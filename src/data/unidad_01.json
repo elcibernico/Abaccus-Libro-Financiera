@@ -1,0 +1,192 @@
+{
+  "unit": "01",
+  "title": "Operaciones Financieras de Capitalización Simple y Compuesta",
+  "sections": [
+    {
+      "id": "2.",
+      "title": "UNIDAD 1: OPERACIONES FINANCIERAS DE CAPITALIZACIÓN SIMPLE Y COMPUESTA",
+      "items": []
+    },
+    {
+      "id": "1.1.",
+      "title": "Operaciones Financieras: Concepto, Elementos y Clasificación",
+      "items": [
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "La Matemática Financiera se focaliza en el estudio de las operaciones financieras, definidas como aquellas que producen una modificación cuantitativa del capital por el transcurso del tiempo. Para que una operación sea tal, debe verificarse un intercambio no simultáneo de capitales, lo que implica la existencia de un lapso o \"tiempo corrido\" entre la prestación de una parte y la contraprestación de la otra."
+        },
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "Como bien desarrolla Luis Alberto Zacarías, el valor del capital surge de acercar a dos partes con necesidades distintas: unas necesitan hoy y otras están dispuestas a posponer su goce. El valor asignado al capital es la consecuencia de definir una \"Ley Financiera\" que ambas partes aceptan, lo que supone que los valores capitales son \"equitativos\" para ellas, aunque nominalmente sean distintos por ser disponibles en diferentes momentos del tiempo; en resumen, hay equidad financiera."
+        },
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "Toda operación financiera presenta tres elementos Ciertos:\n- Capital ($C$): Analizado desde un enfoque dinámico, donde se estudia el proceso de transformación que sufre el capital colocado a la productividad durante un lapso de tiempo.\n- Ley Financiera de Valoración: Es el modelo matemático que permite proyectar capitales. Como señala Fransolini, lo más habitual es determinar la ley y la tasa aplicable, y que el valor de los capitales se determine conforme a dicha ley.\n- Tiempo ($n$): Lapso entre el inicio y el fin de la operación. Debe expresarse siempre en la misma unidad de medida que la tasa periódica de interés."
+        },
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "En determinadas operaciones aparece un cuarto elemento Contingente, que es un suceso aleatorio que impide conocer el resultado final al momento de la concertación."
+        },
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "Clasificación de las Operaciones Financieras:\n- Desde el punto de vista formal:\n- Simples: Presentan una única prestación y una única contraprestación diferida (ej. un depósito a plazo fijo).\n- Compuestas (o complejas): Existe una pluralidad de prestaciones o contraprestaciones no contemporáneas (ej. un préstamo a cancelar en $n$ cuotas).\n- Desde el punto de vista sustancial:\n- Ciertas (o de crédito puro): Los elementos están definidos con certeza y el resultado se prevé de antemano.\n- Contingentes (o aleatorias): El resultado depende del azar, como en los seguros de vida o rentas vitalicias, donde la aleatoriedad reside en el desconocimiento del momento de la muerte o supervivencia."
+        }
+      ]
+    },
+    {
+      "id": "1.2.",
+      "title": "Interés: Generación y Liquidación",
+      "items": [
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "El interés ($I$) es el precio que se paga por el uso de un capital ajeno. Fransolini establece una distinción fundamental: el interés se genera en forma continua (instante a instante) basándose en la premisa de que el capital es permanentemente productivo. Sin embargo, la liquidación (el acto de acreditar intereses) se realiza de forma discreta en momentos prefijados según el régimen de capitalización simple o compuesto convenido."
+        }
+      ]
+    },
+    {
+      "id": "1.2.1.",
+      "title": "Régimen de Interés Simple",
+      "items": [
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "En este régimen, los intereses se liquidan de una sola vez al vencimiento y recién en ese momento se incorporan al capital productivo. Como se calculan siempre sobre el capital inicial ($C$), el interés de cada período resulta constante."
+        },
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "La fórmula del Monto ($M$) a interés simple es: $$M = C \\cdot (1 + j \\cdot n)$$ Donde $j$ representa la tasa periódica nominal."
+        },
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "Relación Analítica de Fransolini (Comercial vs. Exacto): Para comprender la diferencia entre el interés comercial (base 360 días) y el calendario (base 365 días), Fransolini realiza la siguiente deducción: $$I_{Comercial} = \\frac{C \\cdot j \\cdot n}{360} \\quad ; \\quad I_{Calendario} = \\frac{C \\cdot j \\cdot n}{365}$$ Dividiendo ambas expresiones: $$\\frac{I_{Comercial}}{I_{Calendario}} = \\frac{\\frac{C \\cdot j \\cdot n}{360}}{\\frac{C \\cdot j \\cdot n}{365}} = \\frac{365}{360} = \\frac{73}{72} \\approx 1,01388...$$ Esta deducción demuestra que el interés comercial es siempre un 1,38% más elevado que el calendario para iguales condiciones de capital, tasa y tiempo."
+        },
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "Tasa Periódica Efectiva en Interés Simple: Si los intereses no se retiran periódicamente, el capital productivo real aumenta. Fransolini demuestra que la tasa periódica efectiva ($i_k$) resulta ser variable y decreciente, ya que el interés constante se distribuye sobre una base de capital acumulado cada vez mayor. La relación para un período $k$ es: $$i_k = \\frac{j}{1 + j \\cdot (k - 1)}$$ Consecuentemente: $j = i_1 > i_2 > i_3 > \\dots > i_n$."
+        }
+      ]
+    },
+    {
+      "id": "1.2.2.",
+      "title": "Régimen de Interés Compuesto",
+      "items": [
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "En el régimen de interés compuesto, los intereses se liquidan al final de cada período y se incorporan al capital, siendo generadores de nuevos intereses. El capital crece en progresión geométrica."
+        },
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "La fórmula del Monto ($M$) es: $$M = C \\cdot (1 + i)^n$$ Donde $i$ es la tasa periódica efectiva."
+        },
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "Frecuencia de Capitalización ($m$): Representa la cantidad de veces que los intereses se capitalizan dentro del período de la tasa nominal ($j$).\n- Enfoque de Proporcionalidad: Se mantiene constante $j$ y se varía $m$. A medida que $m$ aumenta, el monto final crece asintóticamente.\n- Enfoque de Equivalencia: Se busca que el monto sea constante ($i$ constante) y se ajusta la tasa nominal $j_{(m)}$ según varíe $m$."
+        },
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "Capitalización Continua: Cuando la frecuencia de capitalización $m$ tiende a infinito ($m \\to \\infty$), se pasa al campo continuo. Fransolini deduce el Monto Máximo mediante el límite del número $e$: $$\\bar{M} = C \\cdot e^{j \\cdot n}$$ La tasa instantánea de interés ($\\delta$), que representa la fuerza del interés en instantes infinitesimales, se relaciona con la tasa efectiva periódica de la siguiente forma: $$\\delta = \\ln(1 + i)$$ Donde $\\delta$ es la menor de todas las tasas periódicas de interés bajo el enfoque de equivalencia."
+        }
+      ]
+    },
+    {
+      "id": "3.",
+      "title": "CASOS PRÁCTICOS (PASO A PASO)",
+      "items": [
+        {
+          "mode": "both",
+          "type": "example",
+          "content": "Caso 1: Capitalización Simple a Tasas Variables (Caso 1.3 Fransolini) Se coloca un capital de $$10.000$ durante 180 días."
+        },
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "- Primeros 30 días: $j_1 = 2%$ ($0,02$) por 30 días.\n- Siguientes 60 días: $j_2 = 2,5%$ ($0,025$) por 30 días.\n- Últimos 90 días: $j_3 = 15%$ ($0,15$) por 180 días. Resolución:\n- Homogeneización de $n_k$ respecto a sus tasas: $n_1 = 1$; $n_2 = 60/30 = 2$; $n_3 = 90/180 = 0,5$.\n- Aplicación de la fórmula general de sumatoria de tasas: $M = 10.000 \\cdot (1 + 0,02 \\cdot 1 + 0,025 \\cdot 2 + 0,15 \\cdot 0,5)$ $M = 10.000 \\cdot (1 + 0,02 + 0,05 + 0,075) = 10.000 \\cdot (1,145)$\n- Resultado: $M = $11.450$."
+        },
+        {
+          "mode": "both",
+          "type": "example",
+          "content": "Caso 2: Inversión en Régimen Compuesto con Frecuencia Variable Un inversor coloca $$50.000$ a una TNA ($j$) del $24%$ durante 1 año ($n=1$)."
+        },
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "- Capitalización Semestral ($m=2$): $M = 50.000 \\cdot (1 + 0,24/2)^{1 \\cdot 2} = $62.720$.\n- Capitalización Mensual ($m=12$): $M = 50.000 \\cdot (1 + 0,24/12)^{1 \\cdot 12} = $63.412,09$.\n- Capitalización Continua: $M = 50.000 \\cdot e^{0,24 \\cdot 1} = $63.562,46$ [Simulación basada en 154, 280]."
+        }
+      ]
+    },
+    {
+      "id": "4.",
+      "title": "ESPECIFICACIÓN DE VISUALIZACIÓN INTERACTIVA",
+      "items": [
+        {
+          "mode": "both",
+          "type": "chart",
+          "content": "Comparison Chart",
+          "metadata": {
+            "chartType": "comparison"
+          }
+        }
+      ]
+    },
+    {
+      "id": "5.",
+      "title": "AUTOEVALUACIÓN DE RETROALIMENTACIÓN INMEDIATA",
+      "items": [
+        {
+          "mode": "both",
+          "type": "quiz",
+          "question": "- ¿Cuál es la relación numérica exacta entre el interés comercial y el calendario según Fransolini?",
+          "options": [
+            "- A) $360 / 365$.",
+            "- B) $73 / 72$.",
+            "- C) $1 / 360$."
+          ],
+          "feedback": "-  ¡Correcto! Como demuestra Fransolini, al dividir las fórmulas de interés, la relación se invierte a $365/360$, lo que simplificado resulta en $73/72$, indicando un costo $1,38%$ superior en el método comercial.",
+          "correctIndex": 1
+        },
+        {
+          "mode": "both",
+          "type": "quiz",
+          "question": "- En el interés simple, si los intereses devengados NO se retiran, la tasa efectiva de cada período es:",
+          "options": [
+            "- A) Constante e igual a la nominal.",
+            "- B) Variable y decreciente.",
+            "- C) Variable y creciente."
+          ],
+          "feedback": "-  ¡Correcto! Según Fransolini y Zacarías, el interés liquidado es constante pero el capital productivo real aumenta, lo que provoca que la relación $I/C$ disminuya en cada subperíodo.",
+          "correctIndex": 2
+        },
+        {
+          "mode": "both",
+          "type": "quiz",
+          "question": "- ¿Qué ocurre con el monto final bajo el Enfoque de Proporcionalidad si la frecuencia $m$ tiende a infinito?",
+          "options": [
+            "- A) Se alcanza el Monto Máximo (Capitalización Continua).",
+            "- B) El monto tiende a cero.",
+            "- C) El monto permanece igual al régimen periódico ($m=1$)."
+          ],
+          "feedback": "-  ¡Correcto! Como explican Fransolini y López Dumrauf, al aumentar la frecuencia de reinversión de intereses, el monto crece hasta su límite físico-matemático definido por la base $e$.",
+          "correctIndex": 0
+        },
+        {
+          "mode": "both",
+          "type": "text",
+          "content": "### BIBLIOGRAFÍA DE LA UNIDAD\n- Cicero, Fernando J. R. (2006). Capítulo I: Operaciones Financieras. Elementos. Clasificaciones. Matemática Financiera. Rosario: Foja Cero.\n\n- Fransolini, Ernesto Claudio. (2021). Capítulo 1: Operaciones Financieras de Capitalización Simple y Compuesta. Cálculo Financiero y Actuarial. Segunda Edición.\n\n- González, Marcela. (2018). Unidad I: Operaciones Financieras de Capitalización. ABC de Matemática Financiera. Rosario: Foja Cero.\n\n- López Dumrauf, Guillermo. (2006). Capítulo 2: Interés Simple; Capítulo 3: Interés Compuesto; Capítulo 4: Tasas de Interés. Cálculo Financiero Aplicado. Buenos Aires: La Ley.\n\n- Zacarías, Luis Alberto. (2017). Capítulo 1: Operación Financiera. Conceptos Generales; Capítulo 3: Operaciones Simples. Capitalización con frecuencia distinta de uno. Matemática aplicada al Cálculo Financiero. Entre Ríos: U.N.E.R.\n\n"
+        }
+      ]
+    }
+  ]
+}
