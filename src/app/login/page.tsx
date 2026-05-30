@@ -1,12 +1,27 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+
+  useEffect(() => {
+    // Escuchar el estado de autenticación. Si el usuario ya inició sesión con éxito, redirigir a la raíz '/'
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
+      if (session) {
+        router.push('/');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [router]);
 
   const handleOAuthLogin = async (provider: 'google' | 'github' | 'azure' | 'apple') => {
     try {
