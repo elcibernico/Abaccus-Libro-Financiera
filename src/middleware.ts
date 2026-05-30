@@ -21,21 +21,17 @@ export async function middleware(request: NextRequest) {
   const nextUrl = request.nextUrl;
   const pathname = nextUrl.pathname;
 
-  // Si el usuario no está autenticado e intenta entrar a una ruta protegida
-  const isProtectedRoute = 
-    pathname.startsWith('/admin') || 
-    pathname.startsWith('/docente') || 
-    pathname.startsWith('/alumno') ||
-    pathname.startsWith('/dashboard');
+  // Definir las únicas rutas públicas permitidas sin autenticación
+  const isPublicRoute = pathname.startsWith('/login') || pathname.startsWith('/unauthorized');
 
-  if (!user && isProtectedRoute) {
+  if (!user && !isPublicRoute) {
     const loginUrl = new URL('/login', request.url);
     // Redirigir a login
     return NextResponse.redirect(loginUrl);
   }
 
   // Si está autenticado, podemos comprobar los roles a nivel de metadata o perfiles
-  if (user && isProtectedRoute) {
+  if (user && !isPublicRoute) {
     // Leer el rol desde la metadata de la app
     const userRole = user.app_metadata?.role || 'alumno';
 
