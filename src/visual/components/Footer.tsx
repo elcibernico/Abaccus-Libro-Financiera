@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import config from '../../../data_content/locales/config.json';
@@ -23,7 +24,7 @@ export default function Footer() {
     };
     checkAdmin();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: any, session: any) => {
       if (session?.user) {
         const role = session.user.app_metadata?.role;
         setIsAdmin(role === 'admin' || role === 'admin_suplente');

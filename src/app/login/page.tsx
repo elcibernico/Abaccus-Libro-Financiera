@@ -2,6 +2,9 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
+export default function LoginPage() {
+  const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
 
