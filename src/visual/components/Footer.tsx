@@ -15,18 +15,61 @@ export default function Footer() {
     : config.footer.extraReferenceLogoLightUrl;
 
   useEffect(() => {
-    const checkAdmin = async () => {
+    const checkAdminAndSyncProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const role = user.app_metadata?.role;
-        setIsAdmin(role === 'admin' || role === 'admin_suplente');
+        // 1. Consultar si ya existe el perfil en la base de datos
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        let currentRole = profile?.role;
+
+        // 2. Si el perfil no existe, lo creamos de forma automática y segura
+        if (!profile) {
+          let assignedRole = 'alumno';
+          let assignedPerms = ['view_content'];
+
+          if (
+            user.email === 'elcibernico@gmail.com' ||
+            user.email === 'estudiocontableid@gmail.com' ||
+            user.email === 'ndemartis@fcecon.unr.edu.ar'
+          ) {
+            assignedRole = 'admin';
+            assignedPerms = ['all_privileges'];
+          }
+
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              email: user.email,
+              role: assignedRole,
+              permissions: assignedPerms
+            });
+
+          if (!insertError) {
+            currentRole = assignedRole;
+          }
+        }
+
+        setIsAdmin(currentRole === 'admin' || currentRole === 'admin_suplente');
       }
     };
-    checkAdmin();
+    checkAdminAndSyncProfile();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: any, session: any) => {
       if (session?.user) {
-        const role = session.user.app_metadata?.role;
+        // Re-verificar perfil en cambios de estado de auth
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        const role = profile?.role;
         setIsAdmin(role === 'admin' || role === 'admin_suplente');
       } else {
         setIsAdmin(false);
