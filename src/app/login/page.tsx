@@ -205,6 +205,7 @@ import { supabase } from '@/lib/supabase';
           <p>
             Al ingresar, aceptas las políticas de acceso y uso académico de la plataforma.
           </p>
+        </div>
       </div>
 
       <style jsx>{`
