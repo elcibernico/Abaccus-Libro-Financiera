@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50 text-slate-800" style="color-scheme: light;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Descuento Racional Compuesto</title>
+    <!-- Tailwind CSS para diseño fluido y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome para íconos interactivos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- KaTeX para renderizar matemáticas con precisión académica -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <!-- Extensión de auto-render para traducir automáticamente texto delimitado por $ -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Chart.js para gráficos avanzados -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Plugin de Zoom y Paneo para Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+
+    <style>
+        html {
+            color-scheme: light !important;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilización de los sliders de rango */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            transition: background 0.15s, transform 0.1s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #60a5fa;
+            transform: scale(1.15);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            transition: background 0.15s, transform 0.1s;
+        }
+        input[type="range"]::-moz-range-thumb:hover {
+            background: #60a5fa;
+            transform: scale(1.15);
+        }
+        /* Barra de scroll personalizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- Encabezado Principal -->
+    <header class="border-b border-slate-200 bg-white/90 backdrop-blur sticky top-0 z-50 px-6 py-3 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600/20 text-blue-400 p-2.5 rounded-xl border border-blue-500/30">
+                    <i class="fa-solid fa-chart-line text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-800 tracking-wide flex items-center gap-2">
+                        Simulador de Descuento Racional Compuesto
+                    </h1>
+                    <p class="text-xs text-slate-600">Análisis Comparativo Multimodal de Curvas de Actualización Financiera</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                <span class="text-xs font-semibold px-3 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg">
+                    Multimodal
+                </span>
+                <span class="text-xs text-slate-600 pr-2">Racional Simple, Compuesto y Continuo</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor Único y Centralizado (Estructura de Bloques Secuenciales) -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col gap-8">
+        
+        <!-- 1º SECCIÓN: BOTONES DE SELECCIÓN DE MODALIDADES -->
+        <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+            <div>
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-square-check text-indigo-400"></i> 1. Seleccionar Modalidades de Actualización
+                </h2>
+                <p class="text-xs text-slate-600 mt-1">Elige uno o varios regímenes para proyectar y comparar dinámicamente sus curvas en el gráfico y en la tabla.</p>
+            </div>
+
+            <!-- Botonera Interactiva de Selección Múltiple -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-2">
+                
+                <!-- Modalidad Simple -->
+                <button type="button" id="btn-simple" class="flex items-center justify-between p-3.5 rounded-xl border transition-all text-left bg-white border-slate-200 hover:border-sky-500/50">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-semibold text-sky-800 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span> Racional Simple
+                        </span>
+                        <span class="text-[10px] text-slate-600 mt-0.5">Régimen Lineal $D_2$</span>
+                    </div>
+                    <div class="checkbox-indicator text-slate-300"><i class="fa-solid fa-circle-check text-lg"></i></div>
+                </button>
+
+                <!-- Modalidad Compuesto Periódico -->
+                <button type="button" id="btn-periodic" class="flex items-center justify-between p-3.5 rounded-xl border transition-all text-left bg-blue-50 border-blue-300 hover:border-blue-500 text-slate-800">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-semibold text-blue-800 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span> Compuesto Periódico
+                        </span>
+                        <span class="text-[10px] text-slate-600 mt-0.5">Exponencial Base $D_3$</span>
+                    </div>
+                    <div class="checkbox-indicator text-blue-500"><i class="fa-solid fa-circle-check text-lg"></i></div>
+                </button>
+
+                <!-- Modalidad Compuesto Subperiódico -->
+                <button type="button" id="btn-subperiodic" class="flex items-center justify-between p-3.5 rounded-xl border transition-all text-left bg-white border-slate-200 hover:border-emerald-500/50">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-semibold text-emerald-800 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span> Comp. Subperiódico
+                        </span>
+                        <span class="text-[10px] text-slate-600 mt-0.5">Fraccionado por $m$</span>
+                    </div>
+                    <div class="checkbox-indicator text-slate-300"><i class="fa-solid fa-circle-check text-lg"></i></div>
+                </button>
+
+                <!-- Modalidad Compuesto Continuo -->
+                <button type="button" id="btn-continuous" class="flex items-center justify-between p-3.5 rounded-xl border transition-all text-left bg-white border-slate-200 hover:border-purple-500/50">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-semibold text-purple-800 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-purple-600"></span> Compuesto Continuo
+                        </span>
+                        <span class="text-[10px] text-slate-600 mt-0.5">Límite Infinitesimal</span>
+                    </div>
+                    <div class="checkbox-indicator text-slate-300"><i class="fa-solid fa-circle-check text-lg"></i></div>
+                </button>
+            </div>
+        </section>
+        
+        <!-- 2º SECCIÓN: PARÁMETROS DE SIMULACIÓN -->
+        <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-6">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-blue-500"></i> 2. Parámetros de Simulación (Datos del Ejercicio)
+                </h2>
+                <span class="text-xs text-slate-400">Configuración matemática de las variables</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- Input Valor Nominal -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <label for="nominal-value" class="text-sm font-medium text-slate-700">
+                            Valor Nominal $N$:
+                        </label>
+                    </div>
+                    <div class="relative rounded-xl shadow-sm">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <span class="text-slate-400 sm:text-sm">$</span>
+                        </div>
+                        <input type="number" id="nominal-value" value="10000" min="10" max="1000000" step="10"
+                            class="block w-full rounded-xl border-slate-300 bg-white pl-8 pr-3 py-2.5 text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-blue-500 text-sm border focus:outline-none transition-all">
+                    </div>
+                </div>
+
+                <!-- Slider Tasa de Interés -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <label for="interest-rate" class="text-sm font-medium text-slate-700">
+                            Tasa del Período $i$:
+                        </label>
+                        <span id="rate-display" class="text-sm font-bold text-blue-600 font-mono">10.0%</span>
+                    </div>
+                    <input type="range" id="interest-rate" min="1" max="25" step="0.5" value="10"
+                        class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer focus:outline-none">
+                    <div class="flex justify-between text-2xs text-slate-600 px-1">
+                        <span>1%</span>
+                        <span>13%</span>
+                        <span>25%</span>
+                    </div>
+                </div>
+
+                <!-- Slider Tiempo de Antelación -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <label for="time-periods" class="text-sm font-medium text-slate-700">
+                            Tiempo de Antelación $n$:
+                        </label>
+                        <span id="time-display" class="text-sm font-bold text-amber-600 font-mono">24</span>
+                    </div>
+                    <input type="range" id="time-periods" min="0" max="60" step="1" value="24"
+                        class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer focus:outline-none">
+                    <div class="flex justify-between text-2xs text-slate-600 px-1">
+                        <span>0m</span>
+                        <span>30m</span>
+                        <span>60m</span>
+                    </div>
+                </div>
+
+                <!-- Selector de Subperíodos (m) -->
+                <div class="flex flex-col gap-2">
+                    <label for="subperiods-m" class="text-sm font-medium text-slate-700">
+                        Subperíodos $m$:
+                    </label>
+                    <select id="subperiods-m" class="block w-full rounded-xl border-slate-300 bg-white px-3 py-2.5 text-slate-800 focus:border-blue-500 focus:ring-blue-500 text-sm border focus:outline-none transition-all">
+                        <option value="2" class="text-slate-800 bg-white">Semestral ($m = 2$)</option>
+                        <option value="4" selected class="text-slate-800 bg-white">Trimestral ($m = 4$)</option>
+                        <option value="6" class="text-slate-800 bg-white">Bimestral ($m = 6$)</option>
+                        <option value="12" class="text-slate-800 bg-white">Mensual ($m = 12$)</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3º SECCIÓN: COMPARATIVA DINÁMICA DE CURVAS (GRÁFICO CON ZOOM MEJORADO) -->
+        <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 relative">
+            <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-slate-200 pb-3">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">3. Comparativa Dinámica de Curvas de Descuento</h2>
+                    <p class="text-xs text-slate-600">Representación de Valor Actual $V$ y Descuento Acumulado $D$</p>
+                </div>
+                <!-- Controles de Zoom en UI -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button id="btn-zoom-focus" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-all flex items-center gap-1.5 shadow-md shadow-indigo-900/30">
+                        <i class="fa-solid fa-magnifying-glass-plus"></i> Enfocar en Periodo $n$
+                    </button>
+                    <button id="btn-zoom-reset" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrows-rotate"></i> Restablecer Vista
+                    </button>
+                    <span class="text-2xs text-slate-600 hidden sm:inline-block border-l border-slate-200 pl-2">
+                        <i class="fa-solid fa-circle-info"></i> Arrastra en el gráfico o usa la rueda para ampliar curvas
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-x-4 gap-y-1 text-[11px] bg-slate-50 p-2 rounded-xl border border-slate-200 w-fit self-end">
+                <span class="flex items-center gap-1.5 font-medium text-slate-700">
+                    <span class="w-3 h-1.5 rounded-sm bg-blue-500 inline-block"></span> Curvas de Valor Actual $V$
+                </span>
+                <span class="flex items-center gap-1.5 font-medium text-slate-700">
+                    <span class="w-3 h-1.5 rounded-sm bg-rose-500 inline-block"></span> Curvas de Descuento $D$
+                </span>
+            </div>
+
+            <!-- Contenedor del Canvas -->
+            <div class="relative w-full h-[360px] md:h-[420px] bg-white rounded-xl p-3 border border-slate-200">
+                <canvas id="discountChart"></canvas>
+            </div>
+        </section>
+
+        <!-- 4º SECCIÓN: ANÁLISIS DE CONCAVIDAD Y CONVEXIDAD -->
+        <section class="bg-gradient-to-br from-white to-indigo-50/20 border border-slate-200 rounded-2xl p-6 shadow-xl flex flex-col gap-5">
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-indigo-400"></i> 4. Análisis de Concavidad y Convexidad
+            </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 text-sm text-slate-700 leading-relaxed">
+                <!-- Columna Izquierda: Valor Actual -->
+                <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-200 flex flex-col gap-3">
+                    <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wide flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Comportamiento de los Valores Actuales
+                    </h3>
+                    <p>
+                        A medida que el tiempo de antelación $n$ se incrementa, el <strong>Valor Actual $V$</strong> decae de forma decreciente hacia cero:
+                    </p>
+                    <div class="bg-slate-100 p-3 rounded-lg border border-slate-200 flex flex-col gap-2 overflow-x-auto">
+                        <div class="flex justify-between items-center text-2xs text-slate-600 border-b border-slate-200/60 pb-1">
+                            <span>Fórmulas analíticas:</span>
+                        </div>
+                        <div class="flex flex-col gap-1.5 py-1 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sky-800 font-semibold text-[10px]">Simple:</span>
+                                <div id="eq-v-simple" class="font-mono text-slate-800"></div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-blue-800 font-semibold text-[10px]">Periódico:</span>
+                                <div id="eq-v-periodic" class="font-mono text-slate-800"></div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-emerald-800 font-semibold text-[10px]">Subperiódico:</span>
+                                <div id="eq-v-sub" class="font-mono text-slate-800"></div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-purple-800 font-semibold text-[10px]">Continuo:</span>
+                                <div id="eq-v-cont" class="font-mono text-slate-800"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p>
+                        La curva exponencial del modelo compuesto es <strong>decreciente y convexa</strong> (cóncava hacia arriba). El peso marginal de los intereses disminuye exponencialmente con la distancia temporal, haciendo que $V$ tienda de forma asintótica a cero sin tocarlo nunca en el modelo compuesto y continuo.
+                    </p>
+                </div>
+
+                <!-- Columna Derecha: Descuento -->
+                <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-200 flex flex-col gap-3">
+                    <h3 class="text-xs font-bold text-rose-800 uppercase tracking-wide flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Comportamiento de los Descuentos
+                    </h3>
+                    <p>
+                        El <strong>Descuento Racional $D$</strong> representa la diferencia monetaria retenida frente al valor nominal de vencimiento:
+                    </p>
+                    <div class="bg-slate-100 p-3 rounded-lg border border-slate-200 flex flex-col gap-2 overflow-x-auto">
+                        <div class="flex justify-between items-center text-2xs text-slate-600 border-b border-slate-200/60 pb-1">
+                            <span>Estructura de Descuentos $D = N - V$:</span>
+                        </div>
+                        <div class="flex flex-col gap-1.5 py-1 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="text-rose-700 font-semibold text-[10px]">Simple:</span>
+                                <div id="eq-d-simple" class="font-mono text-slate-800"></div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-rose-800 font-semibold text-[10px]">Periódico:</span>
+                                <div id="eq-d-periodic" class="font-mono text-slate-800"></div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-orange-800 font-semibold text-[10px]">Subperiódico:</span>
+                                <div id="eq-d-sub" class="font-mono text-slate-800"></div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-purple-800 font-semibold text-[10px]">Continuo:</span>
+                                <div id="eq-d-cont" class="font-mono text-slate-800"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p>
+                        Esta curva es <strong>creciente y cóncava hacia abajo</strong>. A medida que incrementa $n$, el descuento acumulado se eleva rápidamente al principio y se estabiliza de manera <strong>asintótica al Valor Nominal $N$</strong>, garantizando que el descuento total nunca excederá el capital nominal original.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-2 p-4 bg-indigo-50 rounded-xl border border-indigo-100 flex gap-3">
+                <i class="fa-solid fa-circle-info text-indigo-400 mt-1 text-lg"></i>
+                <span class="text-xs text-indigo-900">
+                    <strong>Interacción de Tasas e Intervalos:</strong> Observe cómo al elevar la tasa $i$, la caída de la curva de valor actual se vuelve drásticamente más pronunciada, provocando que el descuento alcance su nivel asintótico con mayor antelación. En el régimen de subperíodos $m$, a mayor frecuencia de actualización, mayor es el descuento acumulado para una misma tasa nominal.
+                </span>
+            </div>
+        </section>
+
+        <!-- 5º SECCIÓN: TABLA DE PROYECCIÓN TEMPORAL -->
+        <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-table text-amber-500"></i> 5. Tabla de Proyección Temporal Comparativa
+                </h2>
+                <span class="text-xs text-slate-600 font-mono">Valores Calculados</span>
+            </div>
+            
+            <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                <table class="w-full text-xs text-left text-slate-700">
+                    <thead class="bg-slate-100 text-slate-800 border-b border-slate-200 font-mono text-center">
+                        <tr>
+                            <th scope="col" class="px-3 py-3 border-r border-slate-200 text-slate-900" rowspan="2">Periodo $n$</th>
+                            <th scope="col" class="px-3 py-1.5 border-b border-slate-200 text-sky-900 col-simple" colspan="2">Racional Simple</th>
+                            <th scope="col" class="px-3 py-1.5 border-b border-slate-200 text-blue-900 col-periodic" colspan="2">Compuesto Periódico</th>
+                            <th scope="col" class="px-3 py-1.5 border-b border-slate-200 text-emerald-900 col-subperiodic" colspan="2">Compuesto Subperiódico</th>
+                            <th scope="col" class="px-3 py-1.5 border-b border-slate-200 text-purple-900 col-continuous" colspan="2">Compuesto Continuo</th>
+                        </tr>
+                        <tr class="text-[10px] border-b border-slate-200">
+                            <!-- Simple -->
+                            <th scope="col" class="px-3 py-1.5 border-r border-slate-200/40 col-simple text-right font-normal">Valor $V_2$</th>
+                            <th scope="col" class="px-3 py-1.5 border-r border-slate-200/40 col-simple text-right font-normal">Descuento $D_2$</th>
+                            <!-- Periódico -->
+                            <th scope="col" class="px-3 py-1.5 border-r border-slate-200/40 col-periodic text-right font-normal">Valor $V_3$</th>
+                            <th scope="col" class="px-3 py-1.5 border-r border-slate-200/40 col-periodic text-right font-normal">Descuento $D_3$</th>
+                            <!-- Subperiódico -->
+                            <th scope="col" class="px-3 py-1.5 border-r border-slate-200/40 col-subperiodic text-right font-normal">Valor $V_{sub}$</th>
+                            <th scope="col" class="px-3 py-1.5 border-r border-slate-200/40 col-subperiodic text-right font-normal">Descuento $D_{sub}$</th>
+                            <!-- Continuo -->
+                            <th scope="col" class="px-3 py-1.5 border-r border-slate-200/40 col-continuous text-right font-normal">Valor $V_{cont}$</th>
+                            <th scope="col" class="px-3 py-1.5 col-continuous text-right font-normal">Descuento $D_{cont}$</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projection-tbody" class="divide-y divide-slate-200 font-mono">
+                        <!-- Filas dinámicas -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 6º SECCIÓN: ANÁLISIS DE LA FRECUENCIA DE ACTUALIZACIÓN m -->
+        <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-6">
+            <div class="flex flex-col gap-1 border-b border-slate-200 pb-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-arrows-spin text-emerald-400"></i> 6. Impacto de la Frecuencia de Capitalización $m$
+                    </h2>
+                    <span class="text-xs text-slate-600 font-mono">Para $n = $ <span id="m-analysis-n" class="text-amber-600 font-bold">24</span> períodos</span>
+                </div>
+                <p class="text-xs text-slate-400">Estudio del comportamiento del Descuento Compuesto a medida que se fracciona el tiempo de actualización, desde el límite anual/periódico ($m = 1$) hasta el continuo ($m \to \infty$).</p>
+            </div>
+
+            <!-- Tabla de Sensibilidad de m -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Tabla Informativa -->
+                <div class="lg:col-span-2 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                    <table class="w-full text-xs text-left text-slate-700">
+                        <thead class="bg-slate-100 text-slate-800 font-mono text-center border-b border-slate-200">
+                            <tr>
+                                <th scope="col" class="px-3 py-2 border-r border-slate-200">Frecuencia $m$</th>
+                                <th scope="col" class="px-3 py-2 border-r border-slate-200">Tasa Equivalente $i/m$</th>
+                                <th scope="col" class="px-3 py-2 border-r border-slate-200">Valor Actual $V_{sub}$</th>
+                                <th scope="col" class="px-3 py-2 text-rose-900">Descuento $D_{sub}$</th>
+                            </tr>
+                        </thead>
+                        <tbody id="m-sensibility-tbody" class="divide-y divide-slate-200 text-center font-mono">
+                            <!-- Inyectado dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Marco conceptual dinámico -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 flex flex-col justify-between gap-4">
+                    <div class="flex flex-col gap-3">
+                        <h3 class="text-xs font-bold text-indigo-800 uppercase tracking-wide flex items-center gap-1.5">
+                            <i class="fa-solid fa-calculator"></i> Análisis del Límite Infinitesimal
+                        </h3>
+                        <p class="text-xs text-slate-700 leading-relaxed">
+                            Matemáticamente, al fraccionar la tasa en infinitos subperiodos por unidad de tiempo, el límite converge a la función exponencial natural:
+                        </p>
+                        <div class="bg-slate-100 p-3 rounded-lg border border-slate-200 flex justify-center py-4">
+                            <div id="eq-limit-formula" class="text-slate-800"></div>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            A mayor frecuencia de actualización (<strong>mayor $m$</strong>), el dinero del futuro se descuenta con mayor rigor, haciendo que el <strong>Valor Actual disminuya progresivamente</strong> y el <strong>Descuento Racional Total aumente</strong>, tocando su cota superior en la capitalización continua.
+                        </p>
+                    </div>
+                    <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-100 text-center">
+                        <span class="text-2xs text-emerald-700 font-mono">
+                            Máximo Descuento Posible: <span id="max-possible-discount" class="font-bold text-xs text-slate-800">$-$$</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Pie de Página -->
+    <footer class="border-t border-slate-200 bg-slate-100 px-6 py-4 mt-8">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-600">
+            <span>© 2026 Entorno de Matemática Financiera. Diseñado bajo estándares académicos libres de divisa extranjera.</span>
+            <span>Simulador de Descuentos $D_2$ y $D_3$.</span>
+        </div>
+    </footer>
+
+    <!-- CONTROL Y LÓGICA DEL SIMULADOR -->
+    <script>
+        let chartInstance = null;
+
+        // Estado del modelo
+        const state = {
+            N: 10000,
+            i: 0.10, // 10%
+            n: 24,   // 24 periodos
+            m: 4,    // Frecuencia Trimestral por defecto
+            modalities: {
+                simple: false,
+                periodic: true,      // Compuesto periódico activo por defecto
+                subperiodic: false,
+                continuous: false
+            }
+        };
+
+        // Captura de elementos DOM
+        const nominalInput = document.getElementById('nominal-value');
+        const interestSlider = document.getElementById('interest-rate');
+        const rateDisplay = document.getElementById('rate-display');
+        const timeSlider = document.getElementById('time-periods');
+        const timeDisplay = document.getElementById('time-display');
+        const subperiodsSelect = document.getElementById('subperiods-m');
+        const projectionTbody = document.getElementById('projection-tbody');
+        const mSensibilityTbody = document.getElementById('m-sensibility-tbody');
+        const mAnalysisNText = document.getElementById('m-analysis-n');
+        const maxPossibleDiscountSpan = document.getElementById('max-possible-discount');
+
+        // Botonera de modalidades
+        const btnSimple = document.getElementById('btn-simple');
+        const btnPeriodic = document.getElementById('btn-periodic');
+        const btnSubperiodic = document.getElementById('btn-subperiodic');
+        const btnContinuous = document.getElementById('btn-continuous');
+
+        // Botones de Zoom en Chart
+        const btnZoomFocus = document.getElementById('btn-zoom-focus');
+        const btnZoomReset = document.getElementById('btn-zoom-reset');
+
+        // Fórmulas matemáticas básicas
+        // 1. Racional Simple (D2)
+        const getVSimple = (N, i, n) => N / (1 + i * n);
+        const getDSimple = (N, i, n) => N - getVSimple(N, i, n);
+
+        // 2. Compuesto Periódico (D3)
+        const getVPeriodic = (N, i, n) => N * Math.pow(1 + i, -n);
+        const getDPeriodic = (N, i, n) => N - getVPeriodic(N, i, n);
+
+        // 3. Compuesto Subperiódico
+        const getVSubperiodic = (N, i, n, m) => N * Math.pow(1 + i / m, -n * m);
+        const getDSubperiodic = (N, i, n, m) => N - getVSubperiodic(N, i, n, m);
+
+        // 4. Compuesto Continuo
+        const getVContinuous = (N, i, n) => N * Math.exp(-i * n);
+        const getDContinuous = (N, i, n) => N - getVContinuous(N, i, n);
+
+        // Formateador numérico en pesos sin leyendas de divisas foráneas
+        function formatVal(value) {
+            return '$ ' + value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Renderizado estático y dinámico de KaTeX (Auto-Render Seguro)
+        function triggerAutoRender() {
+            try {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } catch (err) {
+                console.error("Error al procesar Auto-Render de KaTeX: ", err);
+            }
+        }
+
+        function renderFormulas() {
+            try {
+                katex.render("V_2 = \\frac{N}{1 + i \\cdot n}", document.getElementById('eq-v-simple'), { throwOnError: false });
+                katex.render("V_3 = N \\cdot (1+i)^{-n}", document.getElementById('eq-v-periodic'), { throwOnError: false });
+                katex.render("V_{sub} = N \\cdot \\left(1 + \\frac{i}{m}\\right)^{-n \\cdot m}", document.getElementById('eq-v-sub'), { throwOnError: false });
+                katex.render("V_{cont} = N \\cdot e^{-i \\cdot n}", document.getElementById('eq-v-cont'), { throwOnError: false });
+
+                katex.render("D_2 = N - V_2", document.getElementById('eq-d-simple'), { throwOnError: false });
+                katex.render("D_3 = N \\cdot \\left[1 - (1+i)^{-n}\\right]", document.getElementById('eq-d-periodic'), { throwOnError: false });
+                katex.render("D_{sub} = N \\cdot \\left[1 - \\left(1 + \\frac{i}{m}\\right)^{-n \\cdot m}\\right]", document.getElementById('eq-d-sub'), { throwOnError: false });
+                katex.render("D_{cont} = N \\cdot \\left[1 - e^{-i \\cdot n}\\right]", document.getElementById('eq-d-cont'), { throwOnError: false });
+
+                // Límite de m tendiendo a infinito
+                katex.render("\\lim_{m \\to \\infty} N \\left(1 + \\frac{i}{m}\\right)^{-n \\cdot m} = N e^{-i \\cdot n}", document.getElementById('eq-limit-formula'), { throwOnError: false });
+            } catch (err) {
+                console.error("Error al renderizar fórmulas KaTeX: ", err);
+            }
+            triggerAutoRender();
+        }
+
+        // Inicializador de Chart.js con soporte integrado para Zoom táctil/mouse y colores premium
+        function initChart() {
+            const ctx = document.getElementById('discountChart').getContext('2d');
+
+            const config = {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: 61 }, (_, idx) => idx), // Eje X (n) de 0 a 60 periodos
+                    datasets: [
+                        // --- Valores Actuales (V) ---
+                        {
+                            label: 'Val. Actual Simple V2',
+                            borderColor: '#38bdf8', // Celeste Sky
+                            borderWidth: 2,
+                            borderDash: [5, 4],
+                            pointRadius: 0,
+                            pointHoverRadius: 5,
+                            data: [],
+                            fill: false,
+                            tension: 0.15
+                        },
+                        {
+                            label: 'Val. Actual Periódico V3',
+                            borderColor: '#2563eb', // Azul fuerte
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            data: [],
+                            fill: false,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'Val. Actual Subperiódico Vsub',
+                            borderColor: '#059669', // Esmeralda
+                            borderWidth: 2.5,
+                            borderDash: [2, 2],
+                            pointRadius: 0,
+                            pointHoverRadius: 5,
+                            data: [],
+                            fill: false,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'Val. Actual Continuo Vcont',
+                            borderColor: '#7c3aed', // Púrpura
+                            borderWidth: 2,
+                            borderDash: [8, 3],
+                            pointRadius: 0,
+                            pointHoverRadius: 5,
+                            data: [],
+                            fill: false,
+                            tension: 0.2
+                        },
+                        // --- Descuentos (D) ---
+                        {
+                            label: 'Descuento Simple D2',
+                            borderColor: '#fda4af', // Rosa claro
+                            borderWidth: 2,
+                            borderDash: [5, 4],
+                            pointRadius: 0,
+                            pointHoverRadius: 5,
+                            data: [],
+                            fill: false,
+                            tension: 0.15
+                        },
+                        {
+                            label: 'Descuento Periódico D3',
+                            borderColor: '#e11d48', // Carmesí
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            data: [],
+                            fill: false,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'Descuento Subperiódico Dsub',
+                            borderColor: '#d97706', // Ámbar
+                            borderWidth: 2.5,
+                            borderDash: [2, 2],
+                            pointRadius: 0,
+                            pointHoverRadius: 5,
+                            data: [],
+                            fill: false,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'Descuento Continuo Dcont',
+                            borderColor: '#ea580c', // Naranja oscuro
+                            borderWidth: 2,
+                            borderDash: [8, 3],
+                            pointRadius: 0,
+                            pointHoverRadius: 5,
+                            data: [],
+                            fill: false,
+                            tension: 0.2
+                        },
+                        // --- Marcadores del Período Actual n ---
+                        {
+                            label: 'Puntos de Selección Actual',
+                            borderColor: '#fbbf24',
+                            backgroundColor: '#fbbf24',
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            data: [],
+                            showLine: false,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#ffffff',
+                            titleColor: '#0f172a',
+                            bodyColor: '#334155',
+                            borderColor: '#cbd5e1',
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.datasetIndex === 8) return null;
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += formatVal(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        // CONFIGURACIÓN DEL PLUGIN DE ZOOM
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'xy',
+                                threshold: 10
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                    speed: 0.05
+                                },
+                                drag: {
+                                    enabled: true,
+                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                    borderColor: 'rgba(59, 130, 246, 0.3)',
+                                    borderWidth: 1
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'xy'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: '#e2e8f0',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#475569',
+                                font: {
+                                    family: 'Inter',
+                                    size: 10
+                                },
+                                callback: function(val, index) {
+                                    return index % 5 === 0 ? `${index}m` : '';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Tiempo de Antelación (n)',
+                                color: '#475569',
+                                font: {
+                                    size: 11,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: '#e2e8f0',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#475569',
+                                font: {
+                                    family: 'Inter',
+                                    size: 10
+                                },
+                                callback: function(val) {
+                                    return `$ ${val.toLocaleString('es-AR')}`;
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Valor Monetario ($)',
+                                color: '#475569',
+                                font: {
+                                    size: 11,
+                                    weight: 'bold'
+                                }
+                            },
+                            min: 0
+                        }
+                    }
+                }
+            };
+
+            chartInstance = new Chart(ctx, config);
+
+            // Evento manual para los controles externos de Zoom
+            btnZoomFocus.addEventListener('click', () => {
+                focusZoomOnCurrentN();
+            });
+
+            btnZoomReset.addEventListener('click', () => {
+                resetChartZoom();
+            });
+        }
+
+        // Realiza un zoom centrado de +/- 5 meses alrededor de la posición 'n' elegida
+        function focusZoomOnCurrentN() {
+            if (!chartInstance) return;
+
+            const currentN = state.n;
+            const minX = Math.max(0, currentN - 5);
+            const maxX = Math.min(60, currentN + 5);
+
+            // Obtener el valor máximo y mínimo en ese segmento para ajustar óptimamente la escala de Y
+            let minYVal = state.N;
+            let maxYVal = 0;
+
+            const activeDatasets = [];
+            chartInstance.data.datasets.forEach((ds, index) => {
+                // Solo inspeccionamos curvas de datos válidas (excluyendo el marcador del punto actual)
+                if (index < 8 && !ds.hidden) {
+                    activeDatasets.push(ds.data);
+                }
+            });
+
+            if (activeDatasets.length > 0) {
+                for (let x = Math.floor(minX); x <= Math.ceil(maxX); x++) {
+                    activeDatasets.forEach(dataArr => {
+                        const val = dataArr[x];
+                        if (val !== undefined) {
+                            if (val < minYVal) minYVal = val;
+                            if (val > maxYVal) maxYVal = val;
+                        }
+                    });
+                }
+            } else {
+                minYVal = 0;
+                maxYVal = state.N;
+            }
+
+            // Agregamos un colchón visual del 5% arriba y abajo
+            const paddingY = (maxYVal - minYVal) * 0.05 || 10;
+            const finalMinY = Math.max(0, minYVal - paddingY);
+            const finalMaxY = Math.min(state.N * 1.05, maxYVal + paddingY);
+
+            chartInstance.options.scales.x.min = minX;
+            chartInstance.options.scales.x.max = maxX;
+            chartInstance.options.scales.y.min = finalMinY;
+            chartInstance.options.scales.y.max = finalMaxY;
+            chartInstance.update('active');
+        }
+
+        function resetChartZoom() {
+            if (!chartInstance) return;
+            chartInstance.options.scales.x.min = 0;
+            chartInstance.options.scales.x.max = 60;
+            chartInstance.options.scales.y.min = 0;
+            chartInstance.options.scales.y.max = Math.ceil(state.N / 100) * 100;
+            chartInstance.update('active');
+        }
+
+        // Calcula y dibuja la sección de sensibilidad de m
+        function updateSensibilityAnalysis() {
+            const N = state.N;
+            const i = state.i;
+            const n = state.n;
+
+            mAnalysisNText.textContent = n;
+
+            // Frecuencias discretas populares
+            const cases = [
+                { label: 'Periódica / Anual ($m = 1$)', m: 1 },
+                { label: 'Semestral ($m = 2$)', m: 2 },
+                { label: 'Trimestral ($m = 4$)', m: 4 },
+                { label: 'Bimestral ($m = 6$)', m: 6 },
+                { label: 'Mensual ($m = 12$)', m: 12 },
+                { label: 'Diaria ($m = 365$)', m: 365 },
+                { label: 'Continua ($m \\to \\infty$)', m: Infinity }
+            ];
+
+            mSensibilityTbody.innerHTML = '';
+
+            cases.forEach(c => {
+                let vVal, dVal, iEqStr;
+
+                if (c.m === Infinity) {
+                    vVal = getVContinuous(N, i, n);
+                    dVal = getDContinuous(N, i, n);
+                    iEqStr = 'Límite $e$';
+                } else {
+                    vVal = getVSubperiodic(N, i, n, c.m);
+                    dVal = getDSubperiodic(N, i, n, c.m);
+                    iEqStr = `${( (i / c.m) * 100 ).toFixed(3)}\\%`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = c.m === Infinity 
+                    ? "bg-purple-50 text-purple-800 font-bold border-t border-purple-200" 
+                    : "hover:bg-slate-50";
+
+                tr.innerHTML = `
+                    <td class="px-3 py-3 border-r border-slate-200 text-left font-medium">${c.label}</td>
+                    <td class="px-3 py-3 border-r border-slate-200 text-slate-600 font-mono">${iEqStr}</td>
+                    <td class="px-3 py-3 border-r border-slate-200 text-blue-800 font-mono">${formatVal(vVal)}</td>
+                    <td class="px-3 py-3 font-bold text-rose-800 font-mono">${formatVal(dVal)}</td>
+                `;
+
+                mSensibilityTbody.appendChild(tr);
+            });
+
+            // Actualizar la cota máxima teórica en el marco explicativo (Continua)
+            const maxD = getDContinuous(N, i, n);
+            maxPossibleDiscountSpan.textContent = formatVal(maxD);
+
+            // Re-renderizar KaTeX de la nueva tabla inyectada
+            triggerAutoRender();
+        }
+
+        // Procesa cálculos globales, actualiza el gráfico y refresca la tabla comparativa
+        function updateAll() {
+            const N = state.N;
+            const i = state.i;
+            const n = state.n;
+            const m = state.m;
+
+            // Arreglos de almacenamiento para las curvas (0 a 60 períodos)
+            const d_v_simple = [];
+            const d_v_periodic = [];
+            const d_v_subperiodic = [];
+            const d_v_continuous = [];
+
+            const d_d_simple = [];
+            const d_d_periodic = [];
+            const d_d_subperiodic = [];
+            const d_d_continuous = [];
+
+            // Puntos seleccionados en la vertical "n"
+            const currentPoints = [];
+
+            for (let t = 0; t <= 60; t++) {
+                const vs = getVSimple(N, i, t);
+                const vp = getVPeriodic(N, i, t);
+                const vsub = getVSubperiodic(N, i, t, m);
+                const vc = getVContinuous(N, i, t);
+
+                const ds = getDSimple(N, i, t);
+                const dp = getDPeriodic(N, i, t);
+                const dsub = getDSubperiodic(N, i, t, m);
+                const dc = getDContinuous(N, i, t);
+
+                d_v_simple.push(vs);
+                d_v_periodic.push(vp);
+                d_v_subperiodic.push(vsub);
+                d_v_continuous.push(vc);
+
+                d_d_simple.push(ds);
+                d_d_periodic.push(dp);
+                d_d_subperiodic.push(dsub);
+                d_d_continuous.push(dc);
+
+                // Captura coordenadas en la antelación actual 'n'
+                if (t === n) {
+                    if (state.modalities.simple) {
+                        currentPoints.push({ x: t, y: vs }, { x: t, y: ds });
+                    }
+                    if (state.modalities.periodic) {
+                        currentPoints.push({ x: t, y: vp }, { x: t, y: dp });
+                    }
+                    if (state.modalities.subperiodic) {
+                        currentPoints.push({ x: t, y: vsub }, { x: t, y: dsub });
+                    }
+                    if (state.modalities.continuous) {
+                        currentPoints.push({ x: t, y: vc }, { x: t, y: dc });
+                    }
+                }
+            }
+
+            // Configurar visibilidad y actualizar datos en Chart.js
+            // 0: Simple V2
+            chartInstance.data.datasets[0].data = d_v_simple;
+            chartInstance.data.datasets[0].hidden = !state.modalities.simple;
+            // 1: Compuesto Periódico V3
+            chartInstance.data.datasets[1].data = d_v_periodic;
+            chartInstance.data.datasets[1].hidden = !state.modalities.periodic;
+            // 2: Compuesto Subperiódico Vsub
+            chartInstance.data.datasets[2].data = d_v_subperiodic;
+            chartInstance.data.datasets[2].hidden = !state.modalities.subperiodic;
+            // 3: Continuo Vcont
+            chartInstance.data.datasets[3].data = d_v_continuous;
+            chartInstance.data.datasets[3].hidden = !state.modalities.continuous;
+
+            // 4: Simple D2
+            chartInstance.data.datasets[4].data = d_d_simple;
+            chartInstance.data.datasets[4].hidden = !state.modalities.simple;
+            // 5: Compuesto Periódico D3
+            chartInstance.data.datasets[5].data = d_d_periodic;
+            chartInstance.data.datasets[5].hidden = !state.modalities.periodic;
+            // 6: Compuesto Subperiódico Dsub
+            chartInstance.data.datasets[6].data = d_d_subperiodic;
+            chartInstance.data.datasets[6].hidden = !state.modalities.subperiodic;
+            // 7: Continuo Dcont
+            chartInstance.data.datasets[7].data = d_d_continuous;
+            chartInstance.data.datasets[7].hidden = !state.modalities.continuous;
+
+            // Marcador flotante de la posición actual
+            chartInstance.data.datasets[8].data = currentPoints;
+
+            // Ajustar el techo del eje Y de forma receptiva, solo si no está en modo zoom focalizado
+            const isDefaultScale = chartInstance.options.scales.x.min === 0 && chartInstance.options.scales.x.max === 60;
+            if (isDefaultScale) {
+                chartInstance.options.scales.y.max = Math.ceil(N / 100) * 100;
+            }
+            chartInstance.update();
+
+            // Refrescar visibilidad de columnas en el encabezado de la Tabla
+            toggleTableColumns();
+
+            // Generar tabla de datos
+            renderTableData(N, i, n, m);
+
+            // Generar tabla de análisis de m
+            updateSensibilityAnalysis();
+        }
+
+        // Controla la visibilidad de los headers y celdas de la tabla según la modalidad activa
+        function toggleTableColumns() {
+            const simpleCols = document.querySelectorAll('.col-simple');
+            const periodicCols = document.querySelectorAll('.col-periodic');
+            const subperiodicCols = document.querySelectorAll('.col-subperiodic');
+            const continuousCols = document.querySelectorAll('.col-continuous');
+
+            const toggle = (cols, isActive) => {
+                cols.forEach(el => {
+                    if (isActive) {
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                });
+            };
+
+            toggle(simpleCols, state.modalities.simple);
+            toggle(periodicCols, state.modalities.periodic);
+            toggle(subperiodicCols, state.modalities.subperiodic);
+            toggle(continuousCols, state.modalities.continuous);
+        }
+
+        // Redibuja los registros de la tabla optimizando filas seleccionadas
+        function renderTableData(N, i, selectedN, m) {
+            projectionTbody.innerHTML = '';
+
+            // Hitos temporales representativos + el período elegido
+            const keyPeriods = new Set([0, 5, 10, 15, 20, 30, 40, 50, 60]);
+            keyPeriods.add(selectedN);
+
+            const sortedPeriods = Array.from(keyPeriods).sort((a, b) => a - b);
+
+            sortedPeriods.forEach(t => {
+                const isSelected = (t === selectedN);
+                const row = document.createElement('tr');
+                row.className = isSelected 
+                    ? 'bg-indigo-50 border-y border-indigo-200 font-semibold text-slate-900' 
+                    : 'hover:bg-slate-50 text-slate-700';
+
+                const badge = isSelected 
+                    ? `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase">Actual</span>`
+                    : '';
+
+                // Valores calculados puntuales
+                const vs = getVSimple(N, i, t);
+                const ds = getDSimple(N, i, t);
+                const vp = getVPeriodic(N, i, t);
+                const dp = getDPeriodic(N, i, t);
+                const vsub = getVSubperiodic(N, i, t, m);
+                const dsub = getDSubperiodic(N, i, t, m);
+                const vc = getVContinuous(N, i, t);
+                const dc = getDContinuous(N, i, t);
+
+                let cellsHTML = `
+                    <td class="px-3 py-2.5 text-center border-r border-slate-200/40 font-bold font-mono">
+                        ${t}m ${badge}
+                    </td>
+                `;
+
+                // Racional Simple
+                if (state.modalities.simple) {
+                    cellsHTML += `
+                        <td class="px-3 py-2.5 text-right text-sky-800 border-r border-slate-200/20 font-mono">${formatVal(vs)}</td>
+                        <td class="px-3 py-2.5 text-right text-rose-700 border-r border-slate-200/20 font-mono">${formatVal(ds)}</td>
+                    `;
+                }
+                // Compuesto Periódico
+                if (state.modalities.periodic) {
+                    cellsHTML += `
+                        <td class="px-3 py-2.5 text-right text-blue-800 border-r border-slate-200/20 font-mono">${formatVal(vp)}</td>
+                        <td class="px-3 py-2.5 text-right text-rose-800 border-r border-slate-200/20 font-mono">${formatVal(dp)}</td>
+                    `;
+                }
+                // Compuesto Subperiódico
+                if (state.modalities.subperiodic) {
+                    cellsHTML += `
+                        <td class="px-3 py-2.5 text-right text-emerald-800 border-r border-slate-200/20 font-mono">${formatVal(vsub)}</td>
+                        <td class="px-3 py-2.5 text-right text-amber-800 border-r border-slate-200/20 font-mono">${formatVal(dsub)}</td>
+                    `;
+                }
+                // Compuesto Continuo
+                if (state.modalities.continuous) {
+                    cellsHTML += `
+                        <td class="px-3 py-2.5 text-right text-purple-800 border-r border-slate-200/20 font-mono">${formatVal(vc)}</td>
+                        <td class="px-3 py-2.5 text-right text-orange-800 font-mono">${formatVal(dc)}</td>
+                    `;
+                }
+
+                row.innerHTML = cellsHTML;
+                projectionTbody.appendChild(row);
+            });
+
+            // Re-render de KaTeX en los headers y celdas
+            triggerAutoRender();
+        }
+
+        // Enlace visual y reactivo de la botonera de selección múltiple (activa/desactiva curvas)
+        function setupBotonera() {
+            const updateButtonUI = (btn, key, colorClass, borderClass) => {
+                const iconContainer = btn.querySelector('.checkbox-indicator');
+                if (state.modalities[key]) {
+                    btn.className = `flex items-center justify-between p-3.5 rounded-xl border transition-all text-left bg-${colorClass}-50 border-${colorClass}-300 hover:border-${colorClass}-500`;
+                    iconContainer.className = `checkbox-indicator text-${colorClass}-600`;
+                } else {
+                    btn.className = `flex items-center justify-between p-3.5 rounded-xl border transition-all text-left bg-white border-slate-200 hover:border-${colorClass}-300`;
+                    iconContainer.className = `checkbox-indicator text-slate-300`;
+                }
+            };
+
+            const toggleKey = (key, btn, color, border) => {
+                const activeCount = Object.values(state.modalities).filter(Boolean).length;
+                if (state.modalities[key] && activeCount <= 1) {
+                    return; // Forzar al menos un régimen activo para mantener coherencia interactiva
+                }
+                state.modalities[key] = !state.modalities[key];
+                updateButtonUI(btn, key, color, border);
+                updateAll();
+            };
+
+            btnSimple.addEventListener('click', () => toggleKey('simple', btnSimple, 'sky', 'sky-500/50'));
+            btnPeriodic.addEventListener('click', () => toggleKey('periodic', btnPeriodic, 'blue', 'blue-500'));
+            btnSubperiodic.addEventListener('click', () => toggleKey('subperiodic', btnSubperiodic, 'emerald', 'emerald-500/50'));
+            btnContinuous.addEventListener('click', () => toggleKey('continuous', btnContinuous, 'purple', 'purple-500/50'));
+
+            // UI inicial
+            updateButtonUI(btnSimple, 'simple', 'sky', 'sky-500/50');
+            updateButtonUI(btnPeriodic, 'periodic', 'blue', 'blue-500');
+            updateButtonUI(btnSubperiodic, 'subperiodic', 'emerald', 'emerald-500/50');
+            updateButtonUI(btnContinuous, 'continuous', 'purple', 'purple-500/50');
+        }
+
+        // Gestión global de gestores de eventos para parámetros
+        function setupParamsEventListeners() {
+            // Nominal
+            nominalInput.addEventListener('input', (e) => {
+                let val = parseFloat(e.target.value);
+                if (isNaN(val) || val <= 0) {
+                    val = 10000;
+                }
+                state.N = val;
+                updateAll();
+            });
+            nominalInput.addEventListener('blur', (e) => {
+                if (e.target.value === '' || parseFloat(e.target.value) <= 0) {
+                    e.target.value = 10000;
+                    state.N = 10000;
+                    updateAll();
+                }
+            });
+
+            // Tasa i
+            interestSlider.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                state.i = val / 100;
+                rateDisplay.textContent = `${val.toFixed(1)}%`;
+                updateAll();
+            });
+
+            // Tiempo n
+            timeSlider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                state.n = val;
+                timeDisplay.textContent = `${val} meses`;
+                updateAll();
+            });
+
+            // Selector subperíodos m
+            subperiodsSelect.addEventListener('change', (e) => {
+                state.m = parseInt(e.target.value);
+                updateAll();
+            });
+        }
+
+        // Ciclo inicializador principal
+        window.onload = function() {
+            initChart();
+            setupBotonera();
+            setupParamsEventListeners();
+            updateAll();
+            renderFormulas();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama Dinámico de Flujo de Actualización Retrospectiva</title>
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* slate-100 - Gris claro */
+            color: #0f172a; /* slate-900 */
+        }
+
+        /* Estilos personalizados para sliders (Modo Claro) */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+            border: 2px solid #fff;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #cbd5e1; /* slate-300 */
+            border-radius: 2px;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        /* Botones de radio personalizados (Botonera) */
+        .radio-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            padding: 0.75rem 0.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid #cbd5e1; /* slate-300 */
+            background-color: #ffffff;
+            color: #475569; /* slate-600 */
+            transition: all 0.2s ease;
+            font-weight: 500;
+            height: 100%;
+        }
+        .radio-label:hover {
+            border-color: #94a3b8; /* slate-400 */
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .radio-input:checked + .radio-label {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
+        }
+        
+        canvas {
+            touch-action: none; /* Previene scroll al interactuar con canvas */
+        }
+
+        /* Paneles Glassmorphism para modo claro */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 lg:p-8 flex flex-col items-center">
+
+    <div class="max-w-7xl w-full space-y-6">
+        
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-emerald-600">
+                    Flujo de Actualización vs Capitalización
+                </h1>
+                <p class="text-slate-500 text-sm mt-1">Diagrama Dinámico de Retrospectiva Financiera</p>
+            </div>
+            <div id="test-status" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-300 text-xs font-medium text-slate-600 shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" id="test-indicator"></span>
+                <span id="test-text">Ejecutando pruebas...</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            
+            <!-- Controles (Izquierda) -->
+            <div class="lg:col-span-1 glass-panel rounded-2xl p-5 space-y-6">
+                <h2 class="text-lg font-semibold flex items-center gap-2 text-slate-800 border-b border-slate-200 pb-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                    Parámetros
+                </h2>
+
+                <!-- Antelación (n) -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm font-medium text-slate-600">Tiempo (<span id="katex-n-label"></span>)</label>
+                        <span id="val-n" class="text-sm font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">6 meses</span>
+                    </div>
+                    <input type="range" id="slider-n" min="1" max="12" step="1" value="6">
+                </div>
+
+                <!-- Tasa (d/i) -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm font-medium text-slate-600">Tasa Mensual (<span id="katex-rate-label"></span>)</label>
+                        <span id="val-r" class="text-sm font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">5.0%</span>
+                    </div>
+                    <input type="range" id="slider-r" min="1" max="7" step="0.5" value="5">
+                </div>
+
+                <!-- Nominal (N) -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm font-medium text-slate-600">Nominal (<span id="katex-N-label"></span>)</label>
+                        <span id="val-N" class="text-sm font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded">$1000</span>
+                    </div>
+                    <input type="range" id="slider-N" min="500" max="2000" step="100" value="1000">
+                </div>
+
+                <!-- Régimen (Botonera) -->
+                <div class="space-y-3 pt-2">
+                    <label class="text-sm font-medium text-slate-600">Régimen Financiero</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="relative block">
+                            <input type="radio" name="regime" value="comercial_simple" class="peer sr-only radio-input" checked>
+                            <div class="radio-label text-xs">Comercial<br>Simple</div>
+                        </label>
+                        <label class="relative block">
+                            <input type="radio" name="regime" value="racional_simple" class="peer sr-only radio-input">
+                            <div class="radio-label text-xs">Racional<br>Simple</div>
+                        </label>
+                        <label class="relative block">
+                            <input type="radio" name="regime" value="comercial_compuesto" class="peer sr-only radio-input">
+                            <div class="radio-label text-xs">Comercial<br>Comp.</div>
+                        </label>
+                        <label class="relative block">
+                            <input type="radio" name="regime" value="racional_compuesto" class="peer sr-only radio-input">
+                            <div class="radio-label text-xs">Racional<br>Comp.</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Principal (Canvas + Stats) -->
+            <div class="lg:col-span-3 space-y-6 flex flex-col">
+                
+                <!-- Canvas Container (Ahora arriba) -->
+                <div class="glass-panel rounded-2xl p-2 md:p-4 flex-grow relative" id="canvas-container" style="min-height: 350px;">
+                    <canvas id="main-canvas" class="w-full h-full rounded-xl cursor-crosshair"></canvas>
+                    <div class="absolute top-6 left-6 text-xs text-slate-500 font-mono pointer-events-none bg-white/70 px-2 py-1 rounded backdrop-blur-sm">Interactúa pasando el cursor sobre el eje de tiempo</div>
+                </div>
+
+                <!-- Identidades en Vivo (Ahora abajo) -->
+                <div class="glass-panel rounded-2xl p-4 flex flex-col md:flex-row justify-around items-center gap-4 text-center">
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Identidad de Actualización</p>
+                        <p class="text-xl font-medium text-slate-800 font-mono">
+                            <span id="katex-eq-act-vars"></span>
+                        </p>
+                        <p class="text-lg font-bold text-slate-700 mt-1" id="eq-actualizacion">
+                            $700 = $1000 - $300
+                        </p>
+                    </div>
+                    <div class="hidden md:block w-px h-12 bg-slate-200"></div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Identidad de Capitalización</p>
+                        <p class="text-xl font-medium text-slate-800 font-mono">
+                            <span id="katex-eq-cap-vars"></span>
+                        </p>
+                        <p class="text-lg font-bold text-slate-700 mt-1" id="eq-capitalizacion">
+                            $910 = $700 + $210
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tarjetas de Resultados -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="glass-panel p-4 rounded-xl border-l-4 border-l-blue-500 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 opacity-[0.03] text-blue-900 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform"><svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>
+                        <p class="text-xs text-slate-500 font-medium">Valor Actual (<span id="katex-V-card"></span>)</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1" id="card-V">$0</p>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl border-l-4 border-l-red-500 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 opacity-[0.03] text-red-900 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform"><svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 9h-2V7h-2v5H6v2h2v5h2v-5h2v-2z"/></svg></div>
+                        <p class="text-xs text-slate-500 font-medium">Descuento Total (<span id="katex-D-card"></span>)</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1" id="card-D">$0</p>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl border-l-4 border-l-blue-400 relative overflow-hidden group bg-blue-50/50">
+                        <div class="absolute right-0 top-0 opacity-[0.03] text-blue-900 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform"><svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg></div>
+                        <p class="text-xs text-slate-500 font-medium">Capital Inicial (<span id="katex-C-card"></span>)</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1" id="card-C">$0</p>
+                    </div>
+                    <div class="glass-panel p-4 rounded-xl border-l-4 border-l-emerald-500 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 opacity-[0.03] text-emerald-900 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform"><svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg></div>
+                        <p class="text-xs text-slate-500 font-medium">Interés / Monto (<span id="katex-IM-card"></span>)</p>
+                        <p class="text-lg font-bold text-slate-800 mt-1"><span id="card-I" class="text-emerald-600">+$0</span> <span class="text-slate-400 text-sm font-normal">/ <span id="card-M" class="font-bold text-slate-600">$0</span></span></p>
+                    </div>
+                </div>
+
+                <!-- Explicación Dinámica -->
+                <div class="glass-panel rounded-xl p-4 border border-slate-200">
+                    <p class="text-sm text-slate-600 leading-relaxed" id="dynamic-text">
+                        Cargando análisis dinámico...
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- KaTeX JS -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+    <script>
+        // --- ESTADO GLOBAL ---
+        const state = {
+            n: 6,
+            r: 0.05,
+            N: 1000,
+            regime: 'comercial_simple', // comercial_simple, racional_simple, comercial_compuesto, racional_compuesto
+            
+            // Calculados
+            V: 0, D: 0, C: 0, M: 0, I: 0,
+
+            // Interacción Canvas
+            mouseX: -1,
+            mouseY: -1,
+            isHovering: false,
+            
+            // Animación
+            particlesA: [],
+            particlesB: []
+        };
+
+        // --- REFERENCIAS DOM ---
+        const els = {
+            sliderN: document.getElementById('slider-n'),
+            sliderR: document.getElementById('slider-r'),
+            sliderNominal: document.getElementById('slider-N'),
+            radios: document.querySelectorAll('input[name="regime"]'),
+            
+            valN: document.getElementById('val-n'),
+            valR: document.getElementById('val-r'),
+            valNominal: document.getElementById('val-N'),
+            
+            eqAct: document.getElementById('eq-actualizacion'),
+            eqCap: document.getElementById('eq-capitalizacion'),
+            
+            cardV: document.getElementById('card-V'),
+            cardD: document.getElementById('card-D'),
+            cardC: document.getElementById('card-C'),
+            cardI: document.getElementById('card-I'),
+            cardM: document.getElementById('card-M'),
+            
+            dynText: document.getElementById('dynamic-text'),
+            
+            canvas: document.getElementById('main-canvas'),
+            container: document.getElementById('canvas-container'),
+            
+            testStatus: document.getElementById('test-status'),
+            testIndicator: document.getElementById('test-indicator'),
+            testText: document.getElementById('test-text')
+        };
+
+        const ctx = els.canvas.getContext('2d');
+
+        // --- INICIALIZAR KATEX ---
+        function initKaTeX() {
+            katex.render("n", document.getElementById('katex-n-label'), { displayMode: false });
+            katex.render("i / d", document.getElementById('katex-rate-label'), { displayMode: false });
+            katex.render("N", document.getElementById('katex-N-label'), { displayMode: false });
+            katex.render("V = N - D", document.getElementById('katex-eq-act-vars'), { displayMode: false });
+            katex.render("M = C + I", document.getElementById('katex-eq-cap-vars'), { displayMode: false });
+            katex.render("V", document.getElementById('katex-V-card'), { displayMode: false });
+            katex.render("D", document.getElementById('katex-D-card'), { displayMode: false });
+            katex.render("C = V", document.getElementById('katex-C-card'), { displayMode: false });
+            katex.render("I / M", document.getElementById('katex-IM-card'), { displayMode: false });
+        }
+
+        // --- LÓGICA FINANCIERA ---
+        function calculate() {
+            const { n, r, N, regime } = state;
+            
+            if (regime === 'comercial_simple') {
+                state.D = N * r * n;
+                if (state.D > N) state.D = N; // Previene valores negativos
+                state.V = N - state.D;
+                state.C = state.V;
+                state.I = state.C * r * n;
+                state.M = state.C + state.I; 
+            } else if (regime === 'racional_simple') {
+                state.V = N / (1 + r * n);
+                state.D = N - state.V;
+                state.C = state.V;
+                state.M = state.C * (1 + r * n);
+                state.I = state.M - state.C;
+            } else if (regime === 'comercial_compuesto') {
+                state.V = N * Math.pow(1 - r, n);
+                state.D = N - state.V;
+                state.C = state.V;
+                state.M = state.C * Math.pow(1 - r, -n);
+                state.I = state.M - state.C;
+            } else if (regime === 'racional_compuesto') {
+                state.V = N * Math.pow(1 + r, -n);
+                state.D = N - state.V;
+                state.C = state.V;
+                state.M = state.C * Math.pow(1 + r, n);
+                state.I = state.M - state.C;
+            }
+        }
+
+        function getIntermediateValues(t) {
+            const { r, N, C, regime, n } = state;
+            let vT, cT;
+            
+            if (regime === 'comercial_simple') {
+                let dTemp = N * r * (n - t);
+                vT = Math.max(0, N - dTemp);
+                cT = C * (1 + r * t);
+            } else if (regime === 'racional_simple') {
+                vT = N / (1 + r * (n - t));
+                cT = C * (1 + r * t);
+            } else if (regime === 'comercial_compuesto') {
+                vT = N * Math.pow(1 - r, n - t);
+                cT = C * Math.pow(1 - r, -t);
+            } else if (regime === 'racional_compuesto') {
+                vT = N * Math.pow(1 + r, -(n - t));
+                cT = C * Math.pow(1 + r, t);
+            }
+            return { vT, cT };
+        }
+
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(val).replace('ARS', '$');
+        }
+
+        function updateUI() {
+            calculate();
+            
+            els.valN.innerText = `${state.n} meses`;
+            els.valR.innerText = `${(state.r * 100).toFixed(1)}%`;
+            els.valNominal.innerText = formatCurrency(state.N);
+            
+            els.eqAct.innerHTML = `${formatCurrency(state.V)} = ${formatCurrency(state.N)} - <span class="text-red-500">${formatCurrency(state.D)}</span>`;
+            els.eqCap.innerHTML = `<span class="text-emerald-600">${formatCurrency(state.M)}</span> = ${formatCurrency(state.C)} + <span class="text-emerald-500">${formatCurrency(state.I)}</span>`;
+            
+            els.cardV.innerText = formatCurrency(state.V);
+            els.cardD.innerText = formatCurrency(state.D);
+            els.cardC.innerText = formatCurrency(state.C);
+            els.cardI.innerText = `+${formatCurrency(state.I)}`;
+            els.cardM.innerText = formatCurrency(state.M);
+            
+            const regimenNombres = {
+                'comercial_simple': "Descuento Comercial Simple",
+                'racional_simple': "Descuento Racional Simple",
+                'comercial_compuesto': "Descuento Comercial Compuesto",
+                'racional_compuesto': "Descuento Racional Compuesto"
+            };
+            const regName = regimenNombres[state.regime];
+            const porcDescuento = ((state.D / state.N) * 100).toFixed(1);
+            
+            els.dynText.innerHTML = `Bajo el régimen de <strong>${regName}</strong>, con una antelación de <strong>${state.n} meses</strong> a una tasa del <strong>${(state.r*100).toFixed(1)}%</strong>, el descuento aplicado sobre el nominal de ${formatCurrency(state.N)} es de <strong class="text-red-600">${formatCurrency(state.D)}</strong> (representando una quita del ${porcDescuento}%). En consecuencia, el valor actual residual es de <strong class="text-blue-600">${formatCurrency(state.V)}</strong>. Paralelamente, si capitalizamos este mismo importe (${formatCurrency(state.C)}) por el mismo período, generaría un interés de <strong class="text-emerald-600">${formatCurrency(state.I)}</strong>.`;
+        }
+
+        // --- SISTEMA DE PARTÍCULAS ---
+        class Particle {
+            constructor(arrowType) {
+                this.arrowType = arrowType; 
+                this.reset();
+                this.progress = Math.random(); 
+            }
+            
+            reset() {
+                this.progress = 0;
+                this.speed = 0.002 + Math.random() * 0.003;
+                this.offsetY = (Math.random() - 0.5) * 8;
+                this.alpha = 0.3 + Math.random() * 0.7;
+            }
+            
+            update() {
+                this.progress += this.speed;
+                if (this.progress >= 1) {
+                    this.reset();
+                }
+            }
+            
+            draw(ctx, startX, endX, y) {
+                const currentX = startX + (endX - startX) * (this.arrowType === 'A' ? this.progress : (1 - this.progress));
+                
+                ctx.beginPath();
+                ctx.arc(currentX, y + this.offsetY, 2, 0, Math.PI * 2);
+                ctx.fillStyle = this.arrowType === 'A' ? `rgba(16, 185, 129, ${this.alpha})` : `rgba(59, 130, 246, ${this.alpha})`;
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            state.particlesA = Array.from({length: 40}, () => new Particle('A'));
+            state.particlesB = Array.from({length: 40}, () => new Particle('B'));
+        }
+
+        // --- CANVAS RENDER ---
+        function resizeCanvas() {
+            const rect = els.container.getBoundingClientRect();
+            els.canvas.width = rect.width;
+            els.canvas.height = rect.height;
+        }
+
+        function drawCircle(ctx, x, y, radius, label, value, color, glowColor) {
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = glowColor;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff'; // Fondo claro
+            ctx.fill();
+            
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = color;
+            ctx.stroke();
+            
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = '#0f172a'; // Texto oscuro
+            ctx.font = 'bold 16px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, x, y - 5);
+            
+            ctx.fillStyle = color;
+            ctx.font = 'bold 10px Inter';
+            ctx.fillText(formatCurrency(value), x, y + 12);
+        }
+
+        function drawArrow(ctx, startX, endX, y, color, isForward) {
+            ctx.beginPath();
+            ctx.moveTo(startX, y);
+            ctx.lineTo(endX, y);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            const arrowSize = 10;
+            const dir = isForward ? 1 : -1;
+            ctx.beginPath();
+            ctx.moveTo(endX, y);
+            ctx.lineTo(endX - arrowSize * dir, y - arrowSize/2);
+            ctx.lineTo(endX - arrowSize * dir, y + arrowSize/2);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        function drawCanvas() {
+            ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
+            
+            const w = els.canvas.width;
+            const h = els.canvas.height;
+            const padX = 80;
+            const startX = padX;
+            const endX = w - padX;
+            const spanX = endX - startX;
+            
+            const midY = h / 2;
+            const offsetArrow = Math.min(80, h * 0.25);
+            const yA = midY - offsetArrow;
+            const yB = midY + offsetArrow;
+
+            // Eje de Tiempo (Modo Claro)
+            ctx.beginPath();
+            ctx.moveTo(startX, midY);
+            ctx.lineTo(endX, midY);
+            ctx.strokeStyle = '#94a3b8'; // slate-400
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#64748b'; // slate-500
+            ctx.font = '12px Inter';
+            ctx.textAlign = 'center';
+            
+            const numTicks = state.n;
+            for(let i = 0; i <= numTicks; i++) {
+                const x = startX + (i / numTicks) * spanX;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, midY - 5);
+                ctx.lineTo(x, midY + 5);
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                if (i === 0) {
+                    ctx.fillText('t=0 (Hoy)', x, midY + 25);
+                } else if (i === numTicks) {
+                    ctx.fillText(`t=${state.n} (Futuro)`, x, midY + 25);
+                    ctx.fillStyle = '#3b82f6';
+                    ctx.fillText('Dato Conocido ↓', x, yB - 45); 
+                } else if (numTicks <= 6 || i % 2 === 0) {
+                    ctx.fillStyle = '#64748b';
+                    ctx.fillText(`t=${i}`, x, midY + 20);
+                }
+            }
+
+            const baseRadius = 25;
+            const maxVal = state.N;
+            const getRadius = (val) => Math.max(12, baseRadius * Math.sqrt(val / maxVal));
+
+            const rC = getRadius(state.C);
+            const rM = getRadius(state.M);
+            const rN = getRadius(state.N);
+            const rV = getRadius(state.V);
+
+            // Flechas
+            const colorA = 'rgba(16, 185, 129, 0.9)';
+            const colorAGlow = 'rgba(16, 185, 129, 0.3)';
+            drawArrow(ctx, startX + rC, endX - rM - 5, yA, colorA, true);
+            
+            const colorB = 'rgba(59, 130, 246, 0.9)';
+            const colorBGlow = 'rgba(59, 130, 246, 0.3)';
+            drawArrow(ctx, endX - rN, startX + rV + 5, yB, colorB, false);
+
+            // Partículas
+            state.particlesA.forEach(p => { p.update(); p.draw(ctx, startX + rC, endX - rM, yA); });
+            state.particlesB.forEach(p => { p.update(); p.draw(ctx, startX + rV, endX - rN, yB); });
+
+            // Círculos
+            drawCircle(ctx, startX, yA, rC, 'C', state.C, '#10b981', colorAGlow);
+            drawCircle(ctx, endX, yA, rM, 'M', state.M, '#10b981', colorAGlow);
+            
+            drawCircle(ctx, endX, yB, rN, 'N', state.N, '#3b82f6', colorBGlow);
+            drawCircle(ctx, startX, yB, rV, 'V', state.V, '#3b82f6', colorBGlow);
+
+            // Tooltip (Modo Claro)
+            if (state.isHovering && state.mouseX >= startX && state.mouseX <= endX) {
+                const tHover = ((state.mouseX - startX) / spanX) * state.n;
+                const { vT, cT } = getIntermediateValues(tHover);
+                
+                // Línea Guía
+                ctx.beginPath();
+                ctx.moveTo(state.mouseX, yA);
+                ctx.lineTo(state.mouseX, yB);
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)'; // Oscura translúcida
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Punto en timeline
+                ctx.beginPath();
+                ctx.arc(state.mouseX, midY, 4, 0, Math.PI*2);
+                ctx.fillStyle = '#0f172a';
+                ctx.fill();
+
+                // Caja del Tooltip
+                const toolW = 140;
+                const toolH = 70;
+                let toolX = state.mouseX + 15;
+                if (toolX + toolW > w) toolX = state.mouseX - toolW - 15; 
+                const toolY = midY - toolH/2;
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                ctx.strokeStyle = '#cbd5e1'; // Borde claro
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.roundRect(toolX, toolY, toolW, toolH, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#475569';
+                ctx.font = '10px Inter';
+                ctx.textAlign = 'left';
+                ctx.fillText(`Mes estimado: ${tHover.toFixed(1)}`, toolX + 10, toolY + 20);
+                
+                ctx.fillStyle = '#10b981'; // Verde
+                ctx.fillText(`C(t) ≈ ${formatCurrency(cT)}`, toolX + 10, toolY + 40);
+                
+                ctx.fillStyle = '#3b82f6'; // Azul
+                ctx.fillText(`V(t) ≈ ${formatCurrency(vT)}`, toolX + 10, toolY + 55);
+            }
+
+            requestAnimationFrame(drawCanvas);
+        }
+
+        // --- EVENT LISTENERS ---
+        function attachEvents() {
+            const inputs = [els.sliderN, els.sliderR, els.sliderNominal];
+            
+            inputs.forEach(input => {
+                input.addEventListener('input', (e) => {
+                    state[e.target.id === 'slider-n' ? 'n' : e.target.id === 'slider-r' ? 'r' : 'N'] = 
+                        e.target.id === 'slider-r' ? parseFloat(e.target.value) / 100 : parseFloat(e.target.value);
+                    updateUI();
+                });
+            });
+
+            els.radios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        state.regime = e.target.value;
+                        updateUI();
+                    }
+                });
+            });
+
+            els.canvas.addEventListener('mousemove', (e) => {
+                const rect = els.canvas.getBoundingClientRect();
+                state.mouseX = e.clientX - rect.left;
+                state.mouseY = e.clientY - rect.top;
+                state.isHovering = true;
+            });
+
+            els.canvas.addEventListener('mouseleave', () => {
+                state.isHovering = false;
+            });
+
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+            });
+        }
+
+        // --- AUTO EVALUACIÓN / PRUEBAS ANTIGRAVITY ---
+        function runAutomatedTests() {
+            setTimeout(() => {
+                try {
+                    if (!els.canvas || !els.sliderN) throw new Error("DOM no inicializado correctamente");
+                    
+                    state.regime = 'comercial_simple'; state.N = 1000; state.r = 0.05; state.n = 6;
+                    calculate();
+                    if (Math.abs(state.V - 700) > 0.01) throw new Error(`Fallo Comercial Simple`);
+                    
+                    state.regime = 'racional_compuesto';
+                    calculate();
+                    if (Math.abs(state.V - (1000 * Math.pow(1.05, -6))) > 0.01) throw new Error("Fallo Racional Compuesto");
+                    
+                    state.regime = 'racional_simple';
+                    calculate();
+                    if (Math.abs(state.V - (1000 / (1 + 0.05 * 6))) > 0.01) throw new Error("Fallo Racional Simple");
+
+                    // Restore state
+                    const checkedRadio = document.querySelector('input[name="regime"]:checked');
+                    state.regime = checkedRadio ? checkedRadio.value : 'comercial_simple';
+                    updateUI();
+
+                    // Update UI status (Modo Claro)
+                    els.testIndicator.classList.remove('bg-yellow-500', 'animate-pulse');
+                    els.testIndicator.classList.add('bg-emerald-500');
+                    
+                    els.testStatus.classList.remove('bg-white', 'border-slate-300');
+                    els.testStatus.classList.add('bg-emerald-50', 'border-emerald-200');
+                    
+                    els.testText.innerText = "Sistemas Nominales. Pruebas superadas.";
+                    els.testText.classList.remove('text-slate-600');
+                    els.testText.classList.add('text-emerald-700');
+
+                } catch (error) {
+                    console.error("Test Fallido:", error);
+                    els.testIndicator.classList.remove('bg-yellow-500', 'animate-pulse');
+                    els.testIndicator.classList.add('bg-red-500');
+                    
+                    els.testStatus.classList.remove('bg-white', 'border-slate-300');
+                    els.testStatus.classList.add('bg-red-50', 'border-red-200');
+                    
+                    els.testText.innerText = "Error en Pruebas";
+                    els.testText.classList.remove('text-slate-600');
+                    els.testText.classList.add('text-red-700');
+                }
+            }, 1500); 
+        }
+
+        // --- INICIALIZACIÓN ---
+        function init() {
+            initKaTeX();
+            state.r = parseFloat(els.sliderR.value) / 100;
+            resizeCanvas();
+            initParticles();
+            attachEvents();
+            updateUI();
+            runAutomatedTests();
+            requestAnimationFrame(drawCanvas);
+        }
+
+        window.onload = init;
+
+    </script>
+</body>
+</html>

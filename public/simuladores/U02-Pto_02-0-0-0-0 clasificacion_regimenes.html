@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Regímenes de Descuento</title>
+    <!-- Tailwind CSS para el diseño premium -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons para simbología clara -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- KaTeX para renderizar fórmulas matemáticas en formato LaTeX de forma ultra rápida -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .node-active {
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.6));
+        }
+        /* Custom ranges styling */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden p-4 md:p-6 animate-fadeIn">
+
+<div class="w-full max-w-7xl mx-auto flex-grow flex flex-col gap-6">
+    
+    <!-- Encabezado de la página -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b border-slate-800 pb-4">
+        <div>
+            <span class="text-xs font-semibold tracking-wider text-blue-400 uppercase">Libro Digital Interactivo — Fransolini</span>
+            <h1 class="text-2xl font-bold text-white mt-1">Explorador de Regímenes de Actualización</h1>
+        </div>
+        <div class="text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+            Interactúa con el árbol o usa los selectores para simular
+        </div>
+    </div>
+
+    <!-- Contenido Principal Dinámico -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Columna Izquierda: Árbol de Decisión Interactiva responsivo con lg:sticky -->
+        <div class="lg:col-span-6 flex flex-col bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl lg:sticky lg:top-6 lg:self-start z-10">
+            <div class="mb-2">
+                <h2 class="text-lg font-semibold text-slate-200 flex items-center gap-2">
+                    <i data-lucide="git-fork" class="text-blue-400 w-5 h-5"></i>
+                    Mapa de Regímenes de Descuento
+                </h2>
+                <p class="text-xs text-slate-400">Haz clic en cualquier nodo para cargar su información y configurar el simulador.</p>
+            </div>
+
+            <!-- Contenedor del Árbol SVG -->
+            <div class="flex-grow flex items-center justify-center py-4 bg-slate-950/40 rounded-xl border border-slate-850 my-3">
+                <svg id="decisionTreeSvg" class="w-full h-auto max-w-xl" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Conectores del Árbol (Líneas dinámicas) -->
+                    <g id="treeConnections" stroke="#334155" stroke-width="2.5" fill="none">
+                        <!-- Root to Level 1 -->
+                        <path d="M 300 50 L 150 150" id="path-root-left" />
+                        <path d="M 300 50 L 450 150" id="path-root-right" />
+                        <!-- Simple to Comercial / Racional -->
+                        <path d="M 150 150 L 80 270" id="path-simple-com" />
+                        <path d="M 150 150 L 220 270" id="path-simple-rac" />
+                        <!-- Compuesto to Comercial / Racional -->
+                        <path d="M 450 150 L 380 270" id="path-comp-com" />
+                        <path d="M 450 150 L 520 270" id="path-comp-rac" />
+                    </g>
+
+                    <!-- Nodo Raíz -->
+                    <g transform="translate(300, 50)" class="cursor-pointer" onclick="selectNode('root')">
+                        <rect x="-95" y="-22" width="190" height="44" rx="8" fill="#1e293b" stroke="#475569" stroke-width="2" class="transition-all hover:stroke-blue-400" />
+                        <text text-anchor="middle" y="5" fill="#f8fafc" font-size="11" font-weight="600" letter-spacing="0.5">Regímenes de Actualización</text>
+                    </g>
+
+                    <!-- Nivel 1: Por Régimen -->
+                    <!-- Simple -->
+                    <g transform="translate(150, 150)" id="node-simple" class="cursor-pointer group" onclick="selectNode('simple')">
+                        <rect x="-65" y="-18" width="130" height="36" rx="6" fill="#0f172a" stroke="#3b82f6" stroke-width="1.5" class="transition-all group-hover:fill-blue-950" />
+                        <text text-anchor="middle" y="5" fill="#93c5fd" font-size="11" font-weight="600">Régimen Simple</text>
+                    </g>
+                    <!-- Compuesto -->
+                    <g transform="translate(450, 150)" id="node-compuesto" class="cursor-pointer group" onclick="selectNode('compuesto')">
+                        <rect x="-65" y="-18" width="130" height="36" rx="6" fill="#0f172a" stroke="#10b981" stroke-width="1.5" class="transition-all group-hover:fill-emerald-950" />
+                        <text text-anchor="middle" y="5" fill="#6ee7b7" font-size="11" font-weight="600">Régimen Compuesto</text>
+                    </g>
+
+                    <!-- Nivel 2: Por Tasa/Criterio (Hojas Terminales) -->
+                    <!-- Simple Comercial (V1) -->
+                    <g transform="translate(80, 270)" id="node-v1" class="cursor-pointer group" onclick="selectLeaf('v1')">
+                        <circle r="22" fill="#1e1b4b" stroke="#6366f1" stroke-width="2" class="transition-all group-hover:scale-105" />
+                        <text text-anchor="middle" y="4" fill="#c7d2fe" font-size="10" font-weight="bold">V1</text>
+                        <text text-anchor="middle" y="38" fill="#a5b4fc" font-size="9" font-weight="500">Comercial</text>
+                    </g>
+                    <!-- Simple Racional (V2) -->
+                    <g transform="translate(220, 270)" id="node-v2" class="cursor-pointer group" onclick="selectLeaf('v2')">
+                        <circle r="22" fill="#1e1b4b" stroke="#6366f1" stroke-width="2" class="transition-all group-hover:scale-105" />
+                        <text text-anchor="middle" y="4" fill="#c7d2fe" font-size="10" font-weight="bold">V2</text>
+                        <text text-anchor="middle" y="38" fill="#a5b4fc" font-size="9" font-weight="500">Racional</text>
+                    </g>
+                    <!-- Compuesto Comercial (V4) -->
+                    <g transform="translate(380, 270)" id="node-v4" class="cursor-pointer group" onclick="selectLeaf('v4')">
+                        <circle r="22" fill="#064e3b" stroke="#34d399" stroke-width="2" class="transition-all group-hover:scale-105" />
+                        <text text-anchor="middle" y="4" fill="#a7f3d0" font-size="10" font-weight="bold">V4</text>
+                        <text text-anchor="middle" y="38" fill="#a7f3d0" font-size="9" font-weight="500">Comercial</text>
+                    </g>
+                    <!-- Compuesto Racional (V3) -->
+                    <g transform="translate(520, 270)" id="node-v3" class="cursor-pointer group" onclick="selectLeaf('v3')">
+                        <circle r="22" fill="#064e3b" stroke="#34d399" stroke-width="2" class="transition-all group-hover:scale-105" />
+                        <text text-anchor="middle" y="4" fill="#a7f3d0" font-size="10" font-weight="bold">V3</text>
+                        <text text-anchor="middle" y="38" fill="#a7f3d0" font-size="9" font-weight="500">Racional</text>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Leyenda del Árbol -->
+            <div class="flex gap-4 text-[11px] text-slate-400 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 block"></span> Descuento Simple</div>
+                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 block"></span> Descuento Compuesto</div>
+                <div class="ml-auto text-slate-500">Elige un nodo o presiona un régimen a la derecha</div>
+            </div>
+
+            <!-- Caja Informativa sobre el Comportamiento de la Tasa -->
+            <div class="mt-4 p-4 rounded-xl border border-slate-800 bg-slate-950/20 text-slate-400 text-xs">
+                <h5 class="font-bold text-slate-300 mb-1 flex items-center gap-1.5">
+                    <i data-lucide="help-circle" class="w-4 h-4 text-amber-400"></i> ¿Por qué la base de cálculo es crítica?
+                </h5>
+                <p id="whyRationalBox" class="leading-relaxed">
+                    Al descontar de manera Racional ($V_2$ o $V_3$), la tasa se calcula sobre una base menor (el capital efectivamente recibido, $V$), lo que arroja un descuento total más pequeño en comparación con el Comercial ($V_1$ o $V_4$), donde la tasa golpea directamente al total nominal original ($N$).
+                </p>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Ficha Didáctica, Selectores, Simulador y Gráficos -->
+        <div class="lg:col-span-6 flex flex-col gap-6">
+            
+            <!-- 1. FICHA DIDÁCTICA -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between min-h-[280px]">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="p-1.5 rounded bg-blue-500/10 text-blue-400"><i data-lucide="book-open" class="w-4 h-4"></i></span>
+                            <span class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Ficha Didáctica</span>
+                        </div>
+                        <span id="badgeRegimeType" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">General</span>
+                    </div>
+                    
+                    <h3 id="infoTitle" class="text-xl font-bold text-white mb-2">Regímenes de Actualización</h3>
+                    <div id="infoDesc" class="text-slate-300 text-xs leading-relaxed mb-4">
+                        La actualización financiera consiste en calcular el valor presente ($V$) de un capital futuro ($N$). La decisión clave radica en la elección de la <span class="text-yellow-400 font-semibold">base de cálculo</span>: la tasa se puede aplicar sobre el valor nominal (Comercial) o sobre el valor actual obtenido (Racional).
+                    </div>
+                </div>
+
+                <!-- Área de Fórmula Destacada -->
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center my-2 relative">
+                    <span class="text-[10px] text-slate-500 block mb-1">Modelo de Fransolini</span>
+                    <div id="formulaDisplay" class="text-xl font-mono text-blue-300 font-bold tracking-wide py-1">
+                        V = N - D
+                    </div>
+                    <div id="formulaDetail" class="text-[11px] text-slate-400 mt-1">
+                        La equivalencia financiera general.
+                    </div>
+                </div>
+
+                <!-- Datos Técnicos / Leyendas -->
+                <div class="text-[10px] text-slate-400 grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
+                    <div id="legN"></div>
+                    <div id="legV"></div>
+                    <div id="legTime"></div>
+                    <div id="legRate"></div>
+                </div>
+            </div>
+
+            <!-- 2. SIMULADOR MULTI-MODO (CON SELECTORES DE RÉGIMEN INTEGRADOS) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+                
+                <!-- Selector de Régimen de Descuento (4 Botones Pedidos) -->
+                <div>
+                    <span class="text-xs font-semibold text-slate-400 mb-2 block">Selecciona un Régimen para Simular e Inspeccionar:</span>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <button id="btn-v1" onclick="selectLeafDirect('v1')" class="py-2 px-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 text-xs font-bold transition-all hover:bg-slate-800 hover:border-slate-700 flex flex-col items-center justify-center gap-1">
+                            <span class="text-blue-400 text-sm">V1</span>
+                            <span class="text-[9px] font-normal text-slate-400">Simple Comercial</span>
+                        </button>
+                        <button id="btn-v2" onclick="selectLeafDirect('v2')" class="py-2 px-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 text-xs font-bold transition-all hover:bg-slate-800 hover:border-slate-700 flex flex-col items-center justify-center gap-1">
+                            <span class="text-blue-400 text-sm">V2</span>
+                            <span class="text-[9px] font-normal text-slate-400">Simple Racional</span>
+                        </button>
+                        <button id="btn-v4" onclick="selectLeafDirect('v4')" class="py-2 px-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 text-xs font-bold transition-all hover:bg-slate-800 hover:border-slate-700 flex flex-col items-center justify-center gap-1">
+                            <span class="text-emerald-400 text-sm">V4</span>
+                            <span class="text-[9px] font-normal text-slate-400">Comp. Comercial</span>
+                        </button>
+                        <button id="btn-v3" onclick="selectLeafDirect('v3')" class="py-2 px-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 text-xs font-bold transition-all hover:bg-slate-800 hover:border-slate-700 flex flex-col items-center justify-center gap-1">
+                            <span class="text-emerald-400 text-sm">V3</span>
+                            <span class="text-[9px] font-normal text-slate-400">Comp. Racional</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sliders e Inputs de Control -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-850">
+                    <!-- N: Nominal -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[11px] font-semibold text-slate-400" id="labelMathN">Valor Nominal (N)</label>
+                            <span id="labelN" class="text-xs font-bold text-white">$10.000</span>
+                        </div>
+                        <input id="sliderN" type="range" min="1000" max="50000" step="1000" value="10000" oninput="runSimulation()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    </div>
+
+                    <!-- n: Tiempo -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[11px] font-semibold text-slate-400" id="labelMathNTime">Tiempo (n)</label>
+                            <span id="labelTime" class="text-xs font-bold text-white">4</span>
+                        </div>
+                        <input id="sliderTime" type="range" min="0.1" max="15" step="0.1" value="4" oninput="runSimulation()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    </div>
+
+                    <!-- i/f: Tasa -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[11px] font-semibold text-slate-400" id="labelMathRate">Tasa (i, d, f)</label>
+                            <span id="labelRate" class="text-xs font-bold text-white">10.0%</span>
+                        </div>
+                        <input id="sliderRate" type="range" min="1" max="50" step="0.5" value="10" oninput="runSimulation()" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    </div>
+                </div>
+
+                <!-- Alerta Crítica Integrada (Límite de Aplicabilidad Comercial Simple) -->
+                <div id="applicabilityWarning" class="p-3.5 rounded-xl border border-amber-900/40 bg-amber-950/20 text-amber-200 flex items-start gap-2.5 transition-all duration-300 hidden">
+                    <div class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 mt-0.5 shrink-0">
+                        <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-amber-300">¡Advertencia de Aplicabilidad!</h4>
+                        <p class="text-[10px] mt-0.5 leading-relaxed text-amber-400">
+                            Estás operando en <span class="font-semibold" id="warnLatexFormula"></span> para Descuento Comercial Simple. El valor actual se vuelve nulo o negativo (<span id="warnCalc" class="font-mono text-[9px]">V_1 \le 0</span>). El modelo colapsa.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Comparador Rápido de Dinero en Mano (Valor Actual de los 4 Regímenes) -->
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-850">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-semibold text-slate-400" id="labelMathActualV">Valor Actual Obtenido (V):</span>
+                        <span class="text-[10px] text-slate-500 italic">Dinero neto recibido</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <!-- V1: Comercial Simple -->
+                        <div id="row-v1" class="transition-all">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-300 flex items-center gap-1 text-[11px]">Simple Comercial <span id="mathV1Symbol" class="text-[10px]"></span></span>
+                                <span id="valV1" class="font-bold text-red-400">$6.000</span>
+                            </div>
+                            <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                                <div id="barV1" class="bg-red-500 h-full rounded-full transition-all duration-200" style="width: 60%"></div>
+                            </div>
+                        </div>
+
+                        <!-- V2: Racional Simple -->
+                        <div id="row-v2" class="transition-all">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-300 flex items-center gap-1 text-[11px]">Simple Racional <span id="mathV2Symbol" class="text-[10px]"></span></span>
+                                <span id="valV2" class="font-bold text-blue-400">$7.143</span>
+                            </div>
+                            <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                                <div id="barV2" class="bg-blue-500 h-full rounded-full transition-all duration-200" style="width: 71.4%"></div>
+                            </div>
+                        </div>
+
+                        <!-- V4: Comercial Compuesto -->
+                        <div id="row-v4" class="transition-all">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-300 flex items-center gap-1 text-[11px]">Compuesto Comercial <span id="mathV4Symbol" class="text-[10px]"></span></span>
+                                <span id="valV4" class="font-bold text-emerald-400">$6.561</span>
+                            </div>
+                            <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                                <div id="barV4" class="bg-emerald-500 h-full rounded-full transition-all duration-200" style="width: 65.6%"></div>
+                            </div>
+                        </div>
+
+                        <!-- V3: Racional Compuesto -->
+                        <div id="row-v3" class="transition-all">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-300 flex items-center gap-1 text-[11px]">Compuesto Racional <span id="mathV3Symbol" class="text-[10px]"></span></span>
+                                <span id="valV3" class="font-bold text-teal-400">$6.830</span>
+                            </div>
+                            <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                                <div id="barV3" class="bg-teal-400 h-full rounded-full transition-all duration-200" style="width: 68.3%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. NUEVO GRÁFICO COMPARATIVO: MULTI-DESCUENTOS EN PARALELO -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <div class="flex justify-between items-center mb-3">
+                    <div>
+                        <h4 class="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                            <i data-lucide="layers" class="text-emerald-400 w-4 h-4"></i>
+                            Comparador Dinámico de Descuento (<span id="mathDSymbol">D</span>)
+                        </h4>
+                        <p class="text-[10px] text-slate-400">Verifica la magnitud del descuento acumulado. A mayor descuento, menos dinero en mano.</p>
+                    </div>
+                </div>
+
+                <!-- Selectores de comparación de regímenes (Permite comparar 2 o más) -->
+                <div class="grid grid-cols-4 gap-2 mb-4 bg-slate-950 p-2.5 rounded-xl border border-slate-850">
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="checkbox" id="comp-v1" checked onchange="runSimulation()" class="rounded border-slate-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900 bg-slate-900 w-3.5 h-3.5">
+                        <span class="text-[10px] text-slate-300">V1</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="checkbox" id="comp-v2" checked onchange="runSimulation()" class="rounded border-slate-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900 bg-slate-900 w-3.5 h-3.5">
+                        <span class="text-[10px] text-slate-300">V2</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="checkbox" id="comp-v4" checked onchange="runSimulation()" class="rounded border-slate-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900 bg-slate-900 w-3.5 h-3.5">
+                        <span class="text-[10px] text-slate-300">V4</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="checkbox" id="comp-v3" checked onchange="runSimulation()" class="rounded border-slate-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900 bg-slate-900 w-3.5 h-3.5">
+                        <span class="text-[10px] text-slate-300">V3</span>
+                    </label>
+                </div>
+
+                <!-- Gráfico Comparativo de Barras -->
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-3.5">
+                    <!-- Comp V1 -->
+                    <div id="comp-row-v1" class="space-y-1">
+                        <div class="flex justify-between text-[10px]">
+                            <span class="text-slate-400">V1 (Comercial Simple)</span>
+                            <span id="comp-val-v1" class="font-bold text-red-400">$4.000</span>
+                        </div>
+                        <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                            <div id="comp-bar-v1" class="bg-red-400 h-full rounded-full transition-all duration-200" style="width: 40%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Comp V2 -->
+                    <div id="comp-row-v2" class="space-y-1">
+                        <div class="flex justify-between text-[10px]">
+                            <span class="text-slate-400">V2 (Racional Simple)</span>
+                            <span id="comp-val-v2" class="font-bold text-blue-400">$2.857</span>
+                        </div>
+                        <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                            <div id="comp-bar-v2" class="bg-blue-400 h-full rounded-full transition-all duration-200" style="width: 28.5%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Comp V4 -->
+                    <div id="comp-row-v4" class="space-y-1">
+                        <div class="flex justify-between text-[10px]">
+                            <span class="text-slate-400">V4 (Comercial Compuesto)</span>
+                            <span id="comp-val-v4" class="font-bold text-emerald-400">$3.439</span>
+                        </div>
+                        <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                            <div id="comp-bar-v4" class="bg-emerald-400 h-full rounded-full transition-all duration-200" style="width: 34.3%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Comp V3 -->
+                    <div id="comp-row-v3" class="space-y-1">
+                        <div class="flex justify-between text-[10px]">
+                            <span class="text-slate-400">V3 (Racional Compuesto)</span>
+                            <span id="comp-val-v3" class="font-bold text-teal-400">$3.170</span>
+                        </div>
+                        <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                            <div id="comp-bar-v3" class="bg-teal-400 h-full rounded-full transition-all duration-200" style="width: 31.7%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Variables y datos dinámicos globales
+    let currentActiveNode = 'root';
+    let selectedRegime = 'v1'; // Por defecto iniciamos simulando el V1
+
+    // Fórmulas LaTeX
+    const formulaData = {
+        'root': {
+            title: "Sistemas de Actualización",
+            desc: "Representa el conjunto de leyes financieras que permiten anticipar la disponibilidad de un capital futuro. Se divide formalmente según el comportamiento de la tasa (Comercial vs Racional) y la capitalización (Simple vs Compuesto).",
+            formula: "V = N - D",
+            detail: "Identidad general de la ley de actualización de capitales.",
+            badge: "General"
+        },
+        'simple': {
+            title: "Descuento Simple",
+            desc: "Las variaciones se calculan de manera proporcional directa al tiempo de descuento. Los intereses devengados o descuentos aplicados no se acumulan periódicamente para generar nuevos descuentos.",
+            formula: "D \\propto n",
+            detail: "El descuento es directamente proporcional al tiempo lineal.",
+            badge: "Régimen"
+        },
+        'compuesto': {
+            title: "Descuento Compuesto",
+            desc: "Se aplica el criterio de la capitalización compuesta a la inversa. La base imponible o de cálculo se modifica periodo a periodo, asumiendo reinversión implícita de la tasa de descuento.",
+            formula: "V = N \\cdot (1 + i)^{-n}",
+            detail: "Efecto de la acumulación geométrica en el tiempo.",
+            badge: "Régimen"
+        },
+        'v1': {
+            title: "Descuento Comercial Simple (V1)",
+            desc: "La tasa de descuento ($f$) se aplica directamente sobre el Valor Nominal ($N$). Es muy utilizado en el descuento bancario de pagarés por su extrema practicidad en el cortísimo plazo.",
+            formula: "V_1 = N \\cdot (1 - f \\cdot n)",
+            detail: "Fórmula comercial clásica. Posee el límite de aplicabilidad crítico de n < 1/f.",
+            badge: "Comercial Simple"
+        },
+        'v2': {
+            title: "Descuento Racional Simple (V2)",
+            desc: "Llamado también descuento matemático. La tasa de descuento se aplica sobre el Valor Actual ($V$). Resuelve la anomalía matemática del descuento comercial simple impidiendo el valor negativo.",
+            formula: "V_2 = \\frac{N}{1 + j \\cdot n}",
+            detail: "La base del descuento se calcula de modo inverso a la ley de capitalización simple.",
+            badge: "Racional Simple"
+        },
+        'v4': {
+            title: "Descuento Comercial Compuesto (V4)",
+            desc: "En este modelo, en cada período se aplica la tasa de descuento ($d$) sobre el valor remanente del período anterior. El descuento es una función exponencial decreciente.",
+            formula: "V_4 = N \\cdot (1 - d)^n",
+            detail: "Modelo exponencial comercial. Evita el valor negativo a costa de una caída asintótica rápida.",
+            badge: "Comercial Compuesto"
+        },
+        'v3': {
+            title: "Descuento Racional Compuesto (V3)",
+            desc: "Constituye la ley de capitalización compuesta operando en dirección inversa. Es el modelo más robusto teóricamente para valorar activos a mediano y largo plazo.",
+            formula: "V_3 = N \\cdot (1 + i)^{-n}",
+            detail: "Equivalencia pura de la capitalización compuesta teórica de mercado.",
+            badge: "Racional Compuesto"
+        }
+    };
+
+    // Al cargar la ventana, iniciar Lucide Icons, renderizar fórmulas estáticas y sincronizar simulación
+    window.onload = function() {
+        lucide.createIcons();
+        renderStaticMath();
+        selectLeafDirect('v1'); // Empezar con V1 por defecto de forma activa
+    };
+
+    // Función para renderizar el texto que contiene marcas matemáticas de tipo $...$
+    function renderMathInText(elementId, rawText) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        // Expresión regular para detectar texto entre signos de dólar $
+        const parts = rawText.split('$');
+        let htmlContent = "";
+        
+        for (let i = 0; i < parts.length; i++) {
+            if (i % 2 === 1) {
+                // Es un fragmento matemático
+                const span = document.createElement('span');
+                try {
+                    katex.render(parts[i], span, { throwOnError: false, displayMode: false });
+                    htmlContent += span.innerHTML;
+                } catch (e) {
+                    htmlContent += parts[i];
+                }
+            } else {
+                // Es texto plano
+                htmlContent += parts[i];
+            }
+        }
+        element.innerHTML = htmlContent;
+    }
+
+    // Renderizar matemática estática de la interfaz
+    function renderStaticMath() {
+        // Etiquetas de Sliders
+        katex.render("N", document.getElementById('labelMathN'), { displayMode: false });
+        katex.render("n", document.getElementById('labelMathNTime'), { displayMode: false });
+        katex.render("i, d, f", document.getElementById('labelMathRate'), { displayMode: false });
+        katex.render("V", document.getElementById('labelMathActualV'), { displayMode: false });
+
+        // Símbolos en gráfico de barras
+        katex.render("(V_1)", document.getElementById('mathV1Symbol'), { displayMode: false });
+        katex.render("(V_2)", document.getElementById('mathV2Symbol'), { displayMode: false });
+        katex.render("(V_4)", document.getElementById('mathV4Symbol'), { displayMode: false });
+        katex.render("(V_3)", document.getElementById('mathV3Symbol'), { displayMode: false });
+        katex.render("D", document.getElementById('mathDSymbol'), { displayMode: false });
+
+        // Leyendas de la Ficha Técnica
+        katex.render("N \\text{: Valor Nominal (Futuro)}", document.getElementById('legN'), { displayMode: false });
+        katex.render("V \\text{: Valor Actual (Mano)}", document.getElementById('legV'), { displayMode: false });
+        katex.render("n \\text{: Tiempo de anticipación}", document.getElementById('legTime'), { displayMode: false });
+        katex.render("i \\text{ / } f \\text{: Tasa de interés / descuento}", document.getElementById('legRate'), { displayMode: false });
+
+        // Caja Didáctica Inferior
+        renderMathInText('whyRationalBox', "Al descontar de manera Racional ($V_2$ o $V_3$), la tasa se calcula sobre una base menor (el capital efectivamente recibido, $V$), lo que arroja un descuento total más pequeño en comparación con el Comercial ($V_1$ o $V_4$), donde la tasa golpea directamente al total nominal original ($N$).");
+    }
+
+    // Clic desde los selectores del simulador
+    function selectLeafDirect(leafId) {
+        selectedRegime = leafId;
+        
+        // Actualizar el estilo activo en los botones de selección
+        ['v1', 'v2', 'v3', 'v4'].forEach(id => {
+            const btn = document.getElementById(`btn-${id}`);
+            if (id === leafId) {
+                btn.className = "py-2 px-3 rounded-xl border-2 border-blue-500 bg-slate-900 text-white text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 shadow-lg";
+                // Resaltar la fila en el panel de valor actual
+                document.getElementById(`row-${id}`).classList.remove('opacity-40');
+                document.getElementById(`row-${id}`).classList.add('scale-[1.02]');
+            } else {
+                btn.className = "py-2 px-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 text-xs font-bold transition-all hover:bg-slate-900 flex flex-col items-center justify-center gap-1";
+                document.getElementById(`row-${id}`).classList.add('opacity-40');
+                document.getElementById(`row-${id}`).classList.remove('scale-[1.02]');
+            }
+        });
+
+        // Actualizar también la información del nodo en el árbol de decisión
+        selectLeaf(leafId, false); // false para no recursar el simulador
+    }
+
+    // Nodo intermedio/raíz
+    function selectNode(nodeId) {
+        clearNodeHighlights();
+        currentActiveNode = nodeId;
+        
+        // Colorear el nodo clickeado
+        if (nodeId === 'simple') {
+            document.getElementById('node-simple').classList.add('node-active');
+            document.getElementById('path-root-left').setAttribute('stroke', '#3b82f6');
+        } else if (nodeId === 'compuesto') {
+            document.getElementById('node-compuesto').classList.add('node-active');
+            document.getElementById('path-root-right').setAttribute('stroke', '#10b981');
+        }
+
+        updateInfoCard(nodeId);
+    }
+
+    // Hojas del árbol
+    function selectLeaf(leafId, syncSimulator = true) {
+        clearNodeHighlights();
+        currentActiveNode = leafId;
+
+        // Resaltar el camino completo en el SVG
+        if (leafId === 'v1') {
+            document.getElementById('node-v1').classList.add('node-active');
+            document.getElementById('path-root-left').setAttribute('stroke', '#3b82f6');
+            document.getElementById('path-simple-com').setAttribute('stroke', '#6366f1');
+        } else if (leafId === 'v2') {
+            document.getElementById('node-v2').classList.add('node-active');
+            document.getElementById('path-root-left').setAttribute('stroke', '#3b82f6');
+            document.getElementById('path-simple-rac').setAttribute('stroke', '#6366f1');
+        } else if (leafId === 'v4') {
+            document.getElementById('node-v4').classList.add('node-active');
+            document.getElementById('path-root-right').setAttribute('stroke', '#10b981');
+            document.getElementById('path-comp-com').setAttribute('stroke', '#34d399');
+        } else if (leafId === 'v3') {
+            document.getElementById('node-v3').classList.add('node-active');
+            document.getElementById('path-root-right').setAttribute('stroke', '#10b981');
+            document.getElementById('path-comp-rac').setAttribute('stroke', '#34d399');
+        }
+
+        updateInfoCard(leafId);
+
+        if (syncSimulator) {
+            selectedRegime = leafId;
+            // Sincronizar el botón del panel del simulador
+            ['v1', 'v2', 'v3', 'v4'].forEach(id => {
+                const btn = document.getElementById(`btn-${id}`);
+                if (id === leafId) {
+                    btn.className = "py-2 px-3 rounded-xl border-2 border-blue-500 bg-slate-900 text-white text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 shadow-lg";
+                    document.getElementById(`row-${id}`).classList.remove('opacity-40');
+                    document.getElementById(`row-${id}`).classList.add('scale-[1.02]');
+                } else {
+                    btn.className = "py-2 px-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 text-xs font-bold transition-all hover:bg-slate-900 flex flex-col items-center justify-center gap-1";
+                    document.getElementById(`row-${id}`).classList.add('opacity-40');
+                    document.getElementById(`row-${id}`).classList.remove('scale-[1.02]');
+                }
+            });
+            runSimulation();
+        }
+    }
+
+    function clearNodeHighlights() {
+        const nodes = ['node-simple', 'node-compuesto', 'node-v1', 'node-v2', 'node-v3', 'node-v4'];
+        nodes.forEach(n => {
+            const el = document.getElementById(n);
+            if (el) el.classList.remove('node-active');
+        });
+
+        // Restablecer colores de líneas a slate neutro
+        document.getElementById('path-root-left').setAttribute('stroke', '#334155');
+        document.getElementById('path-root-right').setAttribute('stroke', '#334155');
+        document.getElementById('path-simple-com').setAttribute('stroke', '#334155');
+        document.getElementById('path-simple-rac').setAttribute('stroke', '#334155');
+        document.getElementById('path-comp-com').setAttribute('stroke', '#334155');
+        document.getElementById('path-comp-rac').setAttribute('stroke', '#334155');
+    }
+
+    function updateInfoCard(id) {
+        const info = formulaData[id];
+        document.getElementById('infoTitle').innerText = info.title;
+        document.getElementById('badgeRegimeType').innerText = info.badge;
+        
+        // Renderizar la descripción que puede tener inline math
+        renderMathInText('infoDesc', info.desc);
+
+        // Renderizar la fórmula principal con KaTeX
+        const displayContainer = document.getElementById('formulaDisplay');
+        katex.render(info.formula, displayContainer, { 
+            throwOnError: false, 
+            displayMode: true 
+        });
+
+        // Renderizar el detalle
+        document.getElementById('formulaDetail').innerText = info.detail;
+    }
+
+    function runSimulation() {
+        // Capturar valores desde los sliders
+        const N = parseFloat(document.getElementById('sliderN').value);
+        const n = parseFloat(document.getElementById('sliderTime').value);
+        const rate = parseFloat(document.getElementById('sliderRate').value) / 100;
+
+        // Actualizar etiquetas visuales de los controles
+        document.getElementById('labelN').innerText = `$${N.toLocaleString('es-AR', {minimumFractionDigits: 0})}`;
+        document.getElementById('labelTime').innerText = n.toFixed(1) + ' ' + (n === 1 ? 'período' : 'períodos');
+        document.getElementById('labelRate').innerText = (rate * 100).toFixed(1) + '%';
+
+        // 1. V1: Comercial Simple -> V1 = N * (1 - f * n)
+        const valV1Calculated = N * (1 - (rate * n));
+        const V1 = Math.max(0, valV1Calculated); 
+        const D1 = N - V1;
+
+        // 2. V2: Racional Simple -> V2 = N / (1 + j * n)
+        const V2 = N / (1 + (rate * n));
+        const D2 = N - V2;
+
+        // 3. V4: Comercial Compuesto -> V4 = N * (1 - d)^n
+        const V4 = N * Math.pow((1 - rate), n);
+        const D4 = N - V4;
+
+        // 4. V3: Racional Compuesto -> V3 = N * (1 + i)^-n
+        const V3 = N * Math.pow((1 + rate), -n);
+        const D3 = N - V3;
+
+        // Mostrar resultados monetarios de los Valores Actualizados
+        document.getElementById('valV1').innerText = `$${Math.round(valV1Calculated).toLocaleString('es-AR')}`;
+        document.getElementById('valV2').innerText = `$${Math.round(V2).toLocaleString('es-AR')}`;
+        document.getElementById('valV4').innerText = `$${Math.round(V4).toLocaleString('es-AR')}`;
+        document.getElementById('valV3').innerText = `$${Math.round(V3).toLocaleString('es-AR')}`;
+
+        // Configurar porcentajes de barras de Valor Actual
+        document.getElementById('barV1').style.width = `${(V1 / N) * 100}%`;
+        document.getElementById('barV2').style.width = `${(V2 / N) * 100}%`;
+        document.getElementById('barV4').style.width = `${(V4 / N) * 100}%`;
+        document.getElementById('barV3').style.width = `${(V3 / N) * 100}%`;
+
+
+        // --- GRÁFICO COMPARATIVO: MULTI-DESCUENTOS EN PARALELO ---
+        const d1Checked = document.getElementById('comp-v1').checked;
+        const d2Checked = document.getElementById('comp-v2').checked;
+        const d4Checked = document.getElementById('comp-v4').checked;
+        const d3Checked = document.getElementById('comp-v3').checked;
+
+        // Mostrar u ocultar filas de comparación según selección de checkboxes
+        toggleCompRow('comp-row-v1', d1Checked);
+        toggleCompRow('comp-row-v2', d2Checked);
+        toggleCompRow('comp-row-v4', d4Checked);
+        toggleCompRow('comp-row-v3', d3Checked);
+
+        // Actualizar valores monetarios de Descuento Acumulado (D)
+        document.getElementById('comp-val-v1').innerText = `$${Math.round(D1).toLocaleString('es-AR')}`;
+        document.getElementById('comp-val-v2').innerText = `$${Math.round(D2).toLocaleString('es-AR')}`;
+        document.getElementById('comp-val-v4').innerText = `$${Math.round(D4).toLocaleString('es-AR')}`;
+        document.getElementById('comp-val-v3').innerText = `$${Math.round(D3).toLocaleString('es-AR')}`;
+
+        // El descuento de mayor magnitud posible es igual a N
+        document.getElementById('comp-bar-v1').style.width = `${(D1 / N) * 100}%`;
+        document.getElementById('comp-bar-v2').style.width = `${(D2 / N) * 100}%`;
+        document.getElementById('comp-bar-v4').style.width = `${(D4 / N) * 100}%`;
+        document.getElementById('comp-bar-v3').style.width = `${(D3 / N) * 100}%`;
+
+
+        // --- LÍMITE DE APLICABILIDAD COMERCIAL SIMPLE (n >= 1/f) ---
+        const limitApplicabilityValue = 1 / rate;
+        const warningElement = document.getElementById('applicabilityWarning');
+
+        if (n >= limitApplicabilityValue) {
+            warningElement.classList.remove('hidden');
+
+            // Renderizar la alerta con fórmulas LaTeX
+            katex.render("n \\ge \\frac{1}{f}", document.getElementById('warnLatexFormula'), { throwOnError: false });
+            katex.render(
+                `n = ${n.toFixed(1)} \\ge \\frac{1}{f} = ${limitApplicabilityValue.toFixed(1)} \\implies (V_1 = \\$${Math.round(valV1Calculated).toLocaleString('es-AR')})`, 
+                document.getElementById('warnCalc'), 
+                { throwOnError: false }
+            );
+
+            // Resaltar barra de valor actual en rojo intermitente
+            document.getElementById('barV1').className = "bg-red-600 h-full rounded-full transition-all duration-200 animate-pulse";
+        } else {
+            warningElement.classList.add('hidden');
+            document.getElementById('barV1').className = "bg-red-500 h-full rounded-full transition-all duration-200";
+        }
+    }
+
+    // Ocultar / Mostrar filas con suavidad en el comparador dinámico
+    function toggleCompRow(elementId, isVisible) {
+        const el = document.getElementById(elementId);
+        if (isVisible) {
+            el.classList.remove('hidden');
+        } else {
+            el.classList.add('hidden');
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,1062 @@
+{
+  "units": [
+    {
+      "id": "U01",
+      "number": "1",
+      "title": "Operaciones Financieras de Capitalización Simple y Compuesta",
+      "topics": [
+        {
+          "id": "1.1",
+          "number": "1.1",
+          "title": "Operaciones Financieras. Concepto. Elementos. Clasificación",
+          "dataFile": "U01_Pto01"
+        },
+        {
+          "id": "1.2",
+          "number": "1.2",
+          "title": "Interés: Generación y liquidación. Métodos aplicables para el cálculo de los intereses.",
+          "dataFile": "U01_Pto02",
+          "subtopics": [
+            {
+              "id": "1.2.1",
+              "number": "1.2.1",
+              "title": "Régimen de interés simple: Características. Interés simple comercial y exacto. Fórmula general del monto a interés simple. Cálculo del interés por numerales. Tasas proporcionales y equivalentes en régimen de interés simple.",
+              "dataFile": "U01_Pto02-1"
+            },
+            {
+              "id": "1.2.2",
+              "number": "1.2.2",
+              "title": "Régimen de interés compuesto: Características. Capitalización: concepto y modalidades. Período de la operación financiera. Frecuencia de capitalización.",
+              "dataFile": "U01_Pto02-2",
+              "subtopics": [
+                {
+                  "id": "1.2.2.1",
+                  "number": "1.2.2.1",
+                  "title": "Enfoque de tasas proporcionales de interés.",
+                  "dataFile": "U01_Pto02-2-1",
+                  "subtopics": [
+                    {
+                      "id": "1.2.2.1.1",
+                      "number": "1.2.2.1.1",
+                      "title": "Fórmula del Monto a Interés Compuesto con capitalización discontinua periódica (para tasa constante). Tasa periódica efectiva de interés. Tasa efectiva en caso de capitalización periódica. Fórmula general del Monto a Interés Compuesto con capitalización discontinua periódica (casos de tasas variables en cada período).",
+                      "dataFile": "U01_Pto02-2-1-1"
+                    },
+                    {
+                      "id": "1.2.2.1.2",
+                      "number": "1.2.2.1.2",
+                      "title": "Fórmula del Monto a Interés Compuesto con capitalización discontinua subperiódica. Tasa efectiva en caso de capitalización subperiódica. Comparación del monto con capitalización discontinua periódica y subperiódica.",
+                      "dataFile": "U01_Pto02-2-1-2"
+                    },
+                    {
+                      "id": "1.2.2.1.3",
+                      "number": "1.2.2.1.3",
+                      "title": "Fórmula del Monto a Interés Compuesto con capitalización continua. Tasa efectiva en caso de capitalización continua (Tasa efectiva máxima de interés). Síntesis del enfoque de proporcionalidad de tasas de interés.",
+                      "dataFile": "U01_Pto02-2-1-3"
+                    },
+                    {
+                      "id": "1.2.2.1.4",
+                      "number": "1.2.2.1.4",
+                      "title": "Representación gráfica de montos operando con tasas proporcionales (para n variable).",
+                      "dataFile": "U01_Pto02-2-1-4"
+                    }
+                  ]
+                },
+                {
+                  "id": "1.2.2.2",
+                  "number": "1.2.2.2",
+                  "title": "Enfoque de tasas equivalentes de interés.",
+                  "dataFile": "U01_Pto02-2-2",
+                  "subtopics": [
+                    {
+                      "id": "1.2.2.2.1",
+                      "number": "1.2.2.2.1",
+                      "title": "Capitalización discontinua subperiódica. Tasa subperiódica equivalente de interés. Tasa periódica nominal convertible de interés.",
+                      "dataFile": "U01_Pto02-2-2-1"
+                    },
+                    {
+                      "id": "1.2.2.2.2",
+                      "number": "1.2.2.2.2",
+                      "title": "Capitalización continua. Tasa instantánea de interés. Definición sintética. Definición analítica. Deducción de la fórmula de la tasa instantánea por número e.",
+                      "dataFile": "U01_Pto02-2-2-2"
+                    },
+                    {
+                      "id": "1.2.2.2.3",
+                      "number": "1.2.2.2.3",
+                      "title": "Comparación de tasas nominales convertibles de interés al variar la frecuencia de capitalización. Síntesis del enfoque de equivalencia de tasas de interés.",
+                      "dataFile": "U01_Pto02-2-2-3"
+                    },
+                    {
+                      "id": "1.2.2.2.4",
+                      "number": "1.2.2.2.4",
+                      "title": "Representación gráfica de montos operando con tasas equivalentes (para n variable).",
+                      "dataFile": "U01_Pto02-2-2-4"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "1.3",
+          "number": "1.3",
+          "title": "Tasa media de interés. Características. Modalidades.",
+          "dataFile": "U01_Pto03",
+          "subtopics": [
+            {
+              "id": "1.3.1",
+              "number": "1.3.1",
+              "title": "Primer caso: Tasa media de varios capitales colocados a tasas distintas (fraccionamiento del capital en parcelas).",
+              "dataFile": "U01_Pto03-1"
+            },
+            {
+              "id": "1.3.2",
+              "number": "1.3.2",
+              "title": "Segundo caso: Tasa media de un capital único colocado a tasas variables",
+              "dataFile": "U01_Pto03-2"
+            }
+          ]
+        },
+        {
+          "id": "1.4",
+          "number": "1.4",
+          "title": "Tasa efectiva en operaciones a interés simple.",
+          "dataFile": "U01_Pto04",
+          "subtopics": [
+            {
+              "id": "1.4.1",
+              "number": "1.4.1",
+              "title": "En cada período.",
+              "dataFile": "U01_Pto04-1"
+            },
+            {
+              "id": "1.4.2",
+              "number": "1.4.2",
+              "title": "Media.",
+              "dataFile": "U01_Pto04-2"
+            }
+          ]
+        },
+        {
+          "id": "1.5",
+          "number": "1.5",
+          "title": "Operaciones con ajuste de capital por desvalorización monetaria. Relación entre las tasas aparente de interés, la tasa de inflación y la tasa real de interés. Tasa de inflación y tasa de desvalorización monetaria. Relación entre la tasa de inflación y la tasa de desvalorización monetaria.",
+          "dataFile": "U01_Pto05"
+        },
+        {
+          "id": "1.6",
+          "number": "1.6",
+          "title": "Análisis de las funciones Monto Simple y Monto Compuesto.",
+          "dataFile": "U01_Pto06",
+          "subtopics": [
+            {
+              "id": "1.6.1",
+              "number": "1.6.1",
+              "title": "Análisis de la función Monto Simple",
+              "dataFile": "U01_Pto06-1",
+              "subtopics": [
+                {
+                  "id": "1.6.1.1",
+                  "number": "1.6.1.1",
+                  "title": "Para tasa variable y tiempo constante.",
+                  "dataFile": "U01_Pto06-1-1"
+                },
+                {
+                  "id": "1.6.1.2",
+                  "number": "1.6.1.2",
+                  "title": "Para tiempo variable y tasa constante.",
+                  "dataFile": "U01_Pto06-1-2"
+                }
+              ]
+            },
+            {
+              "id": "1.6.2",
+              "number": "1.6.2",
+              "title": "Análisis de la función Monto Compuesto",
+              "dataFile": "U01_Pto06-2",
+              "subtopics": [
+                {
+                  "id": "1.6.2.1",
+                  "number": "1.6.2.1",
+                  "title": "Para tasa variable y tiempo constante.",
+                  "dataFile": "U01_Pto06-2-1"
+                },
+                {
+                  "id": "1.6.2.2",
+                  "number": "1.6.2.2",
+                  "title": "Para tiempo variable y tasa constante.",
+                  "dataFile": "U01_Pto06-2-2"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "1.7",
+          "number": "1.7",
+          "title": "Comparación entre las funciones Monto Simple y Monto Compuesto (para tiempo variable)",
+          "dataFile": "U01_Pto07"
+        },
+        {
+          "id": "1.8",
+          "number": "1.8",
+          "title": "Ejercitación Complementaria Capítulo 1",
+          "dataFile": "U01_Pto08"
+        },
+        {
+          "id": "1.9",
+          "number": "1.9",
+          "title": "Autoevaluación teórica Capítulo 1.",
+          "dataFile": "U01_Pto09"
+        }
+      ]
+    },
+    {
+      "id": "U02",
+      "number": "2",
+      "title": "Operaciones Financieras de Actualización Simple y Compuesta",
+      "topics": [
+        {
+          "id": "2.1",
+          "number": "2.1",
+          "title": "Operaciones financieras de actualización o descuento: Introducción.",
+          "dataFile": "U02_Pto01"
+        },
+        {
+          "id": "2.2",
+          "number": "2.2",
+          "title": "Regímenes de actualización o descuento: Clasificación.",
+          "dataFile": "U02_Pto02",
+          "subtopics": [
+            {
+              "id": "2.2.1",
+              "number": "2.2.1",
+              "title": "Regímenes que operan en interés simple.",
+              "dataFile": "U02_Pto02-1",
+              "subtopics": [
+                {
+                  "id": "2.2.1.1",
+                  "number": "2.2.1.1",
+                  "title": "Descuento comercial simple: Definición, características y deducción de fórmulas. Límite de aplicabilidad. Tasas proporcionales y equivalentes de descuento en régimen de interés simple.",
+                  "dataFile": "U02_Pto02-1-1"
+                },
+                {
+                  "id": "2.2.1.2",
+                  "number": "2.2.1.2",
+                  "title": "Descuento racional simple: Definición, características y deducción de fórmulas.",
+                  "dataFile": "U02_Pto02-1-2"
+                },
+                {
+                  "id": "2.2.1.3",
+                  "number": "2.2.1.3",
+                  "title": "Relación de equivalencia entre la tasa de interés y la tasa de descuento en régimen de interés simple.",
+                  "dataFile": "U02_Pto02-1-3"
+                }
+              ]
+            },
+            {
+              "id": "2.2.2",
+              "number": "2.2.2",
+              "title": "Regímenes que operan en interés compuesto.",
+              "dataFile": "U02_Pto02-2",
+              "subtopics": [
+                {
+                  "id": "2.2.2.1",
+                  "number": "2.2.2.1",
+                  "title": "Descuento racional compuesto: Definición, características y deducción de fórmulas correspondientes a las distintas formas de actualización.",
+                  "dataFile": "U02_Pto02-2-1"
+                },
+                {
+                  "id": "2.2.2.2",
+                  "number": "2.2.2.2",
+                  "title": "Descuento comercial compuesto: Definición, características, modalidades de actualización. Deducción de la fórmula del valor efectivo con actualización discontinua periódica (para tasa constante). Tasa periódica \"efectiva\" de descuento. Tasa efectiva de descuento en caso de actualización periódica. Fórmula general del Valor Efectivo en Régimen de Descuento Comercial Compuesto con actualización discontinua periódica (caso de tasas variables en cada período).",
+                  "dataFile": "U02_Pto02-2-2",
+                  "subtopics": [
+                    {
+                      "id": "2.2.2.2.1",
+                      "number": "2.2.2.2.1",
+                      "title": "Enfoque de tasas proporcionales de descuento.",
+                      "dataFile": "U02_Pto02-2-2-1",
+                      "subtopics": [
+                        {
+                          "id": "2.2.2.2.1.1",
+                          "number": "2.2.2.2.1.1",
+                          "title": "Fórmula del valor efectivo en régimen comercial compuesto con actualización discontinua periódica.",
+                          "dataFile": "U02_Pto02-2-2-1-1"
+                        },
+                        {
+                          "id": "2.2.2.2.1.2",
+                          "number": "2.2.2.2.1.2",
+                          "title": "Fórmula del valor efectivo en régimen comercial compuesto con actualización discontinua subperiódica. Tasa efectiva de descuento en caso de actualización subperiódica. Comparación del valor efectivo con actualización discontinua periódica y subperiódica",
+                          "dataFile": "U02_Pto02-2-2-1-2"
+                        },
+                        {
+                          "id": "2.2.2.2.1.3",
+                          "number": "2.2.2.2.1.3",
+                          "title": "Fórmula del valor efectivo en régimen comercial compuesto con actualización continua. Tasa efectiva de descuento en caso de actualización continua (Tasa efectiva mínima de descuento). Síntesis del enfoque de proporcionalidad de tasas de descuento.",
+                          "dataFile": "U02_Pto02-2-2-1-3"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "2.2.2.2.2",
+                      "number": "2.2.2.2.2",
+                      "title": "Enfoque de tasas equivalentes de descuento.",
+                      "dataFile": "U02_Pto02-2-2-2",
+                      "subtopics": [
+                        {
+                          "id": "2.2.2.2.2.1",
+                          "number": "2.2.2.2.2.1",
+                          "title": "Actualización discontinua subperiódica. Tasa subperiódica equivalente de descuento. Tasa periódica nominal convertible de descuento",
+                          "dataFile": "U02_Pto02-2-2-2-1"
+                        },
+                        {
+                          "id": "2.2.2.2.2.2",
+                          "number": "2.2.2.2.2.2",
+                          "title": "Actualización continua. Tasa instantánea de descuento. Definición sintética. Definición analítica. Deducción de la fórmula de la tasa instantánea por número e.",
+                          "dataFile": "U02_Pto02-2-2-2-2"
+                        },
+                        {
+                          "id": "2.2.2.2.2.3",
+                          "number": "2.2.2.2.2.3",
+                          "title": "Comparación de tasas nominales convertibles de descuento al variar la frecuencia de actualización. Síntesis del enfoque de equivalencia de tasas de descuento.",
+                          "dataFile": "U02_Pto02-2-2-2-3"
+                        },
+                        {
+                          "id": "2.2.2.2.2.4",
+                          "number": "2.2.2.2.2.4",
+                          "title": "Comparación entre la tasa instantánea de interés y la tasa instantánea de descuento.",
+                          "dataFile": "U02_Pto02-2-2-2-4"
+                        },
+                        {
+                          "id": "2.2.2.2.2.5",
+                          "number": "2.2.2.2.2.5",
+                          "title": "Cadena de equivalencia de tasas periódicas de interés y de descuento.",
+                          "dataFile": "U02_Pto02-2-2-2-5"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "2.2.2.2.3",
+                      "number": "2.2.2.2.3",
+                      "title": "Relación de equivalencia entre la tasa de interés y la tasa de descuento en régimen de interés compuesto.",
+                      "dataFile": "U02_Pto02-2-2-3"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "2.3",
+          "number": "2.3",
+          "title": "Incidencia de los gastos en las operaciones de descuento: El costo financiero total (C.F.T.)",
+          "dataFile": "U02_Pto03"
+        },
+        {
+          "id": "2.4",
+          "number": "2.4",
+          "title": "Análisis y representación gráfica de las funciones de valor efectivo para tiempo variable.",
+          "dataFile": "U02_Pto04"
+        },
+        {
+          "id": "2.5",
+          "number": "2.5",
+          "title": "Ejercitación Complementaria Capítulo 2.",
+          "dataFile": "U02_Pto05"
+        },
+        {
+          "id": "2.6",
+          "number": "2.6",
+          "title": "Autoevaluación teórica Capítulo 2.",
+          "dataFile": "U02_Pto06"
+        },
+        {
+          "id": "2.7",
+          "number": "2.7",
+          "title": "Apéndice 2A. Teoría matemática del interés. Fórmula general de capitalización. Aplicaciones de la fórmula general de capitalización. Fórmula general de actualización. Aplicaciones de la fórmula general de actualización.",
+          "dataFile": "U02_Pto07"
+        }
+      ]
+    },
+    {
+      "id": "U03",
+      "number": "3",
+      "title": "Equivalencia de Capitales",
+      "topics": [
+        {
+          "id": "3.1",
+          "number": "3.1",
+          "title": "Equivalencia de Capitales. Concepto",
+          "dataFile": "U03_Pto01"
+        },
+        {
+          "id": "3.2",
+          "number": "3.2",
+          "title": "Valor de un conjunto de capitales: Concepto. Su determinación conforme a las distintas leyes de valorización. Desplazamiento del valor del conjunto de capitales.",
+          "dataFile": "U03_Pto02"
+        },
+        {
+          "id": "3.3",
+          "number": "3.3",
+          "title": "Equivalencia de capitales bajo leyes de capitalización o actualización simple.",
+          "dataFile": "U03_Pto03"
+        },
+        {
+          "id": "3.4",
+          "number": "3.4",
+          "title": "Equivalencia de capitales bajo leyes de capitalización o actualización compuesta.",
+          "dataFile": "U03_Pto04"
+        },
+        {
+          "id": "3.5",
+          "number": "3.5",
+          "title": "Aplicación: Refinanciación de deudas",
+          "dataFile": "U03_Pto05",
+          "subtopics": [
+            {
+              "id": "3.5.1",
+              "number": "3.5.1",
+              "title": "Equivalencia entre un conjunto de capitales.",
+              "dataFile": "U03_Pto05-1"
+            },
+            {
+              "id": "3.5.2",
+              "number": "3.5.2",
+              "title": "Equivalencia de un capital único a otros capitales: Vencimiento común y Vencimiento medio.",
+              "dataFile": "U03_Pto05-2"
+            }
+          ]
+        },
+        {
+          "id": "3.6",
+          "number": "3.6",
+          "title": "Ejercitación Complementaria Capítulo 3.",
+          "dataFile": "U03_Pto06"
+        },
+        {
+          "id": "3.7",
+          "number": "3.7",
+          "title": "Autoevaluación teórica Capítulo 3.",
+          "dataFile": "U03_Pto07"
+        }
+      ]
+    },
+    {
+      "id": "U04",
+      "number": "4",
+      "title": "Operaciones Financieras Compuestas - Rentas Ciertas",
+      "topics": [
+        {
+          "id": "4.1",
+          "number": "4.1",
+          "title": "Rentas: Definición. Elementos de una renta, épocas de una renta, clasificación de las rentas.",
+          "dataFile": "U04_Pto01"
+        },
+        {
+          "id": "4.2",
+          "number": "4.2",
+          "title": "Rentas con cuotas constantes a interés compuesto.",
+          "dataFile": "U04_Pto02",
+          "subtopics": [
+            {
+              "id": "4.2.1",
+              "number": "4.2.1",
+              "title": "Rentas temporarias.",
+              "dataFile": "U04_Pto02-1",
+              "subtopics": [
+                {
+                  "id": "4.2.1.1",
+                  "number": "4.2.1.1",
+                  "title": "Rentas temporarias inmediatas: deducción de su valor financiero.",
+                  "dataFile": "U04_Pto02-1-1",
+                  "subtopics": [
+                    {
+                      "id": "4.2.1.1.1",
+                      "number": "4.2.1.1.1",
+                      "title": "Análisis funcional del factor plural de actualización.",
+                      "dataFile": "U04_Pto02-1-1-1"
+                    },
+                    {
+                      "id": "4.2.1.1.2",
+                      "number": "4.2.1.1.2",
+                      "title": "Análisis funcional de la función cuota de préstamo unitario.",
+                      "dataFile": "U04_Pto02-1-1-2"
+                    }
+                  ]
+                },
+                {
+                  "id": "4.2.1.2",
+                  "number": "4.2.1.2",
+                  "title": "Rentas temporarias diferidas: deducción de su valor financiero.",
+                  "dataFile": "U04_Pto02-1-2"
+                },
+                {
+                  "id": "4.2.1.3",
+                  "number": "4.2.1.3",
+                  "title": "Rentas temporarias anticipadas: deducción de su valor financiero.",
+                  "dataFile": "U04_Pto02-1-3",
+                  "subtopics": [
+                    {
+                      "id": "4.2.1.3.1",
+                      "number": "4.2.1.3.1",
+                      "title": "Caso particular: Valor final de rentas ciertas: Imposiciones.",
+                      "dataFile": "U04_Pto02-1-3-1"
+                    },
+                    {
+                      "id": "4.2.1.3.2",
+                      "number": "4.2.1.3.2",
+                      "title": "Análisis funcional del factor plural de capitalización.",
+                      "dataFile": "U04_Pto02-1-3-2"
+                    },
+                    {
+                      "id": "4.2.1.3.3",
+                      "number": "4.2.1.3.3",
+                      "title": "Análisis funcional de la función cuota de capital final unitario. Relaciones entre las funciones analizadas",
+                      "dataFile": "U04_Pto02-1-3-3"
+                    }
+                  ]
+                },
+                {
+                  "id": "4.2.1.4",
+                  "number": "4.2.1.4",
+                  "title": "Determinación de la tasa de interés en las rentas.",
+                  "dataFile": "U04_Pto02-1-4"
+                },
+                {
+                  "id": "4.2.1.5",
+                  "number": "4.2.1.5",
+                  "title": "Relaciones entre rentas temporarias.",
+                  "dataFile": "U04_Pto02-1-5"
+                }
+              ]
+            },
+            {
+              "id": "4.2.2",
+              "number": "4.2.2",
+              "title": "Rentas perpetuas con cuotas constantes.",
+              "dataFile": "U04_Pto02-2",
+              "subtopics": [
+                {
+                  "id": "4.2.2.1",
+                  "number": "4.2.2.1",
+                  "title": "Deducción del valor financiero de las rentas perpetuas. Rentas perpetuas inmediatas. Rentas perpetuas diferidas. Rentas perpetuas anticipadas.",
+                  "dataFile": "U04_Pto02-2-1"
+                },
+                {
+                  "id": "4.2.2.2",
+                  "number": "4.2.2.2",
+                  "title": "Relaciones de las rentas perpetuas.",
+                  "dataFile": "U04_Pto02-2-2"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "4.3",
+          "number": "4.3",
+          "title": "Rentas con cuotas variables a interés compuesto.",
+          "dataFile": "U04_Pto03",
+          "subtopics": [
+            {
+              "id": "4.3.1",
+              "number": "4.3.1",
+              "title": "Rentas temporarias con cuotas variables a interés compuesto.",
+              "dataFile": "U04_Pto03-1",
+              "subtopics": [
+                {
+                  "id": "4.3.1.1",
+                  "number": "4.3.1.1",
+                  "title": "Rentas temporarias con cuotas variables en progresión aritmética.",
+                  "dataFile": "U04_Pto03-1-1",
+                  "subtopics": [
+                    {
+                      "id": "4.3.1.1.1",
+                      "number": "4.3.1.1.1",
+                      "title": "Rentas temporarias inmediatas, diferidas y anticipadas: deducción de su valor financiero.",
+                      "dataFile": "U04_Pto03-1-1-1"
+                    }
+                  ]
+                },
+                {
+                  "id": "4.3.1.2",
+                  "number": "4.3.1.2",
+                  "title": "Rentas temporarias con cuotas variables en progresión geométrica.",
+                  "dataFile": "U04_Pto03-1-2",
+                  "subtopics": [
+                    {
+                      "id": "4.3.1.2.1",
+                      "number": "4.3.1.2.1",
+                      "title": "Rentas temporarias inmediatas, diferidas y anticipadas: deducción de su valor financiero. Rentas temporarias con cuotas variables sin ley.",
+                      "dataFile": "U04_Pto03-1-2-1"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "4.3.2",
+              "number": "4.3.2",
+              "title": "Rentas perpetuas con cuotas variables a interés compuesto.",
+              "dataFile": "U04_Pto03-2",
+              "subtopics": [
+                {
+                  "id": "4.3.2.1",
+                  "number": "4.3.2.1",
+                  "title": "Rentas perpetuas con cuotas variables en progresión aritmética",
+                  "dataFile": "U04_Pto03-2-1",
+                  "subtopics": [
+                    {
+                      "id": "4.3.2.1.1",
+                      "number": "4.3.2.1.1",
+                      "title": "Rentas perpetuas inmediatas, diferidas y anticipadas: deducción de su valor financiero.",
+                      "dataFile": "U04_Pto03-2-1-1"
+                    }
+                  ]
+                },
+                {
+                  "id": "4.3.2.2",
+                  "number": "4.3.2.2",
+                  "title": "Rentas perpetuas con cuotas variables en progresión geométrica",
+                  "dataFile": "U04_Pto03-2-2",
+                  "subtopics": [
+                    {
+                      "id": "4.3.2.2.1",
+                      "number": "4.3.2.2.1",
+                      "title": "Rentas perpetuas inmediatas, diferidas y anticipadas: deducción de su valor financiero.",
+                      "dataFile": "U04_Pto03-2-2-1"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "4.4",
+          "number": "4.4",
+          "title": "Ejercitación Complementaria Capítulo 4.",
+          "dataFile": "U04_Pto04"
+        },
+        {
+          "id": "4.5",
+          "number": "4.5",
+          "title": "Autoevaluación teórica Capítulo 4.",
+          "dataFile": "U04_Pto05"
+        }
+      ]
+    },
+    {
+      "id": "U05",
+      "number": "5",
+      "title": "Inversiones",
+      "topics": [
+        {
+          "id": "5.1",
+          "number": "5.1",
+          "title": "Teoría de la inversión. Concepto. Clasificaciones de las inversiones",
+          "dataFile": "U05_Pto01"
+        },
+        {
+          "id": "5.2",
+          "number": "5.2",
+          "title": "Criterios de evaluación de proyectos de inversión.",
+          "dataFile": "U05_Pto02",
+          "subtopics": [
+            {
+              "id": "5.2.1",
+              "number": "5.2.1",
+              "title": "Valor actual neto: Concepto. Supuesto de reinversión. Criterio de aceptabilidad en una decisión de inversión. Análisis funcional de la función VAN(i). Casos particulares. Inconvenientes en su utilización.",
+              "dataFile": "U05_Pto02-1"
+            },
+            {
+              "id": "5.2.2",
+              "number": "5.2.2",
+              "title": "Tasa interna de retorno: Concepto. Supuesto de reinversión. Criterio de aceptabilidad en una decisión de inversión. Casos particulares. Inconvenientes en su utilización. Tasa interna de retorno modificada",
+              "dataFile": "U05_Pto02-2"
+            }
+          ]
+        },
+        {
+          "id": "5.3",
+          "number": "5.3",
+          "title": "Tasa de actualización o de corte: Posiciones doctrinarias",
+          "dataFile": "U05_Pto03"
+        },
+        {
+          "id": "5.4",
+          "number": "5.4",
+          "title": "Flujos temporalmente irregulares: Su tratamiento.",
+          "dataFile": "U05_Pto04"
+        },
+        {
+          "id": "5.5",
+          "number": "5.5",
+          "title": "Ejercitación Complementaria Capítulo 5.",
+          "dataFile": "U05_Pto05"
+        },
+        {
+          "id": "5.6",
+          "number": "5.6",
+          "title": "Autoevaluación teórica Capítulo 5.",
+          "dataFile": "U05_Pto06"
+        }
+      ]
+    },
+    {
+      "id": "U06",
+      "number": "6",
+      "title": "Sistemas de reembolso de préstamos",
+      "topics": [
+        {
+          "id": "6.0",
+          "number": "6.0",
+          "title": "Introducción general del capítulo",
+          "dataFile": "U06_Pto00"
+        },
+        {
+          "id": "6.1",
+          "number": "6.1",
+          "title": "Reembolso del capital y de los intereses en un pago único.",
+          "dataFile": "U06_Pto01"
+        },
+        {
+          "id": "6.2",
+          "number": "6.2",
+          "title": "Reembolso del capital en un pago único con pago periódico de intereses.",
+          "dataFile": "U06_Pto02",
+          "subtopics": [
+            {
+              "id": "6.2.1",
+              "number": "6.2.1",
+              "title": "Sin constitución de fondo de acumulación.",
+              "dataFile": "U06_Pto02-1"
+            },
+            {
+              "id": "6.2.2",
+              "number": "6.2.2",
+              "title": "Con constitución de fondo de acumulación: Sistema Americano.",
+              "dataFile": "U06_Pto02-2"
+            }
+          ]
+        },
+        {
+          "id": "6.3",
+          "number": "6.3",
+          "title": "Reembolso del capital en cuotas periódicas con pago periódico de intereses sobre saldos adeudados.",
+          "dataFile": "U06_Pto03",
+          "subtopics": [
+            {
+              "id": "6.3.1",
+              "number": "6.3.1",
+              "title": "Sistema de cuotas constantes y de amortizaciones progresivas: Sistema Francés.",
+              "dataFile": "U06_Pto03-1"
+            },
+            {
+              "id": "6.3.2",
+              "number": "6.3.2",
+              "title": "Sistema de amortizaciones constantes: Sistema Alemán.",
+              "dataFile": "U06_Pto03-2"
+            },
+            {
+              "id": "6.3.3",
+              "number": "6.3.3",
+              "title": "Reembolso del capital en un pago único con pago periódico de intereses y con constitución de fondo de acumulación: Sistema americano.",
+              "dataFile": "U06_Pto03-3"
+            }
+          ]
+        },
+        {
+          "id": "6.4",
+          "number": "6.4",
+          "title": "Conversión de sistemas: Su tratamiento.",
+          "dataFile": "U06_Pto04"
+        },
+        {
+          "id": "6.5",
+          "number": "6.5",
+          "title": "Distorsiones del sistema francés.",
+          "dataFile": "U06_Pto05",
+          "subtopics": [
+            {
+              "id": "6.5.1",
+              "number": "6.5.1",
+              "title": "Tasa Directa con intereses descontados.",
+              "dataFile": "U06_Pto05-1"
+            },
+            {
+              "id": "6.5.2",
+              "number": "6.5.2",
+              "title": "Tasa Directa con intereses cargados.",
+              "dataFile": "U06_Pto05-2"
+            }
+          ]
+        },
+        {
+          "id": "6.6",
+          "number": "6.6",
+          "title": "Comparación entre los distintos sistemas de amortización de deudas.",
+          "dataFile": "U06_Pto06"
+        },
+        {
+          "id": "6.7",
+          "number": "6.7",
+          "title": "Préstamos con ajuste de capital y cuota.",
+          "dataFile": "U06_Pto07"
+        },
+        {
+          "id": "6.8",
+          "number": "6.8",
+          "title": "Préstamos con tasa flotante o variable.",
+          "dataFile": "U06_Pto08"
+        },
+        {
+          "id": "6.9",
+          "number": "6.9",
+          "title": "Valor de un préstamo en un momento dado a tasa de mercado",
+          "dataFile": "U06_Pto09",
+          "subtopics": [
+            {
+              "id": "6.9.1",
+              "number": "6.9.1",
+              "title": "Usufructo y nuda propiedad. Conceptos y determinación.",
+              "dataFile": "U06_Pto09-1"
+            }
+          ]
+        },
+        {
+          "id": "6.10",
+          "number": "6.10",
+          "title": "Ejercitación Complementaria Capítulo 6.",
+          "dataFile": "U06_Pto10"
+        },
+        {
+          "id": "6.11",
+          "number": "6.11",
+          "title": "Autoevaluación teórica Capítulo 6.",
+          "dataFile": "U06_Pto11"
+        }
+      ]
+    },
+    {
+      "id": "U07",
+      "number": "7",
+      "title": "Bonos",
+      "topics": [
+        {
+          "id": "7.1",
+          "number": "7.1",
+          "title": "Concepto. Características.",
+          "dataFile": "U07_Pto01"
+        },
+        {
+          "id": "7.2",
+          "number": "7.2",
+          "title": "Modalidades de emisión.",
+          "dataFile": "U07_Pto02"
+        },
+        {
+          "id": "7.3",
+          "number": "7.3",
+          "title": "Modalidades de reembolso. Pago íntegro del principal al vencimiento con servicio periódico de intereses (bono bullet). Pago íntegro del principal al vencimiento sin pago de intereses (cupón cero). Pago periódico del principal y de los intereses.",
+          "dataFile": "U07_Pto03"
+        },
+        {
+          "id": "7.4",
+          "number": "7.4",
+          "title": "Valor residual. Valor técnico. Valor paridad.",
+          "dataFile": "U07_Pto04"
+        },
+        {
+          "id": "7.5",
+          "number": "7.5",
+          "title": "Riesgos asociados a la inversión en bonos.",
+          "dataFile": "U07_Pto05"
+        },
+        {
+          "id": "7.6",
+          "number": "7.6",
+          "title": "Valuación de bonos. Valuación de un bono con pago periódico de intereses y amortización íntegra al final del plazo (Bullet). Valuación de un bono sin cupones de intereses y amortización íntegra al final del plazo (Cupón cero). Valuación de un bono amortizable.",
+          "dataFile": "U07_Pto06"
+        },
+        {
+          "id": "7.7",
+          "number": "7.7",
+          "title": "Medidas de rendimiento de la inversión en bonos. Rendimiento corriente. Rendimiento al vencimiento. Evolución del precio de un bono a través del tiempo hasta su amortización final.",
+          "dataFile": "U07_Pto07"
+        },
+        {
+          "id": "7.8",
+          "number": "7.8",
+          "title": "Medidas de volatilidad en el precio de un bono. Duration. Duración modificada (Modified duration). Convexity.",
+          "dataFile": "U07_Pto08"
+        },
+        {
+          "id": "7.9",
+          "number": "7.9",
+          "title": "Estructura temporal de las tasas de interés. Tasas de interés corrientes. Tasas de interés futuras.",
+          "dataFile": "U07_Pto09"
+        },
+        {
+          "id": "7.10",
+          "number": "7.10",
+          "title": "Ejercitación Complementaria Capítulo 7.",
+          "dataFile": "U07_Pto10"
+        },
+        {
+          "id": "7.11",
+          "number": "7.11",
+          "title": "Autoevaluación teórica Capítulo 7.",
+          "dataFile": "U07_Pto11"
+        }
+      ]
+    },
+    {
+      "id": "U08",
+      "number": "8",
+      "title": "Nociones elementales de Cálculo Actuarial",
+      "topics": [
+        {
+          "id": "8.1",
+          "number": "8.1",
+          "title": "Introducción.",
+          "dataFile": "U08_Pto01"
+        },
+        {
+          "id": "8.2",
+          "number": "8.2",
+          "title": "Funciones biométricas: Funciones de supervivencia y de mortalidad.",
+          "dataFile": "U08_Pto02"
+        },
+        {
+          "id": "8.3",
+          "number": "8.3",
+          "title": "Tasas anuales de vitalidad y de mortalidad.",
+          "dataFile": "U08_Pto03"
+        },
+        {
+          "id": "8.4",
+          "number": "8.4",
+          "title": "Cálculo de los valores de conmutación sobre la vida y sobre la muerte de las tablas de mortalidad.",
+          "dataFile": "U08_Pto04"
+        },
+        {
+          "id": "8.5",
+          "number": "8.5",
+          "title": "Probabilidades de vida y de muerte sobre una sola cabeza.",
+          "dataFile": "U08_Pto05"
+        },
+        {
+          "id": "8.6",
+          "number": "8.6",
+          "title": "Vida probable.",
+          "dataFile": "U08_Pto06"
+        },
+        {
+          "id": "8.7",
+          "number": "8.7",
+          "title": "Seguros en caso de vida.",
+          "dataFile": "U08_Pto07",
+          "subtopics": [
+            {
+              "id": "8.7.1",
+              "number": "8.7.1",
+              "title": "Capital diferido.",
+              "dataFile": "U08_Pto07-1"
+            },
+            {
+              "id": "8.7.2",
+              "number": "8.7.2",
+              "title": "Rentas vitalicias: expresión del valor actual actuarial de los distintos tipos de rentas vitalicias.",
+              "dataFile": "U08_Pto07-2"
+            },
+            {
+              "id": "8.7.3",
+              "number": "8.7.3",
+              "title": "Rentas vitalicias subperiódicas o fraccionadas.",
+              "dataFile": "U08_Pto07-3"
+            }
+          ]
+        },
+        {
+          "id": "8.8",
+          "number": "8.8",
+          "title": "Seguros en caso de muerte.",
+          "dataFile": "U08_Pto08",
+          "subtopics": [
+            {
+              "id": "8.8.1",
+              "number": "8.8.1",
+              "title": "Expresión del valor actual actuarial de los distintos tipos de seguros sobre la muerte.",
+              "dataFile": "U08_Pto08-1"
+            }
+          ]
+        },
+        {
+          "id": "8.9",
+          "number": "8.9",
+          "title": "Seguros mixtos.",
+          "dataFile": "U08_Pto09"
+        },
+        {
+          "id": "8.10",
+          "number": "8.10",
+          "title": "Primas naturales en seguros sobre la muerte.",
+          "dataFile": "U08_Pto10"
+        },
+        {
+          "id": "8.11",
+          "number": "8.11",
+          "title": "Prima periódica constante o nivelada.",
+          "dataFile": "U08_Pto11"
+        },
+        {
+          "id": "8.12",
+          "number": "8.12",
+          "title": "Prima de tarifa, comercial o cargada.",
+          "dataFile": "U08_Pto12"
+        },
+        {
+          "id": "8.13",
+          "number": "8.13",
+          "title": "Reserva matemática: concepto, métodos para su cálculo y elementos.",
+          "dataFile": "U08_Pto13"
+        },
+        {
+          "id": "8.14",
+          "number": "8.14",
+          "title": "Prima de riesgo y prima de ahorro.",
+          "dataFile": "U08_Pto14",
+          "subtopics": [
+            {
+              "id": "8.14.1",
+              "number": "8.14.1",
+              "title": "Anexo I. Tablas de Mortalidad GAM71 Sexo Masculino.",
+              "dataFile": "U08_Pto14-1"
+            },
+            {
+              "id": "8.14.2",
+              "number": "8.14.2",
+              "title": "Anexo II. Tablas de Mortalidad GAM71 Sexo Femenino.",
+              "dataFile": "U08_Pto14-2"
+            }
+          ]
+        },
+        {
+          "id": "8.15",
+          "number": "8.15",
+          "title": "Ejercitación Complementaria Capítulo 8.",
+          "dataFile": "U08_Pto15"
+        },
+        {
+          "id": "8.16",
+          "number": "8.16",
+          "title": "Autoevaluación teórica Capítulo 8.",
+          "dataFile": "U08_Pto16"
+        }
+      ]
+    }
+  ]
+}

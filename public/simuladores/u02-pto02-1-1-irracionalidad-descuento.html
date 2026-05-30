@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparativa de Reversibilidad Financiera</title>
+    <!-- Tailwind CSS para el diseño responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para el gráfico interactivo -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 p-4 md:p-6 flex items-center justify-center min-h-screen">
+
+<div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6 w-full max-w-4xl transition-all duration-300">
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 bg-slate-50 p-5 rounded-xl border border-slate-100 mb-6">
+        <!-- Slider 1: Valor Nominal (N) -->
+        <div class="flex flex-col">
+            <div class="flex justify-between items-center mb-1.5">
+                <label for="nominalSlider" class="text-xs font-semibold text-slate-700">
+                    Valor Nominal ($N$):
+                </label>
+                <span id="nominalVal" class="text-xs font-bold text-slate-800 bg-slate-200/60 px-2 py-0.5 rounded">
+                    $1,000
+                </span>
+            </div>
+            <input type="range" id="nominalSlider" min="500" max="5000" value="1000" step="100" 
+                   class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600 focus:outline-none">
+            <div class="flex justify-between text-[9px] text-slate-400 mt-1">
+                <span>$500</span>
+                <span>$5,000</span>
+            </div>
+        </div>
+
+        <!-- Slider 2: Tasa de Interés Mensual (f / j) -->
+        <div class="flex flex-col">
+            <div class="flex justify-between items-center mb-1.5">
+                <label for="rateSlider" class="text-xs font-semibold text-slate-700">
+                    Tasa de Interés Mensual ($f$ / $j$):
+                </label>
+                <span id="rateVal" class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                    5.0%
+                </span>
+            </div>
+            <input type="range" id="rateSlider" min="1" max="15" value="5" step="0.5" 
+                   class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600 focus:outline-none">
+            <div class="flex justify-between text-[9px] text-slate-400 mt-1">
+                <span>1.0%</span>
+                <span>15.0%</span>
+            </div>
+        </div>
+
+        <!-- Slider 3: Tiempo (n) -->
+        <div class="flex flex-col">
+            <div class="flex justify-between items-center mb-1.5">
+                <label for="timeSlider" class="text-xs font-semibold text-slate-700">
+                    Tiempo de Vencimiento ($n$):
+                </label>
+                <span id="timeVal" class="text-xs font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-100">
+                    6 meses
+                </span>
+            </div>
+            <input type="range" id="timeSlider" min="1" max="12" value="6" step="1" 
+                   class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-rose-500 focus:outline-none">
+            <div class="flex justify-between text-[9px] text-slate-400 mt-1">
+                <span>1 mes</span>
+                <span>12 meses</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <!-- Paso 1: Descuento Comercial -->
+        <div class="bg-emerald-50/40 border border-emerald-100 rounded-xl p-4 transition-all">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="bg-emerald-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">1</span>
+                <h4 class="text-xs font-bold text-emerald-900 uppercase tracking-wider">Descuento Comercial Realizado</h4>
+            </div>
+            <p class="text-[11px] text-slate-500 mb-2">Se retrocede en el tiempo desde $t = n$ hasta $t = 0$.</p>
+            <div class="space-y-1 text-xs">
+                <div class="font-mono text-slate-600">Formula: <span class="font-bold text-emerald-800">V = N &middot; (1 - f &middot; n)</span></div>
+                <div class="font-mono text-slate-500">
+                    Cálculo: <span id="calcDiscFormula">1000 &middot; (1 - 0.05 &middot; 6)</span>
+                </div>
+                <div class="font-semibold text-slate-800 mt-1">
+                    Valor Actual Recibido ($V$): <span id="calcDiscResult" class="text-emerald-600 font-bold">$700.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 2: Capitalización del Valor Recibido -->
+        <div class="bg-rose-50/40 border border-rose-100 rounded-xl p-4 transition-all">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="bg-rose-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">2</span>
+                <h4 class="text-xs font-bold text-rose-900 uppercase tracking-wider">Capitalización del Valor Recibido</h4>
+            </div>
+            <p class="text-[11px] text-slate-500 mb-2">Se avanza en el tiempo desde $t = 0$ hasta $t = n$.</p>
+            <div class="space-y-1 text-xs">
+                <div class="font-mono text-slate-600">Formula: <span class="font-bold text-rose-800">V<sub>f</sub> = V &middot; (1 + f &middot; n)</span></div>
+                <div class="font-mono text-slate-500">
+                    Cálculo: <span id="calcCapFormula">700.00 &middot; (1 + 0.05 &middot; 6)</span>
+                </div>
+                <div class="font-semibold text-slate-800 mt-1">
+                    Valor Final Obtenido ($V<sub>f</sub>$): <span id="calcCapResult" class="text-rose-600 font-bold">$910.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="relative bg-white rounded-xl border border-slate-100 p-2 mb-5 h-[320px] md:h-[350px]">
+        <canvas id="reversibilityCanvas"></canvas>
+    </div>
+
+    <div id="gapCard" class="bg-gradient-to-r from-rose-50 to-pink-50 border-l-4 border-rose-500 rounded-r-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-all duration-300">
+        <div>
+            <h4 class="text-rose-900 font-bold text-xs md:text-sm flex items-center gap-1.5 uppercase tracking-wide">
+                <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                Pérdida por Irracionalidad (Asimetría Financiera)
+            </h4>
+            <p class="text-[11px] text-rose-600 mt-0.5 leading-relaxed">
+                Al volver a capitalizar el capital neto recibido en el inicio (<span class="font-semibold" id="valVText">$700.00</span>) no recuperamos el valor nominal pactado originalmente de <span class="font-semibold text-slate-700" id="valNText">$1,000.00</span>.
+            </p>
+        </div>
+        <div class="bg-white shadow-sm border border-rose-100 rounded-lg p-3 text-center sm:text-right min-w-[170px]">
+            <span class="text-[9px] text-rose-400 block uppercase tracking-wider font-bold">Brecha (Gap)</span>
+            <span id="gapAmount" class="text-base md:text-lg font-black text-rose-600">$90.00</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ctx = document.getElementById('reversibilityCanvas').getContext('2d');
+    const nominalSlider = document.getElementById('nominalSlider');
+    const rateSlider = document.getElementById('rateSlider');
+    const timeSlider = document.getElementById('timeSlider');
+
+    const nominalVal = document.getElementById('nominalVal');
+    const rateVal = document.getElementById('rateVal');
+    const timeVal = document.getElementById('timeVal');
+
+    const calcDiscFormula = document.getElementById('calcDiscFormula');
+    const calcDiscResult = document.getElementById('calcDiscResult');
+    const calcCapFormula = document.getElementById('calcCapFormula');
+    const calcCapResult = document.getElementById('calcCapResult');
+
+    const valVText = document.getElementById('valVText');
+    const valNText = document.getElementById('valNText');
+    const gapAmount = document.getElementById('gapAmount');
+
+    const arrowPlugin = {
+        id: 'arrowPlugin',
+        afterDatasetsDraw(chart) {
+            const ctx = chart.ctx;
+            
+            // 1. Flecha de Descuento (Verde): Sentido temporal hacia atrás (de t=n a t=0)
+            const metaDiscount = chart.getDatasetMeta(0);
+            if (metaDiscount.data && metaDiscount.data.length >= 2) {
+                const p0_V = metaDiscount.data[0]; // t=0
+                const pN_N = metaDiscount.data[1]; // t=n
+                
+                // Dibujamos la flecha apuntando a t=0 (izquierda-abajo)
+                drawArrowHead(ctx, pN_N.x, pN_N.y, p0_V.x, p0_V.y, '#10b981');
+            }
+
+            // 2. Flecha de Capitalización (Roja): Sentido temporal hacia adelante (de t=0 a t=n)
+            const metaCapitalization = chart.getDatasetMeta(1);
+            if (metaCapitalization.data && metaCapitalization.data.length >= 2) {
+                const p0_V = metaCapitalization.data[0]; // t=0
+                const pN_Cap = metaCapitalization.data[1]; // t=n
+                
+                // Dibujamos la flecha apuntando a t=n (derecha-arriba)
+                drawArrowHead(ctx, p0_V.x, p0_V.y, pN_Cap.x, pN_Cap.y, '#f43f5e');
+            }
+        }
+    };
+
+    function drawArrowHead(ctx, fromX, fromY, toX, toY, color) {
+        const headlen = 10; // Tamaño de la cabeza de la flecha en px
+        const dx = toX - fromX;
+        const dy = toY - fromY;
+        const angle = Math.atan2(dy, dx);
+        
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = 2;
+        
+        // Dibujar el triángulo de la punta de la flecha
+        ctx.beginPath();
+        ctx.moveTo(toX, toY);
+        ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+        ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+
+    const chart = new Chart(ctx, {
+        type: 'line',
+        plugins: [arrowPlugin],
+        data: {
+            datasets: [
+                {
+                    label: 'Descuento Comercial (← Sentido t=n a t=0)',
+                    borderColor: '#10b981', // Verde
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3.5,
+                    pointBackgroundColor: '#10b981',
+                    pointHoverRadius: 6,
+                    pointRadius: 5,
+                    fill: false,
+                    data: [],
+                    tension: 0
+                },
+                {
+                    label: 'Capitalización Simple del Valor Recibido (→ Sentido t=0 a t=n)',
+                    borderColor: '#f43f5e', // Rojo
+                    backgroundColor: 'rgba(244, 63, 148, 0.04)', // Sombreado rosa pálido entre líneas
+                    borderWidth: 3,
+                    borderDash: [6, 4],
+                    pointBackgroundColor: '#f43f5e',
+                    pointHoverRadius: 6,
+                    pointRadius: 5,
+                    fill: '-1', // Rellena el espacio contra el dataset anterior (Descuento Comercial)
+                    data: [],
+                    tension: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: {
+                        display: true,
+                        text: 'Eje Temporal (t) en meses',
+                        color: '#475569',
+                        font: { size: 11, weight: '700' }
+                    },
+                    ticks: { color: '#64748b', stepSize: 1 },
+                    grid: { color: '#f1f5f9' },
+                    min: 0,
+                    max: 12
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Valor Monetario ($)',
+                        color: '#475569',
+                        font: { size: 11, weight: '700' }
+                    },
+                    ticks: {
+                        color: '#64748b',
+                        callback: function(value) { return '$' + value; }
+                    },
+                    grid: { color: '#f1f5f9' },
+                    min: 100,
+                    max: 5200
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: '#334155',
+                        boxWidth: 20,
+                        font: { size: 11, weight: '600' }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    padding: 10,
+                    titleFont: { size: 11, weight: 'bold' },
+                    bodyFont: { size: 11 },
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            return 'Mes ' + tooltipItems[0].parsed.x.toFixed(0);
+                        },
+                        label: function(context) {
+                            return context.dataset.label.split(' (')[0] + ': $' + context.parsed.y.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    function updateSimulation() {
+        const N = parseFloat(nominalSlider.value);
+        const f = parseFloat(rateSlider.value) / 100;
+        const n = parseInt(timeSlider.value);
+
+        // Actualizar valores numéricos de las etiquetas de los Sliders
+        nominalVal.textContent = '$' + N.toLocaleString('es-ES');
+        rateVal.textContent = (f * 100).toFixed(1) + '%';
+        timeVal.textContent = n + (n === 1 ? ' mes' : ' meses');
+
+        // --- CÁLCULOS FINANCIEROS ---
+        const V = N * (1 - (f * n));          // 1) Valor Actual Descontado
+        const capFinal = V * (1 + (f * n));    // 2) Punto final de Capitalización Simple
+        const gap = N - capFinal;              // Brecha / Pérdida por Irracionalidad
+
+        // Ajustar dinámicamente los límites del gráfico según las variables elegidas
+        chart.options.scales.x.max = n;
+        
+        // Ajustar el mínimo del eje Y con un margen de holgura
+        const calculatedMin = Math.floor((V - (N * 0.05)) / 100) * 100;
+        chart.options.scales.y.min = Math.max(0, calculatedMin);
+        chart.options.scales.y.max = Math.ceil((N + (N * 0.05)) / 100) * 100;
+
+        // Inyectar datos en el gráfico:
+        // Dataset 0: Descuento Comercial (De t=0 con valor V hasta t=n con valor N)
+        chart.data.datasets[0].data = [
+            { x: 0, y: V },
+            { x: n, y: N }
+        ];
+
+        // Dataset 1: Capitalización Simple (De t=0 con valor V hasta t=n con valor capFinal)
+        // Gracias a fill: '-1', Chart.js rellenará la brecha entre este dataset y el anterior de rosa
+        chart.data.datasets[1].data = [
+            { x: 0, y: V },
+            { x: n, y: capFinal }
+        ];
+
+        // --- ACTUALIZAR DESARROLLO DE CÁLCULOS MATEMÁTICOS ---
+        // Paso 1: Descuento Comercial
+        calcDiscFormula.innerHTML = `$${N.toLocaleString('es-ES')} &middot; (1 - ${f.toFixed(3)} &middot; ${n})`;
+        calcDiscResult.textContent = '$' + V.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        // Paso 2: Capitalización del Valor Recibido
+        calcCapFormula.innerHTML = `$${V.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} &middot; (1 + ${f.toFixed(3)} &middot; ${n})`;
+        calcCapResult.textContent = '$' + capFinal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        // --- ACTUALIZAR CARTEL DE GAP INFERIOR ---
+        valVText.textContent = '$' + V.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        valNText.textContent = '$' + N.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        gapAmount.textContent = '$' + gap.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        chart.update('none'); // Renderizado directo sin transiciones lentas
+    }
+
+    // Vinculación de oyentes de eventos de entrada
+    nominalSlider.addEventListener('input', updateSimulation);
+    rateSlider.addEventListener('input', updateSimulation);
+    timeSlider.addEventListener('input', updateSimulation);
+
+    // Renderizar al cargar la página
+    window.onload = function() {
+        updateSimulation();
+    };
+</script>
+</body>
+</html>

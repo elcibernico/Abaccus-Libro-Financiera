@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparativa de Tasas Equivalentes en Régimen Simple (Base 365)</title>
+    <!-- Tailwind CSS para el diseño y estilizado moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para el gráfico interactivo -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts: Inter para tipografía profesional -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome para iconos limpios -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- KaTeX para renderizar ecuaciones matemáticas hermosas estilo LaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilos personalizados para los sliders */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+            transition: background 0.15s ease-in-out;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #4338ca;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 p-4 sm:p-6 text-slate-800 antialiased min-h-screen flex items-center justify-center">
+
+    <div class="max-w-5xl w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden flex flex-col">
+        
+        <!-- Cabecera de la Actividad Interactiva -->
+        <div class="bg-gradient-to-r from-indigo-700 to-slate-900 p-6 text-white">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <span class="bg-indigo-500/30 text-indigo-200 text-xs uppercase font-bold px-3 py-1 rounded-full border border-indigo-400/20">
+                        Régimen Simple de Actualización
+                    </span>
+                    <h1 class="text-2xl font-bold mt-2">Tasas Equivalentes: Interés <span id="headerJ"></span> vs. Descuento <span id="headerF"></span></h1>
+                    <p class="text-slate-300 text-sm mt-1">Simulador dinámico de la relación temporal de equivalencia financiera.</p>
+                </div>
+                <div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg border border-white/10 self-stretch sm:self-auto justify-center">
+                    <span class="text-xs text-slate-300">Base del tiempo:</span>
+                    <strong class="text-sm text-white font-semibold">Exacta / Civil (365 días)</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cuerpo del simulador: Controles y Gráfico -->
+        <div class="p-6 grid grid-cols-1 sm:grid-cols-12 gap-6">
+            
+            <div class="sm:col-span-4 flex flex-col gap-6 bg-slate-50 p-5 rounded-xl border border-slate-100">
+                <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-indigo-600"></i> Parámetros de Simulación
+                </h2>
+
+                <!-- Control 1: Tasa Base -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <label for="baseRate" class="text-sm font-semibold text-slate-600">Tasa Base Nominal <span id="lblBaseRate"></span></label>
+                        <span id="baseRateVal" class="text-lg font-bold text-indigo-600">30.0%</span>
+                    </div>
+                    <input type="range" id="baseRate" min="1" max="100" value="30" step="1" 
+                           class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                    <p class="text-[11px] text-slate-400">Tasa de referencia anual para calcular su tasa equivalente correspondiente.</p>
+                </div>
+
+                <!-- Control 2: Plazo Seleccionado (n) -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <label for="timeN" class="text-sm font-semibold text-slate-600">Plazo Actual <span id="lblTimeN"></span></label>
+                        <span id="timeNVal" class="text-lg font-bold text-indigo-600">180 días</span>
+                    </div>
+                    <input type="range" id="timeN" min="1" max="365" value="180" step="1" 
+                           class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                    <div class="flex justify-between text-[11px] text-slate-400">
+                        <span>1 día</span>
+                        <span>365 días (1 Año)</span>
+                    </div>
+                </div>
+
+                <!-- Selector de perspectiva de cálculo -->
+                <div class="flex flex-col gap-2 border-t border-slate-200 pt-4">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Perspectiva del Análisis</span>
+                    <div class="grid grid-cols-2 gap-2 mt-1">
+                        <button id="btnFixF" onclick="setPerspective('f')" 
+                                class="px-3 py-2 text-xs font-semibold rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 transition duration-150">
+                            Fijar Descuento <span id="btnLblF"></span>
+                        </button>
+                        <button id="btnFixJ" onclick="setPerspective('j')" 
+                                class="px-3 py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition duration-150">
+                            Fijar Interés <span id="btnLblJ"></span>
+                        </button>
+                    </div>
+                    <p id="perspectiveDesc" class="text-[11px] text-slate-500 mt-1 italic">
+                        Calculamos el Interés (j) requerido para igualar a una tasa de descuento (f) fija.
+                    </p>
+                </div>
+
+                <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-3">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Fórmula y Equivalencia para <span id="calcNText" class="font-mono">180</span> días:</span>
+                    
+                    <div class="flex flex-col gap-2">
+                        <!-- Fórmula Interés j -->
+                        <div class="flex flex-col p-3 bg-indigo-50/50 rounded-md border border-indigo-100">
+                            <span class="text-[10px] uppercase font-bold text-indigo-700 tracking-wider mb-2">Tasa de Interés (<span id="boxLblJ"></span>)</span>
+                            <div class="flex justify-between items-center mt-1">
+                                <div id="formulaJ" class="text-sm overflow-x-auto py-1"></div>
+                                <span class="text-base font-bold text-slate-900 shrink-0 ml-2" id="resultJ">42.86%</span>
+                            </div>
+                        </div>
+
+                        <!-- Fórmula Descuento f -->
+                        <div class="flex flex-col p-3 bg-emerald-50/50 rounded-md border border-emerald-100">
+                            <span class="text-[10px] uppercase font-bold text-emerald-700 tracking-wider mb-2">Tasa de Descuento (<span id="boxLblF"></span>)</span>
+                            <div class="flex justify-between items-center mt-1">
+                                <div id="formulaF" class="text-sm overflow-x-auto py-1"></div>
+                                <span class="text-base font-bold text-slate-900 shrink-0 ml-2" id="resultF">23.08%</span>
+                            </div>
+                        </div>
+
+                        <!-- Alerta Didáctica de Inviabilidad de Descuento -->
+                        <div id="warningBox" class="hidden bg-rose-50 text-rose-700 text-xs p-3 rounded-md border border-rose-200 flex gap-2 items-start mt-1">
+                            <i class="fa-solid fa-triangle-exclamation mt-0.5 shrink-0"></i>
+                            <p><strong>Límite Financiero:</strong> Para este plazo, el descuento acumulado supera al valor nominal ($f \cdot \frac{d}{365} \ge 1$), resultando en un capital recibido nulo o negativo. Financieramente, la tasa de descuento equivalente es inviable.</p>
+                        </div>
+                    </div>
+
+                    <!-- Indicador visual de la brecha de onerosidad -->
+                    <div class="border-t border-slate-100 pt-2 mt-1">
+                        <div class="flex justify-between text-xs text-slate-600 mb-1">
+                            <span>Brecha de Tasas (<span id="gapLbl"></span>):</span>
+                            <span class="font-bold text-indigo-600" id="rateGap">12.86%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                            <div id="gapBar" class="bg-indigo-600 h-full transition-all duration-300" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="sm:col-span-8 flex flex-col justify-between">
+                
+                <!-- Sección Gráfica -->
+                <div class="bg-white rounded-xl border border-slate-100 p-4 relative h-[360px] sm:h-[400px]">
+                    <canvas id="equivalenceChart"></canvas>
+                </div>
+
+                <!-- Leyenda e Interpretación Interactiva Dinámica -->
+                <div class="mt-4 bg-indigo-50/70 border border-indigo-100 p-4 rounded-xl">
+                    <h3 class="text-xs font-bold text-indigo-900 uppercase tracking-wider flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-graduation-cap"></i> Interpretación Didáctica
+                    </h3>
+                    <p id="didacticExplanation" class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                        A los 180 días de plazo, para que ambas operaciones sean financieramente equivalentes...
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Variables de estado
+        let activePerspective = 'f'; // 'f' = Fijar tasa de descuento, 'j' = Fijar tasa de interés
+        let baseRateInput = document.getElementById('baseRate');
+        let timeNInput = document.getElementById('timeN');
+        let chartInstance = null;
+
+        // Elementos DOM
+        const baseRateVal = document.getElementById('baseRateVal');
+        const timeNVal = document.getElementById('timeNVal');
+        const calcNText = document.getElementById('calcNText');
+        const resultJ = document.getElementById('resultJ');
+        const resultF = document.getElementById('resultF');
+        const formulaJ = document.getElementById('formulaJ');
+        const formulaF = document.getElementById('formulaF');
+        const rateGap = document.getElementById('rateGap');
+        const gapBar = document.getElementById('gapBar');
+        const warningBox = document.getElementById('warningBox');
+        const didacticExplanation = document.getElementById('didacticExplanation');
+
+        // Inicializar renderizado KaTeX para elementos estáticos
+        function initStaticLaTeX() {
+            katex.render("j", document.getElementById('headerJ'));
+            katex.render("f", document.getElementById('headerF'));
+            katex.render("r", document.getElementById('lblBaseRate'));
+            katex.render("n", document.getElementById('lblTimeN'));
+            katex.render("f", document.getElementById('btnLblF'));
+            katex.render("j", document.getElementById('btnLblJ'));
+            katex.render("j", document.getElementById('boxLblJ'));
+            katex.render("f", document.getElementById('boxLblF'));
+            katex.render("j - f", document.getElementById('gapLbl'));
+        }
+
+        // Configurar perspectiva
+        function setPerspective(p) {
+            activePerspective = p;
+            
+            const btnF = document.getElementById('btnFixF');
+            const btnJ = document.getElementById('btnFixJ');
+            const pDesc = document.getElementById('perspectiveDesc');
+
+            if (p === 'f') {
+                btnF.className = "px-3 py-2 text-xs font-semibold rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 transition duration-150";
+                btnJ.className = "px-3 py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition duration-150";
+                pDesc.innerText = "Calculamos el Interés (j) requerido para igualar a una tasa de descuento (f) fija.";
+            } else {
+                btnJ.className = "px-3 py-2 text-xs font-semibold rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 transition duration-150";
+                btnF.className = "px-3 py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition duration-150";
+                pDesc.innerText = "Calculamos la tasa de descuento (f) requerida para igualar a un interés vencido (j) fijo.";
+            }
+            updateSimulator();
+        }
+
+        function calculateEquivalents(rate, days) {
+            const n = days / 365; // Expresado como días sobre 365
+            let j, f;
+            let warning = false;
+
+            if (activePerspective === 'f') {
+                f = rate / 100;
+                // Evitar divisiones por cero o valores negativos en el denominador hiperbólico
+                if (1 - f * n > 0.001) {
+                    j = f / (1 - f * n);
+                } else {
+                    j = null; // Inviable matemáticamente
+                    warning = true;
+                }
+            } else {
+                j = rate / 100;
+                f = j / (1 + j * n);
+            }
+
+            return { j, f, warning, n };
+        }
+
+        // Generar puntos de datos para las curvas completas de 1 a 365 días
+        function generateChartData(baseRate) {
+            const labels = [];
+            const dataJ = [];
+            const dataF = [];
+
+            // Intervalos de 10 días para un gráfico suave
+            for (let d = 0; d <= 365; d += 10) {
+                const days = d === 0 ? 1 : (d > 365 ? 365 : d);
+                labels.push(`${days}d`);
+                const n = days / 365;
+
+                if (activePerspective === 'f') {
+                    const fVal = baseRate / 100;
+                    dataF.push(baseRate); // Descuento constante
+
+                    if (1 - fVal * n > 0) {
+                        const jVal = (fVal / (1 - fVal * n)) * 100;
+                        // Capar la visualización del gráfico para evitar que rompa la escala si tiende a infinito
+                        dataJ.push(jVal > 250 ? null : jVal); 
+                    } else {
+                        dataJ.push(null);
+                    }
+                } else {
+                    const jVal = baseRate / 100;
+                    dataJ.push(baseRate); // Interés constante
+
+                    const fVal = (jVal / (1 + jVal * n)) * 100;
+                    dataF.push(fVal);
+                }
+            }
+
+            return { labels, dataJ, dataF };
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('equivalenceChart').getContext('2d');
+            
+            // Plugin personalizado para dibujar la línea vertical indicadora del día seleccionado
+            const verticalLinePlugin = {
+                id: 'verticalLine',
+                afterDraw: (chart) => {
+                    if (chart.tooltip?._active && chart.tooltip._active.length) {
+                        return; // No interferir si el usuario ya está haciendo hover específico
+                    }
+                    const activeDays = parseInt(timeNInput.value);
+                    const index = Math.round(activeDays / 10);
+                    
+                    const meta = chart.getDatasetMeta(0);
+                    if (!meta.data[index]) return;
+                    
+                    const x = meta.data[index].x;
+                    const topY = chart.chartArea.top;
+                    const bottomY = chart.chartArea.bottom;
+
+                    const ctx = chart.ctx;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(x, topY);
+                    ctx.lineTo(x, bottomY);
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = 'rgba(79, 70, 229, 0.4)'; // Línea discontinua Indigo
+                    ctx.setLineDash([5, 5]);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            };
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                plugins: [verticalLinePlugin],
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Tasa de Interés Equivalente (j) - Vencida',
+                            borderColor: '#4f46e5',
+                            backgroundColor: 'rgba(79, 70, 229, 0.05)',
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            data: [],
+                            fill: true,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Tasa de Descuento Equivalente (f) - Adelantada',
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            data: [],
+                            fill: true,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                font: { size: 11, weight: 'bold' }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.dataset.label.split(' (')[0]}: ${context.raw ? context.raw.toFixed(2) : 'Inviable'}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Plazo de la operación (n) en días', font: { size: 11, weight: 'bold' } },
+                            grid: { display: false }
+                        },
+                        y: {
+                            title: { display: true, text: 'Tasa Efectiva Porcentual (%)', font: { size: 11, weight: 'bold' } },
+                            min: 0,
+                            ticks: {
+                                callback: value => value + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateSimulator() {
+            const baseRate = parseFloat(baseRateInput.value);
+            const days = parseInt(timeNInput.value);
+
+            // Actualizar textos de UI básicos
+            baseRateVal.innerText = `${baseRate.toFixed(1)}%`;
+            timeNVal.innerText = `${days} días`;
+            calcNText.innerText = days;
+
+            // Calcular equivalencia estática para el panel numérico
+            const calc = calculateEquivalents(baseRate, days);
+            
+            // Fórmulas dinámicas con renderizado KaTeX real
+            const fFrac = (baseRate / 100).toFixed(4);
+
+            if (activePerspective === 'f') {
+                // f es fija, renderizamos j = f / (1 - f * (d/365))
+                katex.render(`f = ${fFrac} \\text{ (Fijo)}`, formulaF, { displayMode: false });
+                
+                if (calc.warning) {
+                    katex.render(`j = \\frac{f}{1 - f \\cdot \\frac{d}{365}}`, formulaJ, { displayMode: false });
+                    resultJ.innerText = "Inviable ⚠";
+                    rateGap.innerText = "N/D";
+                    gapBar.style.width = "100%";
+                    gapBar.className = "bg-rose-500 h-full transition-all duration-300";
+                    warningBox.classList.remove('hidden');
+                } else {
+                    const jPercentage = calc.j * 100;
+                    katex.render(`j = \\frac{${fFrac}}{1 - ${fFrac} \\cdot \\frac{${days}}{365}}`, formulaJ, { displayMode: false });
+                    resultJ.innerText = `${jPercentage.toFixed(2)}%`;
+                    resultF.innerText = `${baseRate.toFixed(2)}%`;
+                    
+                    const gap = jPercentage - baseRate;
+                    rateGap.innerText = `${gap.toFixed(2)}%`;
+                    gapBar.style.width = `${Math.min(100, (gap / baseRate) * 100)}%`;
+                    gapBar.className = "bg-indigo-600 h-full transition-all duration-300";
+                    warningBox.classList.add('hidden');
+                }
+            } else {
+                // j es fija, renderizamos f = j / (1 + j * (d/365))
+                katex.render(`j = ${fFrac} \\text{ (Fijo)}`, formulaJ, { displayMode: false });
+                resultJ.innerText = `${baseRate.toFixed(2)}%`;
+
+                const fPercentage = calc.f * 100;
+                katex.render(`f = \\frac{${fFrac}}{1 + ${fFrac} \\cdot \\frac{${days}}{365}}`, formulaF, { displayMode: false });
+                resultF.innerText = `${fPercentage.toFixed(2)}%`;
+
+                const gap = baseRate - fPercentage;
+                rateGap.innerText = `${gap.toFixed(2)}%`;
+                gapBar.style.width = `${Math.min(100, (gap / baseRate) * 100)}%`;
+                gapBar.className = "bg-indigo-600 h-full transition-all duration-300";
+                warningBox.classList.add('hidden');
+            }
+
+            // Explicación textual didáctica dinámica con expresiones matemáticas claras
+            updateExplanation(baseRate, days, calc);
+
+            // Actualizar datos de las curvas del gráfico
+            const chartData = generateChartData(baseRate);
+            chartInstance.data.labels = chartData.labels;
+            chartInstance.data.datasets[0].data = chartData.dataJ;
+            chartInstance.data.datasets[1].data = chartData.dataF;
+            
+            // Ajustar la escala máxima para mantener las curvas visibles y hermosas
+            const maxVal = Math.max(...chartData.dataJ.filter(v => v !== null), ...chartData.dataF);
+            chartInstance.options.scales.y.max = Math.ceil(maxVal / 10) * 10;
+
+            chartInstance.update('none'); // Renderizado rápido sin animaciones pesadas durante arrastre
+        }
+
+        // Redacción didáctica personalizada de acuerdo con los datos seleccionados (usando notación d/365)
+        function updateExplanation(baseRate, days, calc) {
+            if (activePerspective === 'f') {
+                if (calc.warning) {
+                    didacticExplanation.innerHTML = `Para un plazo de <strong class="text-indigo-800">${days} días</strong> y una tasa de descuento fija de <strong class="text-emerald-700">${baseRate.toFixed(1)}%</strong>, la operación se vuelve <strong class="text-rose-600 uppercase font-bold">inviable</strong>. El descuento acumulado supera el valor nominal ($f \\cdot \\frac{${days}}{365} \\ge 1$), lo que genera un valor efectivo neto negativo o nulo. Esto ejemplifica el límite físico del descuento comercial simple.`;
+                } else {
+                    const jPercent = (calc.j * 100).toFixed(2);
+                    const diffPercent = (jPercent - baseRate).toFixed(2);
+                    didacticExplanation.innerHTML = `A los <strong class="text-indigo-800">${days} días</strong> de plazo ($n = \\frac{${days}}{365}$), para igualar el efecto financiero de una tasa de descuento fija de <strong class="text-emerald-700">${baseRate.toFixed(1)}%</strong>, la tasa de interés vencida ($j$) debe escalar hasta el <strong class="text-indigo-800">${jPercent}%</strong>. Esto representa una brecha de <strong class="text-indigo-600">${diffPercent}%</strong>. Al aumentar el plazo, la curva del interés crece de forma hiperbólica para compensar que el descuento se calcula sobre el valor nominal futuro.`;
+                }
+            } else {
+                const fPercent = (calc.f * 100).toFixed(2);
+                const diffPercent = (baseRate - fPercent).toFixed(2);
+                didacticExplanation.innerHTML = `Si fijamos una tasa de interés de <strong class="text-indigo-800">${baseRate.toFixed(1)}%</strong>, al extender el plazo hasta <strong class="text-indigo-800">${days} días</strong> ($n = \\frac{${days}}{365}$), la tasa de descuento equivalente ($f$) disminuye hasta <strong class="text-emerald-700">${fPercent}%</strong> (una diferencia de <strong class="text-indigo-600">${diffPercent}%</strong>). Dado que el descuento comercial se aplica sobre una base de cálculo mayor (el valor nominal al vencimiento), se requiere una tasa porcentual menor para mantener la equivalencia con el interés simple.`;
+            }
+            // Volver a aplicar KaTeX en el bloque explicativo para renderizar las fórmulas $...$
+            renderMathInElement(didacticExplanation, {
+                delimiters: [{left: '$', right: '$', display: false}]
+            });
+        }
+
+        // Carga inicial de forma robusta
+        function initAll() {
+            try {
+                if (!chartInstance) {
+                    initStaticLaTeX();
+                    initChart();
+                    updateSimulator();
+                } else {
+                    updateSimulator();
+                }
+            } catch (e) {
+                console.warn("Retrying initialization...", e);
+            }
+        }
+
+        // Ejecutar de inmediato si el script se evalúa al final del body
+        initAll();
+
+        // Asegurar ejecución en todos los eventos posibles
+        document.addEventListener('DOMContentLoaded', initAll);
+        window.addEventListener('load', initAll);
+
+        // Fallbacks con retraso
+        setTimeout(initAll, 100);
+        setTimeout(initAll, 500);
+
+        // Eventos para actualizar dinámicamente al mover sliders
+        baseRateInput.addEventListener('input', updateSimulator);
+        timeNInput.addEventListener('input', updateSimulator);
+    </script>
+</body>
+</html>

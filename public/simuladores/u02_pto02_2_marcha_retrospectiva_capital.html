@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Marcha Retrospectiva del Capital</title>
+    <!-- Tailwind CSS para un diseño premium y ultra-limpio -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconos Phosphor para una interfaz moderna -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Fuente Inter para legibilidad de libro digital -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX para renderizar ecuaciones matemáticas hermosas estilo LaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+        /* Ocultar barra de scroll para integraciones limpias */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Corrección visual para KaTeX */
+        .katex {
+            font-size: 1.05em;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex items-center justify-center p-3 sm:p-6 overflow-x-hidden">
+
+<div class="w-full max-w-5xl bg-white border border-slate-200 rounded-2xl shadow-xl p-4 sm:p-6 flex flex-col gap-6">
+    
+    <!-- Cabecera del Gráfico -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-4 gap-4">
+        <div>
+            <span class="text-xs font-semibold text-emerald-600 tracking-wider uppercase">Visualización Interactiva</span>
+            <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="ph ph-hourglass-high text-emerald-500"></i>
+                La "Marcha Retrospectiva" del Capital
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                Pérdida no lineal de valor por descuento compuesto.
+            </p>
+        </div>
+        
+        <!-- Estado / Info de Identidad Visual en LaTeX -->
+        <div class="flex items-center gap-4 bg-slate-50 px-4 py-2 rounded-xl border border-slate-250 text-xs sm:text-sm self-start md:self-auto text-slate-700">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>$V < N$</span>
+            </div>
+            <span class="text-slate-300">|</span>
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                <span>$D = N - V$</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Layout Grid Superior: Controles + Canvas -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Columna Izquierda: Panel de Control (4 columnas) -->
+        <div class="lg:col-span-4 flex flex-col justify-between gap-5 bg-slate-50/50 p-4 rounded-xl border border-slate-200/80">
+            
+            <div class="space-y-5">
+                <!-- Slider de Antelación (n) -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label for="antelacionRange" class="text-xs sm:text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                            <i class="ph ph-calendar text-emerald-600"></i> Antelación ($n$)
+                        </label>
+                        <span id="antelacionVal" class="text-xs sm:text-sm font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">18 meses</span>
+                    </div>
+                    <input type="range" id="antelacionRange" min="0" max="24" step="1" value="18" 
+                           class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600 focus:outline-none">
+                    <div class="flex justify-between text-[10px] text-slate-550 mt-1">
+                        <span>$0\text{ m.}$</span>
+                        <span>$12\text{ m.}$</span>
+                        <span>$24\text{ m.}$</span>
+                    </div>
+                </div>
+
+                <!-- Slider de Tasa de Interés (i) -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label for="interesRange" class="text-xs sm:text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                            <i class="ph ph-percent text-amber-600"></i> Tasa Mensual ($i$)
+                        </label>
+                        <span id="interesVal" class="text-xs sm:text-sm font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">3.0%</span>
+                    </div>
+                    <input type="range" id="interesRange" min="0.5" max="12" step="0.1" value="3.0" 
+                           class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500 focus:outline-none">
+                    <div class="flex justify-between text-[10px] text-slate-550 mt-1">
+                        <span>$0.5\%$ m.</span>
+                        <span>Equiv. Anual: <span id="equivAnual" class="text-slate-600 font-semibold">42.6%</span></span>
+                        <span>$12\%$ m.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex flex-col gap-2 mt-2">
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btnPlay" class="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-medium text-xs py-2 rounded-lg transition-all duration-150 shadow-md">
+                        <i class="ph ph-play-fill"></i>
+                        <span id="btnPlayText">Iniciar</span>
+                    </button>
+                    <button id="btnPause" class="flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs py-2 rounded-lg transition-all duration-150 border border-slate-200">
+                        <i class="ph ph-pause-fill"></i>
+                        <span>Pausar</span>
+                    </button>
+                </div>
+                <button id="btnReset" class="w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-600 font-medium text-xs py-2 rounded-lg transition-all duration-150 border border-slate-200">
+                    <i class="ph ph-arrow-counter-clockwise"></i>
+                    <span>Ir al Futuro ($t = n$)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: El Canvas del Eje Temporal y Curva (8 columnas) -->
+        <div class="lg:col-span-8">
+            <div class="relative w-full aspect-[4/3] sm:aspect-[16/10] bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                
+                <!-- Canvas para renderizado dinámico -->
+                <canvas id="marchaCanvas" class="absolute inset-0 w-full h-full block"></canvas>
+
+                <!-- ================= TOOLTIPS HTML DE ALTA DEFINICIÓN (LÁTEX REAL) ================= -->
+                
+                <!-- Tooltip Superior (T. Desc y Valor) -->
+                <div id="tooltipUpper" class="absolute pointer-events-none bg-white/95 border border-slate-200 rounded-lg px-3 py-1.5 flex justify-between gap-4 text-[10px] shadow-lg z-20" style="width: 215px; visibility: hidden; color: #1e293b;">
+                    <!-- Columna Izquierda: Tiempo de Descuento -->
+                    <div class="text-left">
+                        <div class="text-slate-500 font-semibold flex items-center gap-1">T. Desc. ($t_{\text{desc}}$):</div>
+                        <div id="tooltipUpperLeftVal" class="text-amber-600 font-mono font-bold mt-0.5 text-[11px]">0.0 meses</div>
+                    </div>
+                    <!-- Columna Derecha: Valor Actualizado -->
+                    <div class="text-right">
+                        <div class="text-slate-500 font-semibold flex items-center gap-1 justify-end">Valor ($V_t$):</div>
+                        <div id="tooltipUpperRightVal" class="text-emerald-600 font-mono font-bold mt-0.5 text-[11px]">$10,000.0</div>
+                    </div>
+                    <!-- Flecha del Tooltip Superior -->
+                    <div id="tooltipUpperArrowBorder" class="absolute bottom-0 w-0 h-0 border-x-[6px] border-x-transparent border-t-[6px] border-t-slate-200 translate-y-full"></div>
+                    <div id="tooltipUpperArrowFill" class="absolute bottom-[1px] w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-white translate-y-full"></div>
+                </div>
+
+                <!-- Tooltip Inferior (Tiempo Activo t) -->
+                <div id="tooltipLower" class="absolute pointer-events-none bg-white/95 border border-slate-200 rounded-lg px-3 py-1 text-center text-[10px] shadow-lg z-20" style="width: 130px; visibility: hidden; color: #1e293b;">
+                    <div class="text-slate-500 font-semibold">Momento Activo ($t$):</div>
+                    <div id="tooltipLowerVal" class="text-emerald-600 font-mono font-bold mt-0.5 text-[11px]">t = 18.0 m</div>
+                    <!-- Flecha del Tooltip Inferior -->
+                    <div id="tooltipLowerArrowBorder" class="absolute top-0 w-0 h-0 border-x-[6px] border-x-transparent border-b-[6px] border-b-slate-200 -translate-y-full"></div>
+                    <div id="tooltipLowerArrowFill" class="absolute top-[1px] w-0 h-0 border-x-[5px] border-x-transparent border-b-[5px] border-b-white -translate-y-full"></div>
+                </div>
+
+                <!-- ================================================================================= -->
+                
+                <!-- Overlay de estado de animación -->
+                <div id="animationBadge" class="absolute top-4 left-4 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded text-[10px] font-mono text-emerald-600 flex items-center gap-1.5 opacity-0 transition-opacity duration-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-550 animate-ping"></span>
+                    MARCHANDO HACIA $t = 0$
+                </div>
+
+                <!-- Info flotante en el Canvas -->
+                <div class="absolute bottom-4 right-4 text-[10px] text-slate-400 font-mono pointer-events-none select-none">
+                    Arrastra los controles o presiona Play para retroceder
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección Inferior: Identidad de la Marcha (Abajo de todo) -->
+    <div class="border-t border-slate-100 pt-5">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="ph ph-shield-check text-emerald-500"></i>
+                Identidad Matemática de la Marcha
+            </h3>
+            <span class="text-[10px] sm:text-xs text-slate-400">Valores dinámicos en tiempo real</span>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Capital Nominal N (Futuro) -->
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 flex justify-between items-center">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-3 h-3 rounded bg-slate-400"></span>
+                    <span class="text-xs sm:text-sm text-slate-500">Capital Futuro ($N$)</span>
+                </div>
+                <span class="font-mono text-sm sm:text-base font-bold text-slate-800">$10,000</span>
+            </div>
+
+            <!-- Valor Actual V (Descontado) -->
+            <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100/80 flex justify-between items-center">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-3 h-3 rounded bg-emerald-500 shadow-md shadow-emerald-500/25"></span>
+                    <span class="text-xs sm:text-sm text-emerald-700">Valor Actual ($V$)</span>
+                </div>
+                <span id="valActual" class="font-mono text-sm sm:text-base font-bold text-emerald-600">$5,873.90</span>
+            </div>
+
+            <!-- Descuento Compuesto D (El bocado) -->
+            <div class="bg-amber-50 p-3 rounded-lg border border-amber-100/80 flex justify-between items-center">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-3 h-3 rounded bg-amber-500 shadow-md shadow-amber-500/25"></span>
+                    <span class="text-xs sm:text-sm text-amber-700">Descuento ($D$)</span>
+                </div>
+                <span id="descuentoAcumulado" class="font-mono text-sm sm:text-base font-bold text-amber-600">$4,126.10</span>
+            </div>
+        </div>
+        
+        <!-- Breve tip pedagógico integrado -->
+        <div class="text-[11px] sm:text-xs text-slate-650 bg-slate-50 border border-slate-100 p-3 rounded-lg mt-4 flex gap-2 items-start">
+            <i class="ph ph-info text-emerald-500 text-base mt-0.5"></i>
+            <span>
+                <strong>Observación conceptual:</strong> El bocado del descuento ($D$) se incrementa de forma no lineal conforme el capital viaja retrospectivamente hacia el presente ($t=0$). La pérdida de valor es más acelerada al alejarse de la fecha de origen.
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Lógica del Simulador e Interacciones -->
+<script>
+const canvas = document.getElementById('marchaCanvas');
+const ctx = canvas.getContext('2d');
+
+// Elementos de Tooltips HTML
+const tooltipUpper = document.getElementById('tooltipUpper');
+const tooltipUpperLeftVal = document.getElementById('tooltipUpperLeftVal');
+const tooltipUpperRightVal = document.getElementById('tooltipUpperRightVal');
+const tooltipUpperArrowBorder = document.getElementById('tooltipUpperArrowBorder');
+const tooltipUpperArrowFill = document.getElementById('tooltipUpperArrowFill');
+
+const tooltipLower = document.getElementById('tooltipLower');
+const tooltipLowerVal = document.getElementById('tooltipLowerVal');
+const tooltipLowerArrowBorder = document.getElementById('tooltipLowerArrowBorder');
+const tooltipLowerArrowFill = document.getElementById('tooltipLowerArrowFill');
+
+// Variables financieras base
+const N = 10000; // Capital Nominal fijo
+let n = 18;      // Antelación (meses)
+let i = 0.03;    // Tasa de interés mensual (3.0%)
+
+// Animación de la marcha
+let currentT = n; // t actual de la marcha (va desde n hasta 0)
+let isAnimating = false;
+let animationSpeed = 0.06; // Velocidad de la marcha retrospectiva
+
+// Sistema de partículas para representar el "bocado" de interés (D)
+let particles = [];
+
+// Elementos de la UI
+const antelacionRange = document.getElementById('antelacionRange');
+const antelacionVal = document.getElementById('antelacionVal');
+const interesRange = document.getElementById('interesRange');
+const interesVal = document.getElementById('interesVal');
+const equivAnualSpan = document.getElementById('equivAnual');
+const valActualSpan = document.getElementById('valActual');
+const descuentoAcumuladoSpan = document.getElementById('descuentoAcumulado');
+const btnPlay = document.getElementById('btnPlay');
+const btnPause = document.getElementById('btnPause');
+const btnPlayText = document.getElementById('btnPlayText');
+const btnReset = document.getElementById('btnReset');
+const animationBadge = document.getElementById('animationBadge');
+
+// Adaptabilidad del Canvas al contenedor
+function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+}
+
+class Particle {
+    constructor(x, y, targetX, targetY) {
+        this.x = x;
+        this.y = y;
+        const angle = Math.atan2(targetY - y, targetX - x) + (Math.random() - 0.5) * 0.4;
+        const speed = 1.0 + Math.random() * 2;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.size = 1.2 + Math.random() * 2.2;
+        this.alpha = 1;
+        this.decay = 0.012 + Math.random() * 0.018;
+        this.color = Math.random() > 0.4 ? '#d97706' : '#f59e0b'; // Colores amber/gold premium
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.alpha -= this.decay;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = this.color;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+function updateMath(instant = false) {
+    const V = N * Math.pow(1 + i, -n);
+    const D = N - V;
+
+    valActualSpan.textContent = `$${V.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    descuentoAcumuladoSpan.textContent = `$${D.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    
+    const tea = (Math.pow(1 + i, 12) - 1) * 100;
+    equivAnualSpan.textContent = `${tea.toFixed(1)}%`;
+}
+
+function draw() {
+    const width = canvas.width / window.devicePixelRatio;
+    const height = canvas.height / window.devicePixelRatio;
+
+    // Limpieza con color de fondo blanco limpio para modo claro
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+
+    // Márgenes del gráfico
+    const paddingLeft = 65;
+    const paddingRight = 45;
+    const paddingTop = 45;
+    const paddingBottom = 45;
+    const graphWidth = width - paddingLeft - paddingRight;
+    const graphHeight = height - paddingTop - paddingBottom;
+
+    // Mapeo matemático a coordenadas de pantalla
+    const getX = (t) => paddingLeft + (t / 24) * graphWidth;
+    const getY = (value) => (paddingTop + graphHeight) - (value / N) * graphHeight;
+
+    // --- Dibujar Grilla de Fondo (Gris suave en Modo Claro) ---
+    ctx.strokeStyle = '#f1f5f9'; // slate-100 para líneas de grilla
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+
+    // Líneas de grilla horizontales (Capital)
+    for (let j = 0; j <= 4; j++) {
+        const valueGrid = (N / 4) * j;
+        const gy = getY(valueGrid);
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, gy);
+        ctx.lineTo(paddingLeft + graphWidth, gy);
+        ctx.stroke();
+
+        // Etiquetas del eje Y
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#64748b'; // slate-500
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`$${valueGrid.toLocaleString('es-ES')}`, paddingLeft - 8, gy);
+        ctx.setLineDash([4, 4]);
+    }
+
+    // Líneas de grilla verticales (Meses)
+    for (let tGrid = 0; tGrid <= 24; tGrid += 4) {
+        const gx = getX(tGrid);
+        ctx.beginPath();
+        ctx.moveTo(gx, paddingTop);
+        ctx.lineTo(gx, paddingTop + graphHeight);
+        ctx.stroke();
+
+        // Etiquetas del eje X
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#64748b';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(`${tGrid}m`, gx, paddingTop + graphHeight + 8);
+        ctx.setLineDash([4, 4]);
+    }
+    ctx.setLineDash([]);
+
+    // --- Dibujar Ejes Principales ---
+    ctx.strokeStyle = '#cbd5e1'; // slate-300
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(paddingLeft, paddingTop);
+    ctx.lineTo(paddingLeft, paddingTop + graphHeight);
+    ctx.lineTo(paddingLeft + graphWidth, paddingTop + graphHeight);
+    ctx.stroke();
+
+    // Título de los ejes
+    ctx.fillStyle = '#64748b';
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('VALOR DEL CAPITAL ($)', paddingLeft, paddingTop - 15);
+    ctx.textAlign = 'right';
+    ctx.fillText('TIEMPO (MESES)', paddingLeft + graphWidth, paddingTop + graphHeight + 25);
+
+    // --- Curva Teórica de Descuento (Verde esmeralda visible) ---
+    ctx.strokeStyle = 'rgba(16, 185, 129, 0.75)';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    for (let step = 0; step <= 100; step++) {
+        const tRatio = (step / 100) * n;
+        const vAtT = N * Math.pow(1 + i, -(n - tRatio));
+        const px = getX(tRatio);
+        const py = getY(vAtT);
+        if (step === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Dibujar línea discontinua de n a 24 indicando el "Futuro Constante"
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+    ctx.setLineDash([2, 3]);
+    ctx.beginPath();
+    ctx.moveTo(getX(n), getY(N));
+    ctx.lineTo(getX(24), getY(N));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // --- Puntos de Referencia Estáticos ---
+    const xN = getX(n);
+    const yN = getY(N);
+    const xV0 = getX(0);
+
+    // Punto del Capital Nominal original en el Futuro (t = n)
+    ctx.fillStyle = '#f8fafc';
+    ctx.strokeStyle = '#475569'; // slate-600
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(xN, yN, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Etiqueta del punto Nominal N
+    ctx.fillStyle = '#1e293b'; // slate-900
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`N = $10k (t=${n})`, xN, yN - 14);
+
+    // --- Barra Dinámica del Descuento (Bracket Amarillo) en t = 0 ---
+    const currentVal = N * Math.pow(1 + i, -(n - currentT));
+    const animatedDiscount = N - currentVal;
+    const yCurrentVal = getY(currentVal);
+
+    if (animatedDiscount > 0) {
+        ctx.strokeStyle = '#d97706'; // amber-600
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(xV0 - 15, yN);
+        ctx.lineTo(xV0 - 25, yN);
+        ctx.lineTo(xV0 - 25, yCurrentVal);
+        ctx.lineTo(xV0 - 15, yCurrentVal);
+        ctx.stroke();
+
+        ctx.fillStyle = '#d97706';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`D_t = $${animatedDiscount.toFixed(0)}`, xV0 - 30, (yN + yCurrentVal) / 2);
+    }
+
+    // --- Actualizar y Dibujar Partículas ---
+    if (isAnimating || Math.random() < 0.15) {
+        const px = getX(currentT);
+        const py = yCurrentVal;
+        particles.push(new Particle(px, py, xN, yN));
+    }
+
+    particles.forEach((p, idx) => {
+        p.update();
+        if (p.alpha <= 0) {
+            particles.splice(idx, 1);
+        } else {
+            p.draw(ctx);
+        }
+    });
+
+    // --- Círculo de Capital Viajero ---
+    const circleX = getX(currentT);
+    const circleY = yCurrentVal;
+
+    const baseRadius = 8;
+    const maxRadius = 24;
+    const circleRadius = baseRadius + (maxRadius - baseRadius) * (currentVal / N);
+
+    ctx.save();
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#10b981';
+
+    ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+    ctx.beginPath();
+    ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // Línea de proyección al eje de tiempo
+    ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.moveTo(circleX, circleY + circleRadius);
+    ctx.lineTo(circleX, paddingTop + graphHeight);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // ================= ACTUALIZACIÓN DE TOOLTIPS HTML FLOTANTES =================
+
+    const elapsedT = n - currentT;
+
+    // 1. Posicionamiento del Tooltip Superior (Evitando colisiones laterales)
+    const tUpperW = 215;
+    const tUpperH = 46;
+    const tUpperX = Math.min(Math.max(circleX - tUpperW / 2, paddingLeft), width - paddingRight - tUpperW);
+    const tUpperY = circleY - circleRadius - tUpperH - 12;
+
+    tooltipUpper.style.left = `${tUpperX}px`;
+    tooltipUpper.style.top = `${tUpperY}px`;
+    tooltipUpper.style.visibility = 'visible';
+
+    // Actualizamos valores dinámicos
+    tooltipUpperLeftVal.textContent = `${elapsedT.toFixed(1)} meses`;
+    tooltipUpperRightVal.textContent = `$${currentVal.toFixed(1)}`;
+
+    // Alineación dinámica de la flecha indicadora
+    const arrowUpperX = circleX - tUpperX;
+    tooltipUpperArrowBorder.style.left = `${arrowUpperX - 6}px`;
+    tooltipUpperArrowFill.style.left = `${arrowUpperX - 5}px`;
+
+
+    // 2. Posicionamiento del Tooltip Inferior (Eje Temporal)
+    const tLowerW = 130;
+    const tLowerH = 34;
+    const tLowerX = Math.min(Math.max(circleX - tLowerW / 2, paddingLeft), width - paddingRight - tLowerW);
+    const tLowerY = circleY + circleRadius + 15;
+
+    tooltipLower.style.left = `${tLowerX}px`;
+    tooltipLower.style.top = `${tLowerY}px`;
+    tooltipLower.style.visibility = 'visible';
+
+    // Actualizamos valores dinámicos
+    tooltipLowerVal.textContent = `t = ${currentT.toFixed(1)} m`;
+
+    // Alineación dinámica de la flecha indicadora
+    const arrowLowerX = circleX - tLowerX;
+    tooltipLowerArrowBorder.style.left = `${arrowLowerX - 6}px`;
+    tooltipLowerArrowFill.style.left = `${arrowLowerX - 5}px`;
+}
+
+function animate() {
+    if (isAnimating) {
+        currentT -= animationSpeed;
+        if (currentT <= 0) {
+            currentT = 0;
+            isAnimating = false;
+            setPlayState(false);
+        }
+        draw();
+        requestAnimationFrame(animate);
+    } else {
+        draw();
+    }
+}
+
+// Controladores de Estado de Interfaz
+function setPlayState(playing) {
+    isAnimating = playing;
+    if (playing) {
+        btnPlayText.textContent = "Marchando...";
+        animationBadge.classList.remove('opacity-0');
+        animationBadge.classList.add('opacity-100');
+        animate();
+    } else {
+        btnPlayText.textContent = currentT <= 0 ? "Reiniciar Marcha" : "Reanudar Marcha";
+        animationBadge.classList.remove('opacity-100');
+        animationBadge.classList.add('opacity-0');
+    }
+}
+
+// Ajustes de Sliders por parte del usuario
+antelacionRange.addEventListener('input', (e) => {
+    isAnimating = false;
+    setPlayState(false);
+    n = parseInt(e.target.value);
+    currentT = n;
+    antelacionVal.textContent = `${n} meses`;
+    updateMath(true);
+    draw();
+});
+
+interesRange.addEventListener('input', (e) => {
+    i = parseFloat(e.target.value) / 100;
+    interesVal.textContent = `${(i * 100).toFixed(1)}%`;
+    updateMath(true);
+    draw();
+});
+
+// Botón Play / Reanudar
+btnPlay.addEventListener('click', () => {
+    if (currentT <= 0) {
+        currentT = n;
+    }
+    setPlayState(true);
+});
+
+// Botón Pausar
+btnPause.addEventListener('click', () => {
+    setPlayState(false);
+});
+
+// Botón Reset
+btnReset.addEventListener('click', () => {
+    setPlayState(false);
+    currentT = n;
+    draw();
+});
+
+// Loop continuo para mantener partículas ambientales activas cuando está en pausa o reposo
+setInterval(() => {
+    if (!isAnimating) {
+        draw();
+    }
+}, 30);
+
+// Rutina de inicialización robusta
+function initAll() {
+    resizeCanvas();
+    updateMath(true);
+    draw();
+}
+
+// Inicializar KaTeX para renderizado en el documento body
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false
+    });
+    initAll();
+});
+
+window.addEventListener('load', initAll);
+window.addEventListener('resize', initAll);
+setTimeout(initAll, 100);
+setTimeout(initAll, 500);
+
+</script>
+</body>
+</html>

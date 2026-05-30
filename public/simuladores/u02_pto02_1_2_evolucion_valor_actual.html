@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descuento Racional Simple vs Comercial</title>
+    <!-- Tailwind CSS para diseño moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <!-- KaTeX JS -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilos personalizados para controles deslizantes elegantes */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e2e8f0;
+            height: 6px;
+            border-radius: 9999px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.1s ease;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 p-4 md:p-8 flex items-center justify-center min-h-screen">
+
+<div class="max-w-4xl w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+    
+    <!-- Encabezado compacto y profesional para libro digital -->
+    <div class="bg-slate-900 text-white p-6">
+        <span class="text-xs font-semibold tracking-wider text-blue-400 uppercase">Simulador Interactivo Financiero</span>
+        <h1 class="text-xl md:text-2xl font-bold mt-1">Evolución del Valor Actual y Descuento Racional</h1>
+        <p class="text-slate-400 text-xs md:text-sm mt-1">
+            Analiza de forma interactiva la naturaleza no lineal del descuento racional y compáralo con el límite absurdo del descuento comercial simple.
+        </p>
+    </div>
+
+    <div class="p-6 space-y-6">
+        
+        <!-- Cuadro de Variables Remasterizado (Sliders) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-5 rounded-xl border border-slate-100">
+            <!-- Slider Tasa de Interés -->
+            <div class="flex flex-col space-y-2">
+                <div class="flex justify-between items-center">
+                    <label for="slider-j" class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        Tasa nominal (j)
+                    </label>
+                    <span id="j-val" class="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold font-mono">10.0%</span>
+                </div>
+                <input type="range" id="slider-j" min="1" max="20" step="0.5" value="10" class="w-full">
+                <div class="flex justify-between text-[10px] text-slate-400 px-1">
+                    <span>1.0%</span>
+                    <span>10.0%</span>
+                    <span>20.0%</span>
+                </div>
+            </div>
+
+            <!-- Slider Tiempo seleccionado -->
+            <div class="flex flex-col space-y-2">
+                <div class="flex justify-between items-center">
+                    <label for="slider-n" class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        Período (n)
+                    </label>
+                    <span id="n-val" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold font-mono">50</span>
+                </div>
+                <input type="range" id="slider-n" min="0" max="100" step="1" value="50" class="w-full">
+                <div class="flex justify-between text-[10px] text-slate-400 px-1">
+                    <span>n = 0</span>
+                    <span>n = 50</span>
+                    <span>n = 100</span>
+                </div>
+            </div>
+
+            <!-- Slider Valor Nominal (NUEVA VARIABLE SOLICITADA) -->
+            <div class="flex flex-col space-y-2">
+                <div class="flex justify-between items-center">
+                    <label for="slider-N-val" class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                        Valor Nominal (N)
+                    </label>
+                    <span id="N-display-val" class="px-2.5 py-1 bg-violet-50 text-violet-700 rounded-lg text-xs font-bold font-mono">$1,000</span>
+                </div>
+                <input type="range" id="slider-N-val" min="100" max="10000" step="100" value="1000" class="w-full">
+                <div class="flex justify-between text-[10px] text-slate-400 px-1">
+                    <span>$100</span>
+                    <span>$5,000</span>
+                    <span>$10,000</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas Gráfico Principal -->
+        <div class="relative bg-white rounded-xl border border-slate-200 overflow-hidden shadow-inner">
+            <div class="absolute top-2 right-3 bg-slate-800/80 backdrop-blur-sm text-[10px] text-white px-2.5 py-1 rounded-full pointer-events-none select-none">
+                💡 Arrastra el ratón/dedo sobre el gráfico para cambiar el tiempo
+            </div>
+            <canvas id="canvasRacional" class="w-full h-auto block cursor-crosshair"></canvas>
+        </div>
+
+        <!-- Tarjetas de Información con Ecuaciones Renderizadas (MathJax) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-blue-50/60 border border-blue-100 p-4 rounded-xl text-center flex flex-col justify-between">
+                <div>
+                    <span class="text-xs text-blue-600 font-semibold tracking-wide uppercase">Valor Actual (V)</span>
+                    <div id="calc-v" class="text-2xl md:text-3xl font-bold font-mono text-blue-700 mt-1">$500.00</div>
+                </div>
+                <!-- Ecuación renderizada -->
+                <div class="text-xs text-blue-500 mt-3 pt-2 border-t border-blue-100/50">
+                    <div id="math-formula-v"></div>
+                </div>
+            </div>
+
+            <div class="bg-pink-50/60 border border-pink-100 p-4 rounded-xl text-center flex flex-col justify-between">
+                <div>
+                    <span class="text-xs text-pink-600 font-semibold tracking-wide uppercase">Descuento Racional (D)</span>
+                    <div id="calc-d" class="text-2xl md:text-3xl font-bold font-mono text-pink-700 mt-1">$500.00</div>
+                </div>
+                <!-- Ecuación renderizada -->
+                <div class="text-xs text-pink-500 mt-3 pt-2 border-t border-pink-100/50">
+                    <div id="math-formula-d"></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center flex flex-col justify-between text-white">
+                <div>
+                    <span class="text-xs text-slate-400 font-semibold tracking-wide uppercase">Identidad de Cierre</span>
+                    <div class="text-xl md:text-2xl font-bold font-mono mt-2">
+                        <span id="sum-v" class="text-blue-400">500</span> + <span id="sum-d" class="text-pink-400">500</span> = <span id="sum-total" class="text-emerald-400">1000</span>
+                    </div>
+                </div>
+                <!-- Ecuación renderizada -->
+                <div class="text-xs text-slate-400 mt-3 pt-2 border-t border-slate-800">
+                    <div id="math-formula-ident"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NUEVA TABLA COMPARATIVA DE VALORES DINÁMICOS -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <div class="bg-slate-100 px-4 py-3 border-b border-slate-200">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">🔍 Tabla de Análisis y Contraste Numérico</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-4 py-3 font-semibold text-slate-600">Variable / Concepto</th>
+                            <th class="px-4 py-3 font-semibold text-slate-600 text-center">Racional Simple (Cóncavo)</th>
+                            <th class="px-4 py-3 font-semibold text-slate-600 text-center">Comercial Simple (Lineal)</th>
+                            <th class="px-4 py-3 font-semibold text-slate-600">Diagnóstico Educativo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 font-mono">
+                        <tr>
+                            <td class="px-4 py-3 font-sans font-medium text-slate-800">Valor Nominal (<span id="math-N-label"></span>)</td>
+                            <td id="tbl-n-rac" class="px-4 py-3 text-center text-slate-700">$1,000.00</td>
+                            <td id="tbl-n-com" class="px-4 py-3 text-center text-slate-700">$1,000.00</td>
+                            <td class="px-4 py-3 font-sans text-xs text-slate-500">Mismo capital de referencia al vencimiento.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 font-sans font-medium text-slate-800">Tasa de Interés (<span id="math-j-label"></span>)</td>
+                            <td id="tbl-j-rac" class="px-4 py-3 text-center text-slate-700">10.0%</td>
+                            <td id="tbl-j-com" class="px-4 py-3 text-center text-slate-700">10.0%</td>
+                            <td class="px-4 py-3 font-sans text-xs text-slate-500">Tasa de descuento simple por período.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 font-sans font-medium text-slate-800">Tiempo Evaluado (<span id="math-n-label"></span>)</td>
+                            <td id="tbl-nval-rac" class="px-4 py-3 text-center text-slate-700">50</td>
+                            <td id="tbl-nval-com" class="px-4 py-3 text-center text-slate-700">50</td>
+                            <td class="px-4 py-3 font-sans text-xs text-slate-500">Número de períodos para anticipar el capital.</td>
+                        </tr>
+                        <tr class="bg-blue-50/20">
+                            <td class="px-4 py-3 font-sans font-bold text-blue-900">Valor Actual (<span id="math-V-label"></span>)</td>
+                            <td id="tbl-v-rac" class="px-4 py-3 text-center text-blue-700 font-bold">$500.00</td>
+                            <td id="tbl-v-com" class="px-4 py-3 text-center font-bold">--</td>
+                            <td id="tbl-v-diag" class="px-4 py-3 font-sans text-xs">--</td>
+                        </tr>
+                        <tr class="bg-pink-50/20">
+                            <td class="px-4 py-3 font-sans font-bold text-pink-900">Descuento Aplicado (<span id="math-D-label"></span>)</td>
+                            <td id="tbl-d-rac" class="px-4 py-3 text-center text-pink-700 font-bold">$500.00</td>
+                            <td id="tbl-d-com" class="px-4 py-3 text-center font-bold">--</td>
+                            <td id="tbl-d-diag" class="px-4 py-3 font-sans text-xs">--</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Advertencia Didáctica y Toggle de Descuento Comercial -->
+        <div class="border-t border-slate-100 pt-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-amber-50/50 p-4 rounded-xl border border-amber-100/60">
+                <div class="space-y-1">
+                    <h4 class="text-sm font-bold text-amber-950 flex items-center gap-2">
+                        ⚠️ Comparación Didáctica Importante
+                    </h4>
+                    <p class="text-xs text-amber-800 leading-relaxed">
+                        Activa la visualización del <strong>Descuento Comercial Simple (<span id="math-com-formula"></span>)</strong>. Observa cómo, a partir de ciertos períodos, su Valor Actual cae por debajo de cero, un colapso financiero absurdo que el Descuento Racional evita por su curvatura asintótica.
+                    </p>
+                </div>
+                <div class="flex items-center min-w-[200px]">
+                    <label class="inline-flex items-center cursor-pointer select-none">
+                        <input type="checkbox" id="toggle-comercial" class="sr-only peer">
+                        <div class="relative w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                        <span class="ms-3 text-xs font-bold text-amber-950">Ver Comercial Simple</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+// Renderizado seguro de KaTeX
+function renderKaTeXSafe(formula, elementId, options = {}) {
+    const el = document.getElementById(elementId);
+    if (el) {
+        try {
+            katex.render(formula, el, options);
+        } catch(err) {
+            console.error(`Error renderizando KaTeX para #${elementId}:`, err);
+        }
+    }
+}
+
+// Inicializar KaTeX
+function initKaTeX() {
+    renderKaTeXSafe("V = \\frac{N}{1 + j \\cdot n}", 'math-formula-v', { displayMode: true });
+    renderKaTeXSafe("D = \\frac{N \\cdot j \\cdot n}{1 + j \\cdot n}", 'math-formula-d', { displayMode: true });
+    renderKaTeXSafe("V + D = N", 'math-formula-ident', { displayMode: true });
+    
+    renderKaTeXSafe("N", 'math-N-label', { displayMode: false });
+    renderKaTeXSafe("j", 'math-j-label', { displayMode: false });
+    renderKaTeXSafe("n", 'math-n-label', { displayMode: false });
+    renderKaTeXSafe("V", 'math-V-label', { displayMode: false });
+    renderKaTeXSafe("D", 'math-D-label', { displayMode: false });
+    renderKaTeXSafe("D_c = N \\cdot j \\cdot n", 'math-com-formula', { displayMode: false });
+    renderKaTeXSafe("D_c > N", 'math-dc-limit', { displayMode: false });
+}
+
+const canvas = document.getElementById('canvasRacional');
+const ctx = canvas.getContext('2d');
+const sliderJ = document.getElementById('slider-j');
+const sliderN = document.getElementById('slider-n');
+const sliderN_nominal = document.getElementById('slider-N-val');
+const toggleComercial = document.getElementById('toggle-comercial');
+
+// Configuración de visualización responsive
+const logicalWidth = 800;
+const logicalHeight = 450;
+let scaleRatio = 1;
+
+function resizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    let width = canvas.clientWidth;
+    if (width <= 0 && canvas.parentElement) {
+        width = canvas.parentElement.clientWidth;
+    }
+    if (width <= 0) {
+        width = 600;
+    }
+    
+    canvas.width = width * dpr;
+    canvas.height = (width * (logicalHeight / logicalWidth)) * dpr;
+    
+    ctx.scale(dpr, dpr);
+    scaleRatio = width / logicalWidth;
+    
+    draw();
+}
+
+// Formateador de moneda para legibilidad
+function formatCurrency(val) {
+    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(val);
+}
+
+function draw() {
+    const N = parseFloat(sliderN_nominal.value);
+    const j = parseFloat(sliderJ.value) / 100;
+    const n_selected = parseFloat(sliderN.value);
+    const showComercial = toggleComercial.checked;
+    
+    // Sincronizar textos superiores de control
+    document.getElementById('j-val').innerText = (j * 100).toFixed(1) + '%';
+    document.getElementById('n-val').innerText = n_selected;
+    document.getElementById('N-display-val').innerText = formatCurrency(N);
+
+    // Dimensiones de dibujo
+    const margin = { top: 40, right: 40, bottom: 50, left: 75 };
+    const w = logicalWidth - margin.left - margin.right;
+    const h = logicalHeight - margin.top - margin.bottom;
+
+    // Limpiar lienzo
+    ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+
+    // Dibujar rejilla de fondo (Grid lines)
+    ctx.strokeStyle = '#f1f5f9';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 10; i++) {
+        // Líneas horizontales (valores del eje Y escalados por N)
+        const yVal = i / 10;
+        const py = h + margin.top - (yVal * h);
+        ctx.beginPath();
+        ctx.moveTo(margin.left, py);
+        ctx.lineTo(w + margin.left, py);
+        ctx.stroke();
+
+        // Líneas verticales (valores del eje X de 0 a 100)
+        const xVal = i * 10;
+        const px = margin.left + (xVal / 100) * w;
+        ctx.beginPath();
+        ctx.moveTo(px, margin.top);
+        ctx.lineTo(px, h + margin.top);
+        ctx.stroke();
+    }
+
+    // Línea de referencia techo Y = N (Capital Nominal)
+    ctx.beginPath();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1.5;
+    const yN = h + margin.top - (1.0 * h);
+    ctx.moveTo(margin.left, yN);
+    ctx.lineTo(w + margin.left, yN);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Etiqueta del Techo Nominal N
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 11px Inter';
+    ctx.fillText(`N = ${formatCurrency(N)} (Valor Nominal)`, margin.left + 10, yN - 6);
+
+    // Ejes cartesianos principales
+    ctx.beginPath();
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 2;
+    ctx.moveTo(margin.left, margin.top - 10);
+    ctx.lineTo(margin.left, h + margin.top);
+    ctx.lineTo(w + margin.left + 10, h + margin.top);
+    ctx.stroke();
+
+    // 1. Curva VA Racional (Azul): V = N / (1 + j * n)
+    ctx.beginPath();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#3b82f6';
+    for (let x = 0; x <= 100; x++) {
+        const v = N / (1 + j * x);
+        const px = margin.left + (x / 100) * w;
+        const py = (h + margin.top) - ((v / N) * h);
+        if (x === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // 2. Curva Descuento Racional (Rosa): D = (N * j * n) / (1 + j * n)
+    ctx.beginPath();
+    ctx.lineWidth = 3;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = '#ec4899';
+    for (let x = 0; x <= 100; x++) {
+        const d = (N * j * x) / (1 + j * x);
+        const px = margin.left + (x / 100) * w;
+        const py = (h + margin.top) - ((d / N) * h);
+        if (x === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]); // Resetear
+
+    // Dibujar curvas Comerciales si están habilitadas
+    if (showComercial) {
+        // Valor Actual Comercial: Vc = N * (1 - j*n)
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#d97706'; // Ámbar
+        for (let x = 0; x <= 100; x++) {
+            const vc = N * (1 - j * x);
+            const px = margin.left + (x / 100) * w;
+            const py = (h + margin.top) - ((vc / N) * h);
+            // Dibujar con límites de seguridad visual en el Canvas
+            if (py >= margin.top - 20 && py <= h + margin.top + 50) {
+                if (x === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+        }
+        ctx.stroke();
+
+        // Descuento Comercial: Dc = N * j * n
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = '#b91c1c'; // Rojo
+        for (let x = 0; x <= 100; x++) {
+            const dc = N * j * x;
+            const px = margin.left + (x / 100) * w;
+            const py = (h + margin.top) - ((dc / N) * h);
+            if (py >= margin.top - 20 && py <= h + margin.top + 50) {
+                if (x === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    // Puntos Seleccionados Activos
+    const v_sel = N / (1 + j * n_selected);
+    const d_sel = (N * j * n_selected) / (1 + j * n_selected);
+    
+    const px_sel = margin.left + (n_selected / 100) * w;
+    const py_v = (h + margin.top) - ((v_sel / N) * h);
+    const py_d = (h + margin.top) - ((d_sel / N) * h);
+
+    // Línea vertical que marca el tiempo actual (n_selected)
+    ctx.beginPath();
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 2]);
+    ctx.moveTo(px_sel, margin.top);
+    ctx.lineTo(px_sel, h + margin.top);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Nodo VA Racional
+    ctx.beginPath();
+    ctx.fillStyle = '#3b82f6';
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.arc(px_sel, py_v, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Nodo Descuento Racional
+    ctx.beginPath();
+    ctx.fillStyle = '#ec4899';
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.arc(px_sel, py_d, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Dibujar nodos comerciales seleccionados
+    let vc_sel = N * (1 - j * n_selected);
+    let dc_sel = N * j * n_selected;
+
+    if (showComercial) {
+        const py_vc = (h + margin.top) - ((vc_sel / N) * h);
+        const py_dc = (h + margin.top) - ((dc_sel / N) * h);
+
+        if (py_vc >= margin.top - 20 && py_vc <= h + margin.top + 50) {
+            ctx.beginPath();
+            ctx.fillStyle = '#d97706';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.arc(px_sel, py_vc, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+        if (py_dc >= margin.top - 20 && py_dc <= h + margin.top + 50) {
+            ctx.beginPath();
+            ctx.fillStyle = '#b91c1c';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.arc(px_sel, py_dc, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+    }
+
+    // TEXTOS Y EJES
+    ctx.fillStyle = '#475569';
+    ctx.font = '600 12px Inter';
+    
+    // Eje X - Tiempo
+    ctx.fillText('Tiempo (Períodos n)', margin.left + w / 2 - 50, h + margin.top + 35);
+    
+    // Eje Y - Valor
+    ctx.save();
+    ctx.translate(margin.left - 60, margin.top + h / 2 + 30);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Valor Financiero ($)', 0, 0);
+    ctx.restore();
+
+    // Valores en extremos del eje X
+    ctx.font = '500 10px Inter';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('0', margin.left - 3, h + margin.top + 15);
+    ctx.fillText('50', margin.left + w/2 - 8, h + margin.top + 15);
+    ctx.fillText('100', margin.left + w - 10, h + margin.top + 15);
+
+    // Valores dinámicos en el eje Y
+    ctx.fillText('$0.00', margin.left - 45, h + margin.top + 4);
+    ctx.fillText(formatCurrency(N * 0.5), margin.left - 55, h + margin.top - (0.5 * h) + 4);
+    ctx.fillText(formatCurrency(N), margin.left - 55, h + margin.top - (1.0 * h) + 4);
+
+    // Leyendas superiores dentro del Canvas
+    ctx.font = '600 11px Inter';
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillText('Valor Actual Racional (V)', margin.left + 20, margin.top + 20);
+
+    ctx.fillStyle = '#ec4899';
+    ctx.fillText('Descuento Racional (D)', margin.left + 20, margin.top + 38);
+
+    if (showComercial) {
+        ctx.fillStyle = '#d97706';
+        ctx.fillText('Valor Actual Comercial (Vc)', margin.left + 240, margin.top + 20);
+        ctx.fillStyle = '#b91c1c';
+        ctx.fillText('Descuento Comercial (Dc)', margin.left + 240, margin.top + 38);
+    }
+
+    // Actualizar paneles rápidos informativos
+    document.getElementById('calc-v').innerText = formatCurrency(v_sel);
+    document.getElementById('calc-d').innerText = formatCurrency(d_sel);
+    document.getElementById('sum-v').innerText = formatCurrency(v_sel);
+    document.getElementById('sum-d').innerText = formatCurrency(d_sel);
+    document.getElementById('sum-total').innerText = formatCurrency(N);
+
+    // ACTUALIZAR TABLA DE VALORES COMPARATIVA (NUEVA FUNCIÓN REQUERIDA)
+    document.getElementById('tbl-n-rac').innerText = formatCurrency(N);
+    document.getElementById('tbl-n-com').innerText = formatCurrency(N);
+    document.getElementById('tbl-j-rac').innerText = (j * 100).toFixed(1) + '%';
+    document.getElementById('tbl-j-com').innerText = (j * 100).toFixed(1) + '%';
+    document.getElementById('tbl-nval-rac').innerText = n_selected;
+    document.getElementById('tbl-nval-com').innerText = n_selected;
+
+    // Fila Valor Actual
+    document.getElementById('tbl-v-rac').innerText = formatCurrency(v_sel);
+    const tblVCom = document.getElementById('tbl-v-com');
+    const tblVDiag = document.getElementById('tbl-v-diag');
+    
+    if (showComercial) {
+        tblVCom.innerText = formatCurrency(vc_sel);
+        if (vc_sel < 0) {
+            tblVCom.className = "px-4 py-3 text-center font-bold text-red-600 bg-red-100 rounded animate-pulse";
+            tblVDiag.innerHTML = "🚨 <strong>Absurdo Matemático:</strong> El Valor Actual Comercial es negativo. El deudor recibiría dinero por endeudarse.";
+            tblVDiag.className = "px-4 py-3 font-sans text-xs text-red-700 bg-red-50 font-medium";
+        } else {
+            tblVCom.className = "px-4 py-3 text-center font-bold text-amber-600";
+            tblVDiag.innerHTML = "Decrece linealmente más rápido y de manera no sostenible.";
+            tblVDiag.className = "px-4 py-3 font-sans text-xs text-slate-500";
+        }
+    } else {
+        tblVCom.innerText = "Activar Comercial";
+        tblVCom.className = "px-4 py-3 text-center text-slate-400 italic font-normal";
+        tblVDiag.innerText = "Activa el interruptor inferior para contrastar.";
+        tblVDiag.className = "px-4 py-3 font-sans text-xs text-slate-400 italic";
+    }
+
+    // Fila Descuento Aplicado
+    document.getElementById('tbl-d-rac').innerText = formatCurrency(d_sel);
+    const tblDCom = document.getElementById('tbl-d-com');
+    const tblDDiag = document.getElementById('tbl-d-diag');
+
+    if (showComercial) {
+        tblDCom.innerText = formatCurrency(dc_sel);
+        if (dc_sel > N) {
+            tblDCom.className = "px-4 py-3 text-center font-bold text-red-600 bg-red-100 rounded animate-pulse";
+            tblDDiag.innerHTML = "🚨 <strong>Incoherencia:</strong> El descuento comercial supera el valor nominal del documento (<span id='math-dc-limit'></span>).";
+            tblDDiag.className = "px-4 py-3 font-sans text-xs text-red-700 bg-red-50 font-medium";
+        } else {
+            tblDCom.className = "px-4 py-3 text-center font-bold text-red-700";
+            tblDDiag.innerHTML = "Crece linealmente sin tope, superando la realidad financiera.";
+            tblDDiag.className = "px-4 py-3 font-sans text-xs text-slate-500";
+        }
+    } else {
+        tblDCom.innerText = "Activar Comercial";
+        tblDCom.className = "px-4 py-3 text-center text-slate-400 italic font-normal";
+        tblDDiag.innerText = "Activa el interruptor inferior para contrastar.";
+        tblDDiag.className = "px-4 py-3 font-sans text-xs text-slate-400 italic";
+    }
+}
+
+// Interacción directa en el Canvas (Arrastre y Táctil)
+function handlePointerInteraction(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const xRelative = clientX - rect.left;
+    const xPercentage = xRelative / rect.width;
+    
+    const marginRatioLeft = 75 / logicalWidth;
+    const drawWidthRatio = (logicalWidth - 115) / logicalWidth;
+    
+    const clickXLogical = (xPercentage - marginRatioLeft) / drawWidthRatio;
+    let n_calculated = Math.round(clickXLogical * 100);
+    
+    n_calculated = Math.max(0, Math.min(100, n_calculated));
+    
+    sliderN.value = n_calculated;
+    draw();
+}
+
+let isDrawing = false;
+canvas.addEventListener('mousedown', (e) => {
+    isDrawing = true;
+    handlePointerInteraction(e);
+});
+window.addEventListener('mousemove', (e) => {
+    if (isDrawing) handlePointerInteraction(e);
+});
+window.addEventListener('mouseup', () => {
+    isDrawing = false;
+});
+
+canvas.addEventListener('touchstart', (e) => {
+    handlePointerInteraction(e);
+}, { passive: true });
+canvas.addEventListener('touchmove', (e) => {
+    handlePointerInteraction(e);
+}, { passive: true });
+
+// Event Listeners para los controles interactivos
+sliderJ.addEventListener('input', draw);
+sliderN.addEventListener('input', draw);
+sliderN_nominal.addEventListener('input', draw);
+toggleComercial.addEventListener('change', draw);
+window.addEventListener('resize', resizeCanvas);
+
+// Usar ResizeObserver para garantizar que se dibuje cuando cambie el tamaño del layout
+if (window.ResizeObserver && canvas.parentElement) {
+    const ro = new ResizeObserver(() => {
+        resizeCanvas();
+    });
+    ro.observe(canvas.parentElement);
+}
+
+// Inicializar el canvas en la primera carga
+window.onload = function() { resizeCanvas(); initKaTeX(); };
+</script>
+
+</body>
+</html>

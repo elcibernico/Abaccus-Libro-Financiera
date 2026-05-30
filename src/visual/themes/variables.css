@@ -1,0 +1,111 @@
+/* variables.css - CSS Custom Properties para el Monolito Modular */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Paleta Light Mode */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-title: 'Outfit', sans-serif;
+
+  --background: 210 20% 98%;      /* #f8f9fa */
+  --foreground: 224 71.4% 4.1%;
+  
+  --card: 0 0% 100%;
+  --card-foreground: 224 71.4% 4.1%;
+  
+  --popover: 0 0% 100%;
+  --popover-foreground: 224 71.4% 4.1%;
+  
+  --primary: 142.1 76.2% 36.3%;   /* Verde Abaccus Premium HSL */
+  --primary-foreground: 355.7 100% 97.3%;
+  
+  --secondary: 220 14.3% 95.9%;
+  --secondary-foreground: 220.9 39.3% 11%;
+  
+  --muted: 220 14.3% 95.9%;
+  --muted-foreground: 220 8.9% 46.1%;
+  
+  --accent: 220 14.3% 95.9%;
+  --accent-foreground: 220.9 39.3% 11%;
+  
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 20% 98%;
+
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 142.1 76.2% 36.3%;
+
+  --radius: 0.75rem;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.dark {
+  /* Paleta Dark Mode (Por Defecto) */
+  --background: 240 10% 3.9%;     /* Negro carbón neutro premium (#09090b) */
+  --foreground: 240 5% 96%;
+  
+  --card: 240 10% 6%;             /* Gris oscuro neutro (#0f0f11) */
+  --card-foreground: 240 5% 96%;
+  
+  --popover: 240 10% 6%;
+  --popover-foreground: 240 5% 96%;
+  
+  --primary: 142.1 70.6% 45.3%;   /* Verde Esmeralda Abaccus vibrante */
+  --primary-foreground: 144.9 80.4% 10%;
+  
+  --secondary: 240 3.7% 15.9%;    /* Zinc-800 (#27272a) */
+  --secondary-foreground: 240 5% 96%;
+  
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 240 5% 96%;
+  
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 240 5% 96%;
+  
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 142.1 70.6% 45.3%;
+}
+
+/* Estilos Globales Básicos */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Scrollbar Personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--secondary));
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+}

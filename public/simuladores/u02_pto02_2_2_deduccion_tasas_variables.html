@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es" style="color-scheme: light;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cascada de Descuentos Sucesivos y Tasas Variables</title>
+    <!-- Tailwind CSS para el diseño responsivo de alta fidelidad -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para iconos limpios y modernos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        html {
+            color-scheme: light !important;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+            transition: background .15s ease-in-out;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 8px rgba(79, 70, 229, 0.4);
+        }
+        .custom-slider::-webkit-slider-thumb:hover {
+            background: #4338ca;
+            transform: scale(1.15);
+        }
+        /* Personalización de scrollbar para modo claro */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <!-- Header principal -->
+    <header class="border-b border-slate-200 bg-white/90 backdrop-blur sticky top-0 z-50 px-6 py-4 shadow-sm">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100">
+                    <i class="fa-solid fa-chart-line text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-slate-800">Laboratorio de Matemática Financiera</h1>
+                    <p class="text-xs text-slate-600">Erosión del Valor Nominal por Descuentos Sucesivos Compuestos</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="px-3 py-1 bg-indigo-50/50 border border-indigo-100 text-indigo-700 text-xs rounded-full font-medium">
+                    <i class="fa-solid fa-graduation-cap text-indigo-500 mr-1.5"></i> Módulo Didáctico Activo
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor central ordenado secuencialmente de forma vertical -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-6 md:px-6 flex flex-col gap-6">
+        
+        <!-- 1º Variables de Entrada -->
+        <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h2 class="text-md font-bold text-slate-800 mb-5 flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-indigo-500"></i> 1. Variables de Entrada
+            </h2>
+
+            <!-- Control de Valor Nominal (N) - Fila superior -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-1.5">
+                    <label for="nominal-value" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Valor Nominal Inicial (N)</label>
+                    <span id="nominal-display" class="text-lg font-bold text-indigo-600">$10,000</span>
+                </div>
+                <input type="range" id="nominal-value" min="1000" max="20000" step="500" value="10000" 
+                       class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer custom-slider accent-indigo-600">
+                <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                    <span>$1,000</span>
+                    <span>$20,000</span>
+                </div>
+            </div>
+
+            <div class="h-px bg-slate-200 my-5"></div>
+
+            <!-- Sliders de tasas d1, d2, d3 alineados en una sola fila (adaptable a columnas en móvil) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- d1 -->
+                <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-200">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-emerald-700 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Tasa d₁ (Período 1)
+                        </label>
+                        <span id="d1-display" class="text-sm font-bold text-emerald-600">10.0%</span>
+                    </div>
+                    <input type="range" id="d1-rate" min="0" max="15" step="0.5" value="10" 
+                           class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer custom-slider accent-emerald-500">
+                </div>
+
+                <!-- d2 -->
+                <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-200">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Tasa d₂ (Período 2)
+                        </label>
+                        <span id="d2-display" class="text-sm font-bold text-amber-600">12.0%</span>
+                    </div>
+                    <input type="range" id="d2-rate" min="0" max="15" step="0.5" value="12" 
+                           class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer custom-slider accent-amber-500">
+                </div>
+
+                <!-- d3 -->
+                <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-200">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-sky-700 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span> Tasa d₃ (Período 3)
+                        </label>
+                        <span id="d3-display" class="text-sm font-bold text-sky-600">8.0%</span>
+                    </div>
+                    <input type="range" id="d3-rate" min="0" max="15" step="0.5" value="8" 
+                           class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer custom-slider accent-sky-500">
+                </div>
+            </div>
+        </section>
+
+        <!-- 2º Cascada de Descuento Sucesivo -->
+        <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col min-h-[460px]">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-6 border-b border-slate-200 pb-4">
+                <div>
+                    <h2 class="text-md font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-water text-indigo-500"></i> 2. Cascada de Descuento Sucesivo
+                    </h2>
+                    <p class="text-xs text-slate-600">Modifica los sliders de arriba para ver el desplome progresivo del capital remanente.</p>
+                </div>
+                
+                <!-- Leyenda interactiva -->
+                <div class="flex gap-4 text-xs">
+                    <span class="flex items-center gap-1.5 text-slate-700">
+                        <span class="w-3 h-3 bg-indigo-500 rounded-sm"></span> Capital Activo
+                    </span>
+                    <span class="flex items-center gap-1.5 text-slate-700">
+                        <span class="w-3 h-3 bg-rose-500/20 border border-rose-500/80 rounded-sm"></span> Quita Período
+                    </span>
+                </div>
+            </div>
+
+            <!-- Gráfico de Cascada SVG -->
+            <div class="flex-grow w-full flex items-center justify-center min-h-[280px]" id="svg-container">
+                <svg id="waterfall-svg" viewBox="0 0 800 340" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Líneas de fondo del gráfico -->
+                    <line x1="80" y1="40" x2="740" y2="40" stroke="#e2e8f0" stroke-dasharray="4 4" />
+                    <line x1="80" y1="115" x2="740" y2="115" stroke="#e2e8f0" stroke-dasharray="4 4" />
+                    <line x1="80" y1="190" x2="740" y2="190" stroke="#e2e8f0" stroke-dasharray="4 4" />
+                    <line x1="80" y1="265" x2="740" y2="265" stroke="#e2e8f0" stroke-dasharray="4 4" />
+                    
+                    <!-- Las barras dinámicas se renderizan mediante JavaScript aquí -->
+                    <g id="bars-group"></g>
+                    <!-- Las líneas de conexión se renderizan aquí -->
+                    <g id="connectors-group"></g>
+                </svg>
+            </div>
+        </section>
+
+        <!-- 3º Cuadro de Resultados (3 columnas x 2 filas) -->
+        <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h2 class="text-md font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-square-poll-vertical text-indigo-500"></i> 3. Cuadro de Resultados Analíticos
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                <!-- Columna 1: Tasa Equivalente -->
+                <div class="flex flex-col justify-center p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Tasa Global Equivalente (d<sub>eq</sub>)</span>
+                    <span id="equiv-rate-display" class="text-2xl font-extrabold text-slate-800">0.0%</span>
+                </div>
+                <!-- Columna 2: Quita Total -->
+                <div class="flex flex-col justify-center p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Quita Total Acumulada</span>
+                    <span id="total-discount-amount" class="text-2xl font-extrabold text-rose-600">$0.00</span>
+                </div>
+                <!-- Columna 3: Valor Neto -->
+                <div class="flex flex-col justify-center p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Valor Neto Final (V₃)</span>
+                    <span id="final-value-display" class="text-2xl font-extrabold text-emerald-600">$0.00</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4º Orden de Aplicación -->
+        <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-md font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-arrows-spin text-indigo-500"></i> 4. Orden de Aplicación Secuencial
+                    </h2>
+                    <span class="text-[10px] bg-indigo-50 px-2 py-0.5 rounded text-indigo-600 font-bold uppercase tracking-wider">Interactivo</span>
+                </div>
+                <p class="text-xs text-slate-600 max-w-xl leading-relaxed">
+                    Cambia el orden para demostrar empíricamente al alumno que la secuencia de las deducciones no altera el resultado final obtenido.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="order-container">
+                <button onclick="setOrder([1, 2, 3])" id="btn-123" class="order-btn py-3 px-3 text-xs font-bold rounded-lg border border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100/50 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-chevron-right text-[10px] opacity-70"></i> Secuencia: d₁ → d₂ → d₃
+                </button>
+                <button onclick="setOrder([2, 1, 3])" id="btn-213" class="order-btn py-3 px-3 text-xs font-bold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-chevron-right text-[10px] opacity-70"></i> Secuencia: d₂ → d₁ → d₃
+                </button>
+                <button onclick="setOrder([3, 2, 1])" id="btn-321" class="order-btn py-3 px-3 text-xs font-bold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-chevron-right text-[10px] opacity-70"></i> Secuencia: d₃ → d₂ → d₁
+                </button>
+            </div>
+        </section>
+
+        <!-- 5º Marcos Didácticos y Teóricos finales -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Tarjeta Didáctica: La ley de Bases Decrecientes -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-calculator text-emerald-600"></i> ¿Por qué la base se reduce?
+                </h3>
+                <p class="text-xs text-slate-600 leading-relaxed mb-3">
+                    En descuentos sucesivos, cada tasa <strong class="text-slate-800">no actúa sobre el Nominal original (N)</strong>, sino sobre el saldo remanente que dejó el período previo. 
+                </p>
+                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
+                    <div class="flex items-center justify-between text-xs border-b border-slate-200 pb-1.5">
+                        <span class="text-slate-500">Base Aplicación 1ª Quita:</span>
+                        <span id="base1-txt" class="font-semibold text-slate-800">$10,000.00</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs border-b border-slate-200 pb-1.5">
+                        <span class="text-slate-500">Base Aplicación 2ª Quita:</span>
+                        <span id="base2-txt" class="font-semibold text-slate-800">$9,000.00</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500">Base Aplicación 3ª Quita:</span>
+                        <span id="base3-txt" class="font-semibold text-slate-800">$7,920.00</span>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-3 italic">
+                    A medida que avanzamos, la misma tasa porcentual produce un descuento monetario menor porque su base imponible de cálculo disminuye de forma acumulada.
+                </p>
+            </div>
+
+            <!-- Tarjeta Didáctica: Propiedad Conmutativa -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-shapes text-indigo-600"></i> Conmutatividad en el Descuento
+                </h3>
+                <p class="text-xs text-slate-600 leading-relaxed mb-3">
+                    El teorema fundamental del descuento compuesto establece que el orden secuencial en el cual sufres las deducciones no tiene impacto alguno en el resultado neto final:
+                </p>
+                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-center font-mono text-xs text-indigo-900 space-y-1">
+                    <div id="formula-txt" class="text-sm font-bold text-slate-800">V₃ = N × (1 - d₁) × (1 - d₂) × (1 - d₃)</div>
+                    <div id="numeric-formula-txt" class="text-[11px] text-slate-500"></div>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-3 leading-snug">
+                    <strong class="text-slate-800">Lección para el alumno:</strong> Aunque cambies la ordenación de las tasas, el producto final <span class="text-emerald-600 font-bold" id="commu-final-val">$0</span> es idéntico, demostrando la conmutatividad del factor financiero multiplicativo.
+                </p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer académico -->
+    <footer class="mt-auto border-t border-slate-200 bg-white py-4 px-6 text-center text-xs text-slate-500">
+        Diseñado con enfoque pedagógico interactivo para simulación de Matemáticas Financieras e Ingeniería Económica.
+    </footer>
+
+    <script>
+        // Variables globales de estado del simulador
+        let N = 10000;
+        let d1 = 10; // porcentajes
+        let d2 = 12;
+        let d3 = 8;
+        
+        // El orden de aplicación actual por defecto (d1 luego d2 luego d3)
+        let currentOrder = [1, 2, 3];
+
+        // Elementos DOM
+        const sliderNominal = document.getElementById('nominal-value');
+        const displayNominal = document.getElementById('nominal-display');
+
+        const sliderD1 = document.getElementById('d1-rate');
+        const displayD1 = document.getElementById('d1-display');
+
+        const sliderD2 = document.getElementById('d2-rate');
+        const displayD2 = document.getElementById('d2-display');
+
+        const sliderD3 = document.getElementById('d3-rate');
+        const displayD3 = document.getElementById('d3-display');
+
+        const displayEquiv = document.getElementById('equiv-rate-display');
+        const displayTotalDiscount = document.getElementById('total-discount-amount');
+        const displayFinalValue = document.getElementById('final-value-display');
+
+        const base1Txt = document.getElementById('base1-txt');
+        const base2Txt = document.getElementById('base2-txt');
+        const base3Txt = document.getElementById('base3-txt');
+
+        const formulaTxt = document.getElementById('formula-txt');
+        const numericFormulaTxt = document.getElementById('numeric-formula-txt');
+        const commuFinalVal = document.getElementById('commu-final-val');
+
+        // Formateador de moneda de forma legible
+        function formatCurrency(value) {
+            return '$ ' + value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Configuración de la secuencia del orden mediante botones
+        function setOrder(newOrder) {
+            currentOrder = newOrder;
+            
+            // Actualizar estilo visual de los botones de orden
+            document.querySelectorAll('.order-btn').forEach(btn => {
+                btn.classList.remove('border-indigo-300', 'bg-indigo-50', 'text-indigo-700');
+                btn.classList.add('border-slate-200', 'bg-slate-50', 'text-slate-600');
+            });
+
+            const btnId = `btn-${newOrder.join('')}`;
+            const activeBtn = document.getElementById(btnId);
+            if (activeBtn) {
+                activeBtn.classList.remove('border-slate-200', 'bg-slate-50', 'text-slate-600');
+                activeBtn.classList.add('border-indigo-300', 'bg-indigo-50', 'text-indigo-700');
+            }
+
+            calculateAndRender();
+        }
+
+        function calculateAndRender() {
+            // Lectura de inputs actualizados
+            N = parseFloat(sliderNominal.value);
+            d1 = parseFloat(sliderD1.value) / 100;
+            d2 = parseFloat(sliderD2.value) / 100;
+            d3 = parseFloat(sliderD3.value) / 100;
+
+            // Mapear tasas de descuento según el orden de aplicación elegido
+            const ratesMap = { 1: d1, 2: d2, 3: d3 };
+            const ratesColors = { 
+                1: { border: '#059669', fill: 'rgba(5, 150, 105, 0.1)', label: 'd₁' }, 
+                2: { border: '#d97706', fill: 'rgba(217, 119, 6, 0.1)', label: 'd₂' }, 
+                3: { border: '#0284c7', fill: 'rgba(2, 132, 199, 0.1)', label: 'd₃' } 
+            };
+
+            const appliedRates = currentOrder.map(index => ({
+                id: index,
+                val: ratesMap[index],
+                color: ratesColors[index]
+            }));
+
+            // Cálculo paso a paso de bases y quitas
+            let V0 = N;
+            
+            // Quita 1
+            let base1 = V0;
+            let q1 = base1 * appliedRates[0].val;
+            let V1 = base1 - q1;
+
+            // Quita 2
+            let base2 = V1;
+            let q2 = base2 * appliedRates[1].val;
+            let V2 = base2 - q2;
+
+            // Quita 3
+            let base3 = V2;
+            let q3 = base3 * appliedRates[2].val;
+            let V3 = base3 - q3;
+
+            // Tasa equivalente del descuento acumulado: d_eq = 1 - (1-d1)(1-d2)(1-d3)
+            let d_eq = 1 - (1 - d1) * (1 - d2) * (1 - d3);
+            let quitaTotal = N - V3;
+
+            // Actualización de Displays Numéricos en panel lateral e inferior
+            displayNominal.innerText = formatCurrency(N);
+            displayD1.innerText = (d1 * 100).toFixed(1) + "%";
+            displayD2.innerText = (d2 * 100).toFixed(1) + "%";
+            displayD3.innerText = (d3 * 100).toFixed(1) + "%";
+
+            displayEquiv.innerText = (d_eq * 100).toFixed(2) + "%";
+            displayTotalDiscount.innerText = formatCurrency(quitaTotal);
+            displayFinalValue.innerText = formatCurrency(V3);
+            commuFinalVal.innerText = formatCurrency(V3);
+
+            // Actualizar bases en la sección didáctica
+            let ratesNames = currentOrder.map(i => `d<sub>${i}</sub>`);
+            base1Txt.innerHTML = `${formatCurrency(base1)} <span class="text-[10px] text-slate-500">(Sobre N se aplica ${ratesNames[0]})</span>`;
+            base2Txt.innerHTML = `${formatCurrency(base2)} <span class="text-[10px] text-slate-500">(Sobre V₁ se aplica ${ratesNames[1]})</span>`;
+            base3Txt.innerHTML = `${formatCurrency(base3)} <span class="text-[10px] text-slate-500">(Sobre V₂ se aplica ${ratesNames[2]})</span>`;
+
+            // Fórmulas matemáticas detalladas
+            formulaTxt.innerHTML = `V₃ = N × (1 - ${ratesNames[0]}) × (1 - ${ratesNames[1]}) × (1 - ${ratesNames[2]})`;
+            numericFormulaTxt.innerHTML = `${formatCurrency(N)} × ${(1 - appliedRates[0].val).toFixed(2)} × ${(1 - appliedRates[1].val).toFixed(2)} × ${(1 - appliedRates[2].val).toFixed(2)} = <strong>${formatCurrency(V3)}</strong>`;
+
+            renderWaterfallSVG(V0, V1, V2, V3, q1, q2, q3, appliedRates);
+        }
+
+        // Renderizado del Gráfico de Cascada SVG adaptable
+        function renderWaterfallSVG(V0, V1, V2, V3, q1, q2, q3, appliedRates) {
+            const barsGroup = document.getElementById('bars-group');
+            const connectorsGroup = document.getElementById('connectors-group');
+            
+            // Limpieza previa
+            barsGroup.innerHTML = '';
+            connectorsGroup.innerHTML = '';
+
+            // Parámetros de escalamiento del SVG (Ancho máximo 800, Alto 340)
+            const paddingLeft = 100;
+            const barWidth = 90;
+            const barGap = 65;
+            const chartHeight = 220; // Rango utilizable de altura
+            const yOffset = 45;     // Desplazamiento desde arriba
+
+            // El valor máximo es siempre N (V0)
+            const maxVal = N;
+            
+            // Función transformadora para mapear montos de capital a píxeles Y del SVG (invertido)
+            function valToY(value) {
+                const ratio = value / maxVal;
+                return yOffset + chartHeight * (1 - ratio);
+            }
+
+            // Función transformadora para calcular la altura de las barras según su valor nominal
+            function valToHeight(value) {
+                return chartHeight * (value / maxVal);
+            }
+
+            // Definición de las 4 columnas principales
+            const cols = [
+                { x: paddingLeft + 0 * (barWidth + barGap), label: 'V₀ (Nominal)', type: 'solid', val: V0, topY: valToY(V0), height: valToHeight(V0), color: '#6366f1' },
+                { x: paddingLeft + 1 * (barWidth + barGap), label: 'V₁ Remanente', type: 'step', val: V1, reduction: q1, prevVal: V0, topY: valToY(V1), height: valToHeight(V1), reductionColor: appliedRates[0].color },
+                { x: paddingLeft + 2 * (barWidth + barGap), label: 'V₂ Remanente', type: 'step', val: V2, reduction: q2, prevVal: V1, topY: valToY(V2), height: valToHeight(V2), reductionColor: appliedRates[1].color },
+                { x: paddingLeft + 3 * (barWidth + barGap), label: 'V₃ Neto Final', type: 'final', val: V3, reduction: q3, prevVal: V2, topY: valToY(V3), height: valToHeight(V3), reductionColor: appliedRates[2].color }
+            ];
+
+            // Renderizar conectores lógicos entre barras del waterfall
+            for (let i = 0; i < cols.length - 1; i++) {
+                const current = cols[i];
+                const next = cols[i+1];
+                
+                // Línea punteada que sale de la parte superior del valor remanente actual hacia el inicio de la quita siguiente
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', current.x + barWidth);
+                line.setAttribute('y1', current.topY);
+                line.setAttribute('x2', next.x);
+                line.setAttribute('y2', current.topY); // Mantiene nivel del capital previo
+                line.setAttribute('stroke', '#94a3b8');
+                line.setAttribute('stroke-width', '2');
+                line.setAttribute('stroke-dasharray', '3 3');
+                connectorsGroup.appendChild(line);
+            }
+
+            // Renderizar barras y textos informativos
+            cols.forEach((col, idx) => {
+                
+                if (col.type === 'solid') {
+                    // Barra base Nominal inicial
+                    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    rect.setAttribute('x', col.x);
+                    rect.setAttribute('y', col.topY);
+                    rect.setAttribute('width', barWidth);
+                    rect.setAttribute('height', col.height);
+                    rect.setAttribute('fill', 'url(#indigoGradient)');
+                    rect.setAttribute('rx', '8');
+                    barsGroup.appendChild(rect);
+
+                    // Etiqueta del Valor Nominal
+                    const valText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    valText.setAttribute('x', col.x + barWidth / 2);
+                    valText.setAttribute('y', col.topY - 10);
+                    valText.setAttribute('fill', '#1e293b');
+                    valText.setAttribute('font-weight', 'bold');
+                    valText.setAttribute('font-size', '12');
+                    valText.setAttribute('text-anchor', 'middle');
+                    valText.textContent = formatCurrency(col.val);
+                    barsGroup.appendChild(valText);
+
+                } else {
+                    // renderizar de forma escalonada (waterfall quita + remanente)
+                    
+                    // 1. Bloque translúcido de la quita (cayendo del nivel anterior)
+                    const reductionY = valToY(col.prevVal);
+                    const reductionH = valToHeight(col.reduction);
+
+                    const redRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    redRect.setAttribute('x', col.x);
+                    redRect.setAttribute('y', reductionY);
+                    redRect.setAttribute('width', barWidth);
+                    redRect.setAttribute('height', reductionH);
+                    redRect.setAttribute('fill', col.reductionColor.fill);
+                    redRect.setAttribute('stroke', col.reductionColor.border);
+                    redRect.setAttribute('stroke-width', '1.5');
+                    redRect.setAttribute('stroke-dasharray', '4 2');
+                    redRect.setAttribute('rx', '4');
+                    barsGroup.appendChild(redRect);
+
+                    // Porcentaje y monto de la quita
+                    const redTextVal = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    redTextVal.setAttribute('x', col.x + barWidth / 2);
+                    redTextVal.setAttribute('y', reductionY + reductionH / 2 + 4);
+                    redTextVal.setAttribute('fill', '#e11d48');
+                    redTextVal.setAttribute('font-weight', 'bold');
+                    redTextVal.setAttribute('font-size', '10');
+                    redTextVal.setAttribute('text-anchor', 'middle');
+                    redTextVal.textContent = `-${formatCurrency(col.reduction)}`;
+                    barsGroup.appendChild(redTextVal);
+
+                    // Identificador de tasa usada (ej. d1 = 10%)
+                    const rateText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    rateText.setAttribute('x', col.x + barWidth / 2);
+                    rateText.setAttribute('y', reductionY - 8);
+                    rateText.setAttribute('fill', col.reductionColor.border);
+                    rateText.setAttribute('font-weight', 'bold');
+                    rateText.setAttribute('font-size', '11');
+                    rateText.setAttribute('text-anchor', 'middle');
+                    rateText.textContent = `${col.reductionColor.label} (${(appliedRates[idx-1].val * 100).toFixed(1)}%)`;
+                    barsGroup.appendChild(rateText);
+
+                    // 2. Bloque sólido de Capital Remanente que sobrevive al período
+                    if (col.height > 0) {
+                        const remRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                        remRect.setAttribute('x', col.x);
+                        remRect.setAttribute('y', col.topY);
+                        remRect.setAttribute('width', barWidth);
+                        remRect.setAttribute('height', col.height);
+                        remRect.setAttribute('fill', col.type === 'final' ? 'url(#emeraldGradient)' : 'url(#activeGradient)');
+                        remRect.setAttribute('rx', '8');
+                        barsGroup.appendChild(remRect);
+
+                        // Etiqueta del Capital Remanente
+                        const remText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        remText.setAttribute('x', col.x + barWidth / 2);
+                        remText.setAttribute('y', col.topY + 20);
+                        remText.setAttribute('fill', '#ffffff');
+                        remText.setAttribute('font-weight', 'bold');
+                        remText.setAttribute('font-size', '10');
+                        remText.setAttribute('text-anchor', 'middle');
+                        remText.textContent = formatCurrency(col.val);
+                        barsGroup.appendChild(remText);
+                    }
+                }
+
+                // Eje Horizontal y Etiqueta del Paso
+                const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                labelText.setAttribute('x', col.x + barWidth / 2);
+                labelText.setAttribute('y', yOffset + chartHeight + 30);
+                labelText.setAttribute('fill', '#475569');
+                labelText.setAttribute('font-weight', '600');
+                labelText.setAttribute('font-size', '11');
+                labelText.setAttribute('text-anchor', 'middle');
+                labelText.textContent = col.label;
+                barsGroup.appendChild(labelText);
+            });
+        }
+
+        // Definiciones de Gradiantes SVG para UI elegante
+        function createSvgDefs() {
+            const svg = document.getElementById('waterfall-svg');
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+
+            // Gradiente Indigo
+            const indigoGrad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+            indigoGrad.setAttribute('id', 'indigoGradient');
+            indigoGrad.setAttribute('x1', '0%');
+            indigoGrad.setAttribute('y1', '0%');
+            indigoGrad.setAttribute('x2', '0%');
+            indigoGrad.setAttribute('y2', '100%');
+            indigoGrad.innerHTML = `
+                <stop offset="0%" stop-color="#818cf8" />
+                <stop offset="100%" stop-color="#4f46e5" />
+            `;
+            defs.appendChild(indigoGrad);
+
+            // Gradiente Emerald
+            const emeraldGrad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+            emeraldGrad.setAttribute('id', 'emeraldGradient');
+            emeraldGrad.setAttribute('x1', '0%');
+            emeraldGrad.setAttribute('y1', '0%');
+            emeraldGrad.setAttribute('x2', '0%');
+            emeraldGrad.setAttribute('y2', '100%');
+            emeraldGrad.innerHTML = `
+                <stop offset="0%" stop-color="#34d399" />
+                <stop offset="100%" stop-color="#059669" />
+            `;
+            defs.appendChild(emeraldGrad);
+
+            // Gradiente Capital Activo General
+            const activeGrad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+            activeGrad.setAttribute('id', 'activeGradient');
+            activeGrad.setAttribute('x1', '0%');
+            activeGrad.setAttribute('y1', '0%');
+            activeGrad.setAttribute('x2', '0%');
+            activeGrad.setAttribute('y2', '100%');
+            activeGrad.innerHTML = `
+                <stop offset="0%" stop-color="#94a3b8" />
+                <stop offset="100%" stop-color="#475569" />
+            `;
+            defs.appendChild(activeGrad);
+
+            svg.appendChild(defs);
+        }
+
+        // Listeners interactivos
+        sliderNominal.addEventListener('input', calculateAndRender);
+        sliderD1.addEventListener('input', calculateAndRender);
+        sliderD2.addEventListener('input', calculateAndRender);
+        sliderD3.addEventListener('input', calculateAndRender);
+
+        // Inicialización del simulador al cargar la ventana
+        window.onload = function() {
+            createSvgDefs();
+            calculateAndRender();
+        };
+    </script>
+</body>
+</html>
