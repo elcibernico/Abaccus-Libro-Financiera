@@ -30,10 +30,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Si está autenticado, podemos comprobar los roles a nivel de metadata o perfiles
+  // Si está autenticado, podemos comprobar los roles a nivel de base de datos
   if (user && !isPublicRoute) {
-    // Leer el rol desde la metadata de la app
-    const userRole = user.app_metadata?.role || 'alumno';
+    // Leer el rol en tiempo real desde la tabla profiles
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    const userRole = profile?.role || 'alumno';
 
     // Restricciones de rutas
     if (pathname.startsWith('/admin') && userRole !== 'admin' && userRole !== 'admin_suplente') {
