@@ -39,7 +39,7 @@ DECLARE
   assigned_perms jsonb;
 BEGIN
   -- Definir rol y permisos basados en el email
-  IF new.email = 'elcibernico@gmail.com' THEN
+  IF new.email = 'elcibernico@gmail.com' OR new.email = 'estudiocontableid@gmail.com' OR new.email = 'ndemartis@fcecon.unr.edu.ar' THEN
     assigned_role := 'admin'::user_role;
     assigned_perms := '["all_privileges"]'::jsonb;
   ELSE
