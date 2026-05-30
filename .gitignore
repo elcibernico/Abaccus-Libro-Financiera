@@ -33,7 +33,6 @@ next-env.d.ts
 /directivas/
 /scripts/
 /.tmp/
-/data_content/
 .agentrules
 export_chats.py
 
