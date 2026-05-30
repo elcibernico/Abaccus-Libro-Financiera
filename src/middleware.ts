@@ -24,12 +24,6 @@ export async function middleware(request: NextRequest) {
   // Definir las únicas rutas públicas permitidas sin autenticación
   const isPublicRoute = pathname.startsWith('/login') || pathname.startsWith('/unauthorized');
 
-  if (!user && !isPublicRoute) {
-    const loginUrl = new URL('/login', request.url);
-    // Redirigir a login
-    return NextResponse.redirect(loginUrl);
-  }
-
   // Si está autenticado, podemos comprobar los roles a nivel de base de datos
   if (user && !isPublicRoute) {
     // Leer el rol en tiempo real desde la tabla profiles
