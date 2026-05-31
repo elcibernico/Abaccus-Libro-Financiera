@@ -18,6 +18,19 @@ import config from "../../data_content/locales/config.json";
 export const metadata: Metadata = {
   title: config.titletag.title,
   description: config.header.titleLine3,
+  icons: {
+    icon: [
+      {
+        url: config.titletag.faviconLightModeUrl,
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: config.titletag.faviconDarkModeUrl,
+        media: "(prefers-color-scheme: dark)",
+      }
+    ],
+    shortcut: config.titletag.faviconLightModeUrl,
+  }
 };
 
 export default function RootLayout({
