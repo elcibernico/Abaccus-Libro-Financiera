@@ -13,11 +13,7 @@ export default function Footer() {
 
   return (
     <footer className="footer-container">
-      <div className="footer-left">
-        <Link href="/admin/users" className="admin-pi-link" title="Administrar Roles y Usuarios">
-          π
-        </Link>
-      </div>
+      <div className="footer-left"></div>
 
       <div className="footer-center">
         <span className="author-name">
@@ -59,7 +55,11 @@ export default function Footer() {
         )}
       </div>
 
-      <div className="footer-spacer"></div>
+      <div className="footer-right">
+        <Link href="/admin/users" className={`admin-pi-link ${theme}`} title="Administrar Roles y Usuarios">
+          π
+        </Link>
+      </div>
 
       <style jsx>{`
         .footer-container {
@@ -76,23 +76,30 @@ export default function Footer() {
         }
         .footer-left {
           flex: 1;
+        }
+        .footer-right {
+          flex: 1;
           display: flex;
-          justify-content: flex-start;
+          justify-content: flex-end;
           align-items: center;
         }
         .admin-pi-link {
           font-family: 'Cambria', 'Georgia', serif;
           font-size: 1.6rem;
-          color: var(--text-color);
-          opacity: 0.3;
           text-decoration: none;
           cursor: pointer;
           transition: all 0.2s ease;
           line-height: 1;
         }
+        .admin-pi-link.light {
+          color: #d1d5db; /* Gris claro en modo claro */
+        }
+        .admin-pi-link.dark {
+          color: #374151; /* Gris oscuro en modo oscuro */
+        }
         .admin-pi-link:hover {
           opacity: 1;
-          color: #3b82f6;
+          color: #3b82f6 !important;
           transform: scale(1.15);
         }
         .footer-center {
