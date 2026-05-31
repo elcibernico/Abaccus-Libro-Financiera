@@ -1,19 +1,24 @@
 'use client';
 import { useEffect } from 'react';
 import config from '../../../data_content/locales/config.json';
+import { usePreferences } from '@/modules/libro_financiero/components/UserPreferencesProvider';
 
 interface TitleTagProps {
   subtitle?: string;
   theme?: 'light' | 'dark';
 }
 
-export default function TitleTag({ subtitle, theme }: TitleTagProps) {
+export default function TitleTag({ subtitle, theme: propTheme }: TitleTagProps) {
+  const preferences = usePreferences();
+  const contextTheme = preferences ? preferences.theme : undefined;
+  const activeTheme = propTheme || contextTheme || 'light';
+
   useEffect(() => {
     // 1. Inyectar título dinámico en document.title
     const baseTitle = config.titletag.title;
     document.title = subtitle ? `${subtitle} | ${baseTitle}` : baseTitle;
 
-    // 2. Resolver favicon dinámico según el tema del sistema o de la app
+    // 2. Resolver favicon dinámico según el tema activo de la aplicación
     const updateFavicon = (currentTheme: 'light' | 'dark') => {
       let faviconUrl = currentTheme === 'dark' 
         ? config.titletag.faviconDarkModeUrl 
@@ -29,20 +34,8 @@ export default function TitleTag({ subtitle, theme }: TitleTagProps) {
       link.href = faviconUrl;
     };
 
-    // Si recibimos el tema explícito lo aplicamos, de lo contrario escuchamos el matchMedia del sistema
-    if (theme) {
-      updateFavicon(theme);
-    } else {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const listener = (e: MediaQueryListEvent) => {
-        updateFavicon(e.matches ? 'dark' : 'light');
-      };
-      
-      updateFavicon(mediaQuery.matches ? 'dark' : 'light');
-      mediaQuery.addEventListener('change', listener);
-      return () => mediaQuery.removeEventListener('change', listener);
-    }
-  }, [subtitle, theme]);
+    updateFavicon(activeTheme);
+  }, [subtitle, activeTheme]);
 
   return null; // Componente lógico server-safe sin interfaz física
 }
