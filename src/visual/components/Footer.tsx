@@ -56,7 +56,11 @@ export default function Footer() {
       </div>
 
       <div className="footer-right">
-        <Link href="/admin/users" className={`admin-pi-link ${theme}`} title="Administrar Roles y Usuarios">
+        <Link 
+          href="/admin" 
+          title="Panel de Control General"
+          className={`admin-pi-link ${theme}`}
+        >
           π
         </Link>
       </div>
@@ -83,24 +87,28 @@ export default function Footer() {
           justify-content: flex-end;
           align-items: center;
         }
-        .admin-pi-link {
-          font-family: 'Cambria', 'Georgia', serif;
-          font-size: 1.6rem;
+        .footer-right :global(a.admin-pi-link) {
+          font-family: 'Cambria', 'Georgia', serif !important;
+          font-size: 1.6rem !important;
           text-decoration: none !important;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          line-height: 1;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
+          line-height: 1 !important;
+          border: none !important;
+          outline: none !important;
+          background: transparent !important;
+          box-shadow: none !important;
         }
-        .admin-pi-link.light {
+        .footer-right :global(a.admin-pi-link.light) {
           color: #d1d5db !important; /* Gris claro en modo claro */
         }
-        .admin-pi-link.dark {
+        .footer-right :global(a.admin-pi-link.dark) {
           color: #374151 !important; /* Gris oscuro en modo oscuro */
         }
-        .admin-pi-link:hover {
-          opacity: 1;
+        .footer-right :global(a.admin-pi-link:hover) {
+          opacity: 1 !important;
           color: #3b82f6 !important;
-          transform: scale(1.15);
+          transform: scale(1.15) !important;
         }
         .footer-center {
           display: flex;
