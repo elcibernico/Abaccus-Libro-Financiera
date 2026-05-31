@@ -20,18 +20,22 @@ export default function TitleTag({ subtitle, theme: propTheme }: TitleTagProps) 
 
     // 2. Resolver favicon dinámico según el tema activo de la aplicación
     const updateFavicon = (currentTheme: 'light' | 'dark') => {
-      let faviconUrl = currentTheme === 'dark' 
+      const faviconUrl = currentTheme === 'dark' 
         ? config.titletag.faviconDarkModeUrl 
         : config.titletag.faviconLightModeUrl;
 
-      // Buscar o crear la etiqueta link de favicon
-      let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'shortcut icon';
-        document.getElementsByTagName('head')[0].appendChild(link);
-      }
+      const fileType = faviconUrl.endsWith('.png') ? 'image/png' : 'image/jpeg';
+
+      // Remover de manera agresiva todas las etiquetas de favicon previas para evitar conflictos
+      const existingLinks = document.querySelectorAll("link[rel*='icon']");
+      existingLinks.forEach(link => link.parentNode?.removeChild(link));
+
+      // Crear e insertar la etiqueta única y definitiva
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.type = fileType;
       link.href = faviconUrl;
+      document.getElementsByTagName('head')[0].appendChild(link);
     };
 
     updateFavicon(activeTheme);
