@@ -86,16 +86,16 @@ export default function Footer() {
         .admin-pi-link {
           font-family: 'Cambria', 'Georgia', serif;
           font-size: 1.6rem;
-          text-decoration: none;
+          text-decoration: none !important;
           cursor: pointer;
           transition: all 0.2s ease;
           line-height: 1;
         }
         .admin-pi-link.light {
-          color: #d1d5db; /* Gris claro en modo claro */
+          color: #d1d5db !important; /* Gris claro en modo claro */
         }
         .admin-pi-link.dark {
-          color: #374151; /* Gris oscuro en modo oscuro */
+          color: #374151 !important; /* Gris oscuro en modo oscuro */
         }
         .admin-pi-link:hover {
           opacity: 1;
