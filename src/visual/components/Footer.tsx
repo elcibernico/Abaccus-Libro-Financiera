@@ -100,14 +100,14 @@ export default function Footer() {
           box-shadow: none !important;
         }
         .footer-right :global(a.admin-pi-link.light) {
-          color: #d1d5db !important; /* Gris claro en modo claro */
+          color: var(--primary-color) !important;
         }
         .footer-right :global(a.admin-pi-link.dark) {
-          color: #374151 !important; /* Gris oscuro en modo oscuro */
+          color: var(--primary-color) !important;
         }
         .footer-right :global(a.admin-pi-link:hover) {
           opacity: 1 !important;
-          color: #3b82f6 !important;
+          color: var(--primary-hover) !important;
           transform: scale(1.15) !important;
         }
         .footer-center {

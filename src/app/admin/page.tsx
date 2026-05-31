@@ -9,17 +9,14 @@ export default function AdminPage() {
     <div className="admin-container">
       <div className="admin-card glass-card">
         <div className="admin-header">
-          <div className="header-left">
-            <Link href="/" className="back-link">
-              ← Volver al Libro
+          <div className="admin-header-content-left">
+            <Link href="/" className="back-pi-link" title="Volver al Libro">
+              π
             </Link>
             <h1 className="admin-title">Panel de Control General</h1>
             <p className="admin-subtitle">
               Estado general y estadísticas locales del Libro Digital Interactivo.
             </p>
-          </div>
-          <div className="header-right">
-            <span className="pi-badge">π</span>
           </div>
         </div>
 
@@ -83,17 +80,28 @@ export default function AdminPage() {
           margin-bottom: 2.5rem;
         }
 
-        .back-link {
+        .admin-header-content-left {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          width: 100%;
+        }
+
+        .back-pi-link {
+          font-family: 'Cambria', serif;
+          font-size: 2.5rem;
           color: var(--primary-color);
-          font-size: 0.85rem;
+          opacity: 0.8;
+          line-height: 1;
           text-decoration: none;
           display: inline-block;
           margin-bottom: 0.75rem;
-          font-weight: 600;
           transition: var(--transition);
         }
 
-        .back-link:hover {
+        .back-pi-link:hover {
+          opacity: 1;
+          transform: scale(1.15);
           color: var(--primary-hover);
         }
 
@@ -109,14 +117,6 @@ export default function AdminPage() {
           font-size: 0.9rem;
           color: var(--text-color);
           opacity: 0.7;
-        }
-
-        .pi-badge {
-          font-family: 'Cambria', serif;
-          font-size: 2.5rem;
-          color: var(--primary-color);
-          opacity: 0.8;
-          line-height: 1;
         }
 
         .stats-grid {
