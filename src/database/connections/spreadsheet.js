@@ -129,3 +129,35 @@ export function appendSpreadsheetData(spreadsheetId, range, values) {
     processWriteQueue();
   });
 }
+
+/**
+ * Actualiza una fila específica de la hoja de cálculo.
+ * @param {string} spreadsheetId ID de la hoja
+ * @param {string} range Rango exacto de la fila (ej. "Usuarios!A2:E2")
+ * @param {Array<any>} values Array con los valores de la fila
+ */
+export async function updateSpreadsheetRow(spreadsheetId, range, values) {
+  try {
+    const sheets = getSheetsClient();
+    const response = await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [values] }
+    });
+    
+    // Invalidar caché
+    const sheetName = range.split('!')[0];
+    for (const key of CACHE.keys()) {
+      if (key.startsWith(`${spreadsheetId}_${sheetName}`)) {
+        CACHE.delete(key);
+      }
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error('[Spreadsheet Update Error]:', error);
+    throw error;
+  }
+}
+

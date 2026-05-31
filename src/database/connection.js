@@ -1,10 +1,6 @@
 // connection.js - Orquestador y Selector Dinámico de Persistencia Global (Multiorigen)
 // Permite desviar de forma transparente las consultas al motor seleccionado por el usuario.
 
-import prisma from './connections/prisma';
-import { getStrictCollectionPath } from './connections/firestore';
-import { getSpreadsheetData } from './connections/spreadsheet';
-
 /**
  * Orquestador Global para consultar registros según el motor de base de datos asignado.
  * @param {object} params Parámetros de consulta
@@ -14,25 +10,32 @@ import { getSpreadsheetData } from './connections/spreadsheet';
  */
 export async function queryDatabase({ provider, target, options = {} }) {
   switch (provider) {
-    case 'firestore':
+    case 'firestore': {
       // Firestore: Retorna la ruta segura y el conector listo
+      const { getStrictCollectionPath } = await import('./connections/firestore');
       const isPublic = options.isPublic !== false;
       const path = getStrictCollectionPath(target, isPublic, options.userId);
       return { path, dbType: 'firestore' };
+    }
 
-    case 'prisma':
+    case 'prisma': {
       // Prisma (Cloud SQL / Supabase / PostgreSQL): Acceso al modelo dinámico
-      if (typeof prisma[target] === 'undefined') {
+      const { getPrismaClient } = await import('./connections/prisma');
+      const client = await getPrismaClient();
+      if (typeof client[target] === 'undefined') {
         throw new Error(`[Database Error]: El modelo ${target} no existe en el cliente Prisma.`);
       }
-      return prisma[target];
+      return client[target];
+    }
 
-    case 'spreadsheet':
+    case 'spreadsheet': {
       // Google Sheets / Excel de Drive
+      const { getSpreadsheetData } = await import('./connections/spreadsheet');
       if (!options.spreadsheetId) {
         throw new Error('[Database Error]: Se requiere spreadsheetId para consultas Spreadsheet.');
       }
       return await getSpreadsheetData(options.spreadsheetId, target, options.forceRefresh);
+    }
 
     default:
       throw new Error(`[Database Error]: Proveedor de persistencia "${provider}" no soportado.`);

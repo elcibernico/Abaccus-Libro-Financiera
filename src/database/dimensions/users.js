@@ -58,14 +58,14 @@ export async function getAuthorizedUserByEmail(email, provider, options = {}) {
       return user;
     }
 
-    // Por defecto, rol restrictivo de Invitado (Guest) sin permisos especiales
+    // Por defecto, rol de Invitado (Guest) con todos los permisos interactivos habilitados inicialmente
     return {
       email: formattedEmail,
       role: 'guest',
       permissions: {
-        may_export_pdf: false,
-        may_edit_records: false,
-        may_view_advanced_charts: false
+        may_export_pdf: true,
+        may_edit_records: true,
+        may_view_advanced_charts: true
       }
     };
   } catch (error) {
@@ -74,9 +74,9 @@ export async function getAuthorizedUserByEmail(email, provider, options = {}) {
       email: email.toLowerCase().trim(),
       role: 'guest',
       permissions: {
-        may_export_pdf: false,
-        may_edit_records: false,
-        may_view_advanced_charts: false
+        may_export_pdf: true,
+        may_edit_records: true,
+        may_view_advanced_charts: true
       }
     };
   }
