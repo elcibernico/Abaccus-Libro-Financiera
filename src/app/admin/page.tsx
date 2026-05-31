@@ -10,13 +10,15 @@ export default function AdminPage() {
       <div className="admin-card glass-card">
         <div className="admin-header">
           <div className="admin-header-content-left">
-            <Link href="/" className="back-pi-link" title="Volver al Libro">
-              π
-            </Link>
             <h1 className="admin-title">Panel de Control General</h1>
             <p className="admin-subtitle">
               Estado general y estadísticas locales del Libro Digital Interactivo.
             </p>
+          </div>
+          <div className="admin-header-content-right">
+            <Link href="/" className="back-pi-link" title="Volver al Libro">
+              π
+            </Link>
           </div>
         </div>
 
@@ -72,38 +74,43 @@ export default function AdminPage() {
         }
 
         .admin-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          border-bottom: 1px solid var(--border-color);
-          padding-bottom: 1.5rem;
-          margin-bottom: 2.5rem;
-        }
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           border-bottom: 1px solid var(--border-color);
+           padding-bottom: 1.5rem;
+           margin-bottom: 2.5rem;
+         }
+ 
+         .admin-header-content-left {
+           display: flex;
+           flex-direction: column;
+           align-items: flex-start;
+         }
 
-        .admin-header-content-left {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          width: 100%;
-        }
-
-        .back-pi-link {
-          font-family: 'Cambria', serif;
-          font-size: 2.5rem;
-          color: var(--primary-color);
-          opacity: 0.8;
-          line-height: 1;
-          text-decoration: none;
-          display: inline-block;
-          margin-bottom: 0.75rem;
-          transition: var(--transition);
-        }
-
-        .back-pi-link:hover {
-          opacity: 1;
-          transform: scale(1.15);
-          color: var(--primary-hover);
-        }
+         .admin-header-content-right {
+           display: flex;
+           align-items: center;
+           justify-content: flex-end;
+         }
+ 
+         .back-pi-link {
+           font-family: 'Cambria', serif !important;
+           font-size: 2.5rem !important;
+           color: var(--primary-color) !important;
+           opacity: 0.8 !important;
+           line-height: 1 !important;
+           text-decoration: none !important;
+           cursor: pointer !important;
+           transition: var(--transition) !important;
+           display: inline-block !important;
+         }
+ 
+         .back-pi-link:hover {
+           opacity: 1 !important;
+           transform: scale(1.15) !important;
+           color: var(--primary-hover) !important;
+         }
 
         .admin-title {
           font-size: 1.75rem;
