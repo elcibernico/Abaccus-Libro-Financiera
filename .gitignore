@@ -29,6 +29,7 @@ next-env.d.ts
 
 # Copias de seguridad y archivos de bitácora/chats del Agente (Exclusivos locales)
 /BackUp/
+/backups/
 /chats/
 /directivas/
 /scripts/

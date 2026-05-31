@@ -58,10 +58,10 @@ export default function Footer() {
       <div className="footer-right">
         <Link 
           href="/admin" 
-          title="Panel de Control General"
+          title={`Panel de Control General (v${process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'})`}
           className={`admin-pi-link ${theme}`}
         >
-          π
+          π<span className="version-tag">v{process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'}</span>
         </Link>
       </div>
 
@@ -109,6 +109,14 @@ export default function Footer() {
           opacity: 1 !important;
           color: var(--primary-hover) !important;
           transform: scale(1.15) !important;
+        }
+        .footer-right :global(.version-tag) {
+          font-size: 0.65rem !important;
+          font-family: system-ui, -apple-system, sans-serif !important;
+          opacity: 0.65;
+          margin-left: 0.25rem;
+          vertical-align: middle;
+          font-weight: normal !important;
         }
         .footer-center {
           display: flex;

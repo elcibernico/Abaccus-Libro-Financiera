@@ -1,12 +1,17 @@
 {
   "name": "libro-financiero",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "release:patch": "npm version patch -m \"chore(release): version %s\"",
+    "release:minor": "npm version minor -m \"chore(release): version %s\"",
+    "release:major": "npm version major -m \"chore(release): version %s\"",
+    "release:push": "git push --follow-tags",
+    "backup": "node scripts/backup.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

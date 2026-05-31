@@ -51,6 +51,9 @@ export default function AdminPage() {
         <div className="info-section">
           <h3>Información del Sistema</h3>
           <p>Esta es la puerta de entrada discreta (Acceso <strong>π</strong>) de la aplicación. Todo el sistema de autenticación de base de datos ha sido removido de forma exitosa y segura para permitir el consumo 100% libre de los contenidos de la Facultad de Ciencias Económicas y Estadística.</p>
+          <div className="system-version" style={{ marginTop: '1rem', fontSize: '0.85rem', opacity: 0.7 }}>
+            Versión de la Aplicación: <strong>v{process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'}</strong>
+          </div>
         </div>
       </div>
 
