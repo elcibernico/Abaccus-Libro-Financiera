@@ -1,94 +1,22 @@
 'use client';
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
 import config from '../../../data_content/locales/config.json';
 import { usePreferences } from '@/modules/libro_financiero/components/UserPreferencesProvider';
 
 export default function Footer() {
   const { theme } = usePreferences();
-  const [isAdmin, setIsAdmin] = useState(false);
   const whatsappUrl = `https://wa.me/${config.footer.whatsappPhone}`;
   const extraLogo = theme === 'dark' 
     ? config.footer.extraReferenceLogoDarkUrl 
     : config.footer.extraReferenceLogoLightUrl;
 
-  useEffect(() => {
-    const checkAdminAndSyncProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // 1. Consultar si ya existe el perfil en la base de datos
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-
-        let currentRole = profile?.role;
-
-        // 2. Si el perfil no existe, lo creamos de forma automática y segura
-        if (!profile) {
-          let assignedRole = 'alumno';
-          let assignedPerms = ['view_content'];
-
-          if (
-            user.email === 'elcibernico@gmail.com' ||
-            user.email === 'estudiocontableid@gmail.com' ||
-            user.email === 'ndemartis@fcecon.unr.edu.ar'
-          ) {
-            assignedRole = 'admin';
-            assignedPerms = ['all_privileges'];
-          }
-
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert({
-              id: user.id,
-              email: user.email,
-              role: assignedRole,
-              permissions: assignedPerms
-            });
-
-          if (!insertError) {
-            currentRole = assignedRole;
-          }
-        }
-
-        setIsAdmin(currentRole === 'admin' || currentRole === 'admin_suplente');
-      }
-    };
-    checkAdminAndSyncProfile();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: any, session: any) => {
-      if (session?.user) {
-        // Re-verificar perfil en cambios de estado de auth
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-        
-        const role = profile?.role;
-        setIsAdmin(role === 'admin' || role === 'admin_suplente');
-      } else {
-        setIsAdmin(false);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
   return (
     <footer className="footer-container">
       <div className="footer-left">
-        {isAdmin && (
-          <Link href="/admin/users" className="admin-pi-link" title="Administrar Roles y Usuarios">
-            π
-          </Link>
-        )}
+        <Link href="/admin/users" className="admin-pi-link" title="Administrar Roles y Usuarios">
+          π
+        </Link>
       </div>
 
       <div className="footer-center">
@@ -207,6 +135,7 @@ export default function Footer() {
           align-items: center;
           opacity: 0.95;
         }
+        .footer-spacer {
           flex: 1;
         }
         @media (max-width: 640px) {

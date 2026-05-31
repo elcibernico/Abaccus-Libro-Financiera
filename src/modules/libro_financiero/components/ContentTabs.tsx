@@ -48,7 +48,7 @@ export default function ContentTabs({ activeTab, setActiveTab, availableTabs }: 
         }
         .content-tabs {
           display: flex;
-          justify-content: flex-start;
+          justify-content: flex-end;
           gap: 1.5rem;
           padding: 0 1.5rem;
           max-width: 1200px;
