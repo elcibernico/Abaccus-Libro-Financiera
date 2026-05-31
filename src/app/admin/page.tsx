@@ -94,22 +94,26 @@ export default function AdminPage() {
            justify-content: flex-end;
          }
  
-         .back-pi-link {
+         .admin-header :global(.back-pi-link) {
            font-family: 'Cambria', serif !important;
            font-size: 2.5rem !important;
            color: var(--primary-color) !important;
            opacity: 0.8 !important;
            line-height: 1 !important;
            text-decoration: none !important;
+           border-bottom: none !important;
+           outline: none !important;
+           box-shadow: none !important;
            cursor: pointer !important;
            transition: var(--transition) !important;
            display: inline-block !important;
          }
  
-         .back-pi-link:hover {
+         .admin-header :global(.back-pi-link:hover) {
            opacity: 1 !important;
            transform: scale(1.15) !important;
            color: var(--primary-hover) !important;
+           text-decoration: none !important;
          }
 
         .admin-title {
