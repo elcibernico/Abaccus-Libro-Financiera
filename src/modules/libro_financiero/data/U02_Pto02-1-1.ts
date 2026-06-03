@@ -15,11 +15,11 @@ const data: TopicData = {
     },
     {
         "type": "text",
-        "content": "**Deducción de Fórmulas**\nPartiendo de un razonamiento de proporcionalidad simple:\n    1) Si para $1$ peso de nominal, en $1$ período, el descuento es $f$.\n    2) Para $N$ pesos de nominal, en $1$ período, el descuento es $N \\cdot f$.\n    3) Para $N$ pesos de nominal, en $n$ períodos, el descuento total ($D_1$) es: $$D_1 = N \\cdot f \\cdot n$$\n\nEl **Valor Actual ($V_1$)** se obtiene restando el descuento al valor nominal: $$V_1 = N - D_1$$ $$V_1 = N - (N \\cdot f \\cdot n)$$ Sacando factor común $N$: $$V_1 = N \\cdot (1 - f \\cdot n)$$"
+        "content": "**Deducción de Fórmulas**\nPartiendo de un razonamiento de proporcionalidad simple:\n    1) Si para $1$ peso de nominal, en 1 período, el descuento es $f$.\n    2) Para $N$ pesos de nominal, en 1 período, el descuento es $N \\cdot f$.\n    3) Para $N$ pesos de nominal, en $n$ períodos, el descuento total ($D_1$) es: $$D_1 = N \\cdot f \\cdot n$$\n\nEl **Valor Actual ($V_1$)** se obtiene restando el descuento al valor nominal: $$V_1 = N - D_1$$ $$V_1 = N - (N \\cdot f \\cdot n)$$ Sacando factor común $N$: $$V_1 = N \\cdot (1 - f \\cdot n)$$"
     },
     {
         "type": "text",
-        "content": "**Límite de Aplicabilidad**\nPara que la operación tenga sentido financiero, el valor efectivo debe ser estrictamente positivo ($V_1 > 0$). Esto impone una restricción sobre el plazo ($n$) y la tasa ($f$): $$1 - f \\cdot n > 0 \\Rightarrow 1 > f \\cdot n$$ De aquí derivamos las restricciones:\n- **Para el tiempo:** $n < \\frac{1}{f}$\n- **Para la tasa:** $f < \\frac{1}{n}$"
+        "content": "**Límite de Aplicabilidad**\nPara que la operación tenga sentido financiero, el valor efectivo debe ser estrictamente positivo ($V_1 > 0$). Esto impone una restricción sobre el plazo ($n$) y la tasa ($f$): $$V_1 = N \\cdot (1 - f \\cdot n) > 0$$ Si $N$ = 1 $$1 \\cdot (1 - f \\cdot n) > 0$$ $$1 - f \\cdot n > 0 \\Rightarrow 1 > f \\cdot n$$ De aquí derivamos las restricciones:\n- **Para el tiempo:** $n < \\frac{1}{f}$\n- **Para la tasa:** $f < \\frac{1}{n}$"
     },
     {
         "type": "interactive_graphic",
