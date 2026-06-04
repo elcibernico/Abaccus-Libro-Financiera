@@ -1,4 +1,5 @@
 'use client';
+// Fuerza compilación estable v1.1.4
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { TabType } from './ContentTabs';
 
