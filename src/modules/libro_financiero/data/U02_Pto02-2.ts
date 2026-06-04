@@ -12,10 +12,6 @@ const data: TopicData = {
   {
     "type": "text",
     "content": "**La Lógica de la Base Variable**\n\nA diferencia del régimen simple —donde el descuento puede ser constante si se calcula sobre el nominal—, en el régimen compuesto el descuento es **variable y decreciente** período a período. Esto sucede porque:\n    1) Si usamos tasa de interés ($i$), el descuento se calcula sobre un **Valor Actual** que se hace más pequeño a medida que retrocedemos más en el tiempo.\n    2) Si usamos tasa de descuento ($d$), cada actualización se aplica sobre un **Valor Nominal residual** ya disminuido por el descuento del período anterior."
-  },
-  {
-    "type": "text",
-    "content": "**El Principio de Equidad en la Actualización**\n\nLa esencia de estos regímenes es el cumplimiento del **principio de equidad financiera**. En el interés compuesto, la actualización garantiza que el inversor o la entidad financiera sea indiferente entre recibir el Valor Actual hoy ($V$) o el Valor Nominal ($N$) en el futuro, ya que $V$ tiene la capacidad de regenerar a $N$ mediante la capitalización de sus propios intereses."
   }
 ],
   "Glosario": [

@@ -15,7 +15,7 @@ const data: TopicData = {
   },
   {
     "type": "text",
-    "content": "**Deducción de Fórmulas**\n\n**1. Basada en la Condición de Racionalidad:** Partimos de la identidad fundamental: $$V_3 \\cdot (1 + i)^n = N$$\n\n**2. Función Valor Actual ($V_3$):** Despejando el valor actual en función del nominal: $$V_3 = N \\cdot (1 + i)^{-n} = \\frac{N}{(1 + i)^n}$$\n\n**3. Función Descuento Total ($D_3$):** Por definición, el descuento es la diferencia entre el valor futuro y el presente: $$D_3 = N - V_3$$\n\nSustituyendo $V_3$: $$D_3 = N - N \\cdot (1 + i)^{-n}$$ $$D_3 = N \\cdot [1 - (1 + i)^{-n}]$$\n\nTambién se puede expresar en función del Valor Efectivo: $$D_3 = V_3 \\cdot [(1 + i)^n - 1]$$"
+    "content": "**Deducción de Fórmulas**\n\n**1. Basada en la Condición de Racionalidad:** Partimos de la identidad fundamental: $$V_3 \\cdot (1 + i)^n = N$$\n\n**2. Función Valor Actual ($V_3$):** Despejando el valor actual en función del nominal: $$V_3 = N \\cdot (1 + i)^{-n} = \\frac{N}{(1 + i)^n}$$\n\n**3. Función Descuento Total ($D_3$):** Por definición, el descuento es la diferencia entre el valor futuro y el presente: $$D_3 = N - V_3$$\n\nEn función del Valor Nominal (Sustituyendo $V_3$): $$D_3 = N - V_3$$ $$D_3 = N - N \\cdot (1 + i)^{-n}$$ $$D_3 = N \\cdot [1 - (1 + i)^{-n}]$$\n\nTambién se puede expresar en función del Valor Efectivo (sustituyendo $N$): $$D_3 = N - V_3$$ $$D_3 = V_3 \\cdot (1 + i)^n - V_3$$ $$D_3 = V_3 \\cdot [(1 + i)^n - 1]$$"
   },
   {
     "type": "text",
