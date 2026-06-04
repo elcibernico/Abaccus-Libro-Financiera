@@ -3,7 +3,7 @@ import { TopicData } from '@/types';
 
 const data: TopicData = {
   "id": "U02_Pto02-1-1",
-  "title": "Descuento Comercial Simple (DCS)",
+  "title": "Descuento Comercial Simple (DCS) $D_1$",
   "Desarrollo": [
     {
         "type": "text",
@@ -39,7 +39,7 @@ const data: TopicData = {
   "Glosario": [
     {
         "type": "text",
-        "content": "**Descuento Comercial Simple (DCS)**: Régimen financiero donde el descuento se calcula aplicando la tasa de descuento adelantada sobre el Valor Nominal del documento durante el tiempo restante hasta su vencimiento."
+        "content": "**Descuento Comercial Simple (DCS) **: Régimen financiero donde el descuento se calcula aplicando la tasa de descuento adelantada sobre el Valor Nominal del documento durante el tiempo restante hasta su vencimiento."
     },
     {
         "type": "text",
@@ -47,7 +47,7 @@ const data: TopicData = {
     },
     {
         "type": "text",
-        "content": "**Valor Actual ($V$)**: El valor neto de un capital a una fecha anterior a la de su vencimiento; representa el dinero efectivamente recibido después de deducir el descuento."
+        "content": "**Valor Actual ($V_1$)**: El valor neto de un capital a una fecha anterior a la de su vencimiento; representa el dinero efectivamente recibido después de deducir el descuento."
     },
     {
         "type": "text",
@@ -55,23 +55,23 @@ const data: TopicData = {
     },
     {
         "type": "text",
-        "content": "**Reversibilidad / Racionalidad**: Propiedad según la cual colocar el Valor Actual a la misma tasa y por el mismo tiempo permite reconstruir exactamente el Valor Nominal original. El DCS no cumple esta propiedad."
+        "content": "**Reversibilidad / Racionalidad**: Propiedad según la cual colocar el Valor Actual a la misma tasa y por el mismo tiempo permite reconstruir exactamente el Valor Nominal original. El DCS ($D_1$) no cumple esta propiedad."
     }
 ],
   "Casos Prácticos": [
     {
         "type": "case",
         "title": "Caso 1: Cálculo Estándar",
-        "enunciado": "Una empresa posee un documento de \\$50.000 que vence en 4 meses. Decide descontarlo en una entidad financiera que aplica una tasa de descuento comercial simple del 4% mensual.\n\n* **Descuento comercial calculado:** $D_1 = 50.000 \\cdot 0,04 \\cdot 4 = \\$8.000\n* **Valor actual neto recibido:** $V_1 = 50.000 \\cdot (1 - 0,04 \\cdot 4) = \\$42.000",
-        "planteo_solucion": "",
+        "enunciado": "Una empresa posee un documento de \\$50.000 que vence en 4 meses. Decide descontarlo en una entidad financiera que aplica una tasa de descuento comercial simple del 4% mensual.",
+        "planteo_solucion": "**Descuento comercial calculado:** $$D_1 = 50.000 \\cdot 0,04 \\cdot 4 = 8.000$$ **Valor actual neto recibido:** $$V_1 = 50.000 \\cdot (1 - 0,04 \\cdot 4) = 42.000$$",
         "highlights": "DCS estándar: Descuento sobre el valor nominal.",
         "content": "Análisis: Nótese que el descuento de cada mes es constante (\\$2.000 mensuales) debido a que la base de cálculo es siempre el Valor Nominal (\\$50.000) y no varía con el transcurso del tiempo."
     },
     {
         "type": "case",
         "title": "Caso 2: Mercado Financiero Argentino (Descuento de Cheques)",
-        "enunciado": "Una PyME argentina necesita liquidez inmediata y acude a una \"Sociedad de Garantía Recíproca\" (SGR) para descontar un cheque de pago diferido por \\$1.000.000 con vencimiento en 60 días. La entidad aplica una Tasa Nominal Anual (TNA) de descuento del 60%. Considerando un año comercial de 360 días:\n\n* **Adecuación de la tasa:** $f = \\frac{0,60}{360} \\cdot 60 = 0,10$ (tasa adelantada efectiva para 60 días)\n* **Cálculo del Descuento:** $D_1 = 1.000.000 \\cdot 0,10 = \\$100.000\n* **Valor recibido por la PyME:** $V_1 = 1.000.000 - 100.000 = \\$900.000",
-        "planteo_solucion": "",
+        "enunciado": "Una PyME argentina necesita liquidez inmediata y acude a una \"Sociedad de Garantía Recíproca\" (SGR) para descontar un cheque de pago diferido por \\$1.000.000 con vencimiento en 60 días. La entidad aplica una Tasa Nominal Anual (TNA) de descuento del 60%. Considerando un año comercial de 360 días:*",
+        "planteo_solucion": "**Adecuación de la tasa:** $$f = \\frac{0,60}{360} \\cdot 60 = 0,10$$ (tasa adelantada efectiva para 60 días) \n\n **Cálculo del Descuento:** $$D_1 = 1.000.000 \\cdot 0,10 = 100.000$$ \n **Valor recibido por la PyME:** $$V_1 = 1.000.000 - 100.000 = 900.000$$",
         "highlights": "Aplicación de TNA de descuento en plazos cortos.",
         "content": "Análisis: Verificación del límite de aplicabilidad de la operación:\n$n (60 \\text{ días}) < \\frac{1}{f_{\\text{diaria}}} \\Rightarrow 60 < \\frac{1}{0,60/360} \\Rightarrow 60 < 600$.\nComo el plazo de anticipación (60 días) es menor al límite teórico de aplicabilidad (600 días), la operación es financieramente viable y aplicable."
     }
