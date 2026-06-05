@@ -219,8 +219,14 @@ export default function Home() {
     // Preprocesar Markdown heredado a HTML de forma segura
     cleanContent = cleanContent
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/(?<!\*)\*(?!\*)([^\*]+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>')
-      .replace(/\n/g, '<br />');
+      .replace(/(?<!\*)\*(?!\*)([^\*]+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+
+    // Remover saltos de línea dentro de tablas para que no se conviertan en <br /> molestos
+    cleanContent = cleanContent.replace(/<table[\s\S]*?<\/table>/gi, (match) => {
+      return match.replace(/\n/g, '');
+    });
+
+    cleanContent = cleanContent.replace(/\n/g, '<br />');
 
     const spanishStopWords = /\b(de|en|con|para|que|se|del|al|el|la|los|las|un|una|por|su|sus|es|son|si|no|como|donde|cuando|este|esta|dias|meses|anos|años|pesos|dolares|dólares|capital|interes|interés|descuento|valor|tasa|tasas|nominal|efectiva|efectivo|pagará|recibirá|recibe|reciben|coloca|colocan|obtiene|obtener|calcula|calcular|hallar|determine|determinar|vence|vencimiento|cuenta|cuentas|cuota|cuotas|año|años|plazo|plazos|tasa|tasas|intereses|capitalización|capitalizaciones|efectivos|efectivas|vencidos|vencidas|anticipados|anticipadas)\b/i;
 

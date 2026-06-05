@@ -341,3 +341,34 @@ footer {
   color: var(--primary-color) !important;
 }
 
+/* Tablas generales del libro */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+  background-color: var(--card-bg);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+table th, table td {
+  border: 1px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+table th {
+  background-color: var(--hover-color);
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+table tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.015);
+}
+
+[data-theme='dark'] table tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.015);
+}
+
