@@ -7,6 +7,10 @@ const data: TopicData = {
   "Desarrollo": [
   {
     "type": "text",
+    "content": `<h3>Descuento Racional Compuesto ($D_3$)</h3>`
+  },
+{
+    "type": "text",
     "content": `**Definición y Características**
 El **Descuento Racional Compuesto** ($D_3$) se define como el interés compuesto calculado sobre la suma efectivamente recibida (Valor Actual) trabajando con una tasa periódica efectiva de interés $i$.
 
