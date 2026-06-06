@@ -467,12 +467,12 @@
                     didacticExplanation.innerHTML = `Para un plazo de <strong class="text-indigo-800">${days} días</strong> y una tasa de descuento fija de <strong class="text-emerald-700">${baseRate.toFixed(1)}%</strong>, la operación se vuelve <strong class="text-rose-600 uppercase font-bold">inviable</strong>. El descuento acumulado supera el valor nominal ($f \\cdot \\frac{${days}}{365} \\ge 1$), lo que genera un valor efectivo neto negativo o nulo. Esto ejemplifica el límite físico del descuento comercial simple.`;
                 } else {
                     const jPercent = (calc.j * 100).toFixed(2);
-                    const diffPercent = (jPercent - baseRate).toFixed(2);
+                    const diffPercent = (calc.j * 100 - baseRate).toFixed(2);
                     didacticExplanation.innerHTML = `A los <strong class="text-indigo-800">${days} días</strong> de plazo ($n = \\frac{${days}}{365}$), para igualar el efecto financiero de una tasa de descuento fija de <strong class="text-emerald-700">${baseRate.toFixed(1)}%</strong>, la tasa de interés vencida ($j$) debe escalar hasta el <strong class="text-indigo-800">${jPercent}%</strong>. Esto representa una brecha de <strong class="text-indigo-600">${diffPercent}%</strong>. Al aumentar el plazo, la curva del interés crece de forma hiperbólica para compensar que el descuento se calcula sobre el valor nominal futuro.`;
                 }
             } else {
                 const fPercent = (calc.f * 100).toFixed(2);
-                const diffPercent = (baseRate - fPercent).toFixed(2);
+                const diffPercent = (baseRate - calc.f * 100).toFixed(2);
                 didacticExplanation.innerHTML = `Si fijamos una tasa de interés de <strong class="text-indigo-800">${baseRate.toFixed(1)}%</strong>, al extender el plazo hasta <strong class="text-indigo-800">${days} días</strong> ($n = \\frac{${days}}{365}$), la tasa de descuento equivalente ($f$) disminuye hasta <strong class="text-emerald-700">${fPercent}%</strong> (una diferencia de <strong class="text-indigo-600">${diffPercent}%</strong>). <strong><u>Dado que el descuento comercial se aplica sobre una base de cálculo mayor (el valor nominal al vencimiento), se requiere una tasa porcentual menor para mantener la equivalencia con el interés simple.</u></strong>`;
             }
             // Volver a aplicar KaTeX en el bloque explicativo para renderizar las fórmulas $...$
