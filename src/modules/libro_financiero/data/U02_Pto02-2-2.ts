@@ -76,13 +76,13 @@ Consideremos un capital con Valor Nominal $N$ que vence en $n$ períodos. Sea $f
 </tr><!-- Fila n-1 --><tr>
 <td>$n - 1$</td>
 <td>$N \\cdot (1 - f)$</td>
-<td>$N \\cdot (1 - f) \\cdot f$</td>
+<td>$[N \\cdot (1 - f)] \\cdot f$</td>
 <td>$N \\cdot (1 - f) - N \\cdot (1 - f) \\cdot f =$ <br />
 $N \\cdot (1 - f) \\cdot (1 - f) = N \\cdot (1 - f)^2$</td>
 </tr><!-- Fila n-2 --><tr>
 	<td>$n - 2$</td>
 	<td>$N \\cdot (1 - f)^2$</td>
-	<td>$N \\cdot (1 - f)^2 \\cdot f$</td>
+	<td>$[N \\cdot (1 - f)^2] \\cdot f$</td>
 	<td>$N \\cdot (1 - f)^2 - N \\cdot (1 - f)^2 \\cdot f =$ <br />
 	    $N \\cdot (1 - f)^2 \\cdot (1 - f) = N \\cdot (1 - f)^3$</td>
 </tr><!-- Fila de puntos suspensivos --><tr>
@@ -93,13 +93,13 @@ $N \\cdot (1 - f) \\cdot (1 - f) = N \\cdot (1 - f)^2$</td>
 </tr><!-- Fila 1 --><tr>
 	<td>1</td>
 	<td>$N \\cdot (1 - f)^{n-1}$</td>
-	<td>$N \\cdot (1 - f)^{n-1} \\cdot f$</td>
+	<td>$[N \\cdot (1 - f)^{n-1}] \\cdot f$</td>
 	<td>$N \\cdot (1 - f)^{n-1} - N \\cdot (1 - f)^{n-1} \\cdot f =$ <br />
             $N \\cdot (1 - f)^{n-1} \\cdot (1 - f) \\Rightarrow$ <br />
             $V_4 = N \\cdot (1 - f)^n$</td>
 </tr></tbody></table>
 
-<strong>- Generalización para $n$ períodos:</strong> Siguiendo la recurrencia, al llegar al momento inicial ($0$), la fórmula del valor efectivo es: $$V_4 = N \\cdot (1 - f)^n$$
+<strong>- Generalización para $n$ períodos:</strong> Siguiendo la recurrencia, al llegar al momento inicial (0), la fórmula del valor efectivo es: $$V_4 = N \\cdot (1 - f)^n$$
 O bien:$$V_4 = N \\cdot (1 - d)^n$$`
   },
   {
