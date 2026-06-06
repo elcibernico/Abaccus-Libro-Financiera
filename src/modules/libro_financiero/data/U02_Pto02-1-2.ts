@@ -7,27 +7,58 @@ const data: TopicData = {
   "Desarrollo": [
   {
     "type": "text",
-    "content": "**Descuento Racional Simple**"
+    "content": `**Descuento Racional Simple**`
   },
   {
     "type": "text",
-    "content": "**Definición y Concepto**\n\nEl **Descuento Racional Simple** (también llamado matemático o real) se define como el interés simple calculado sobre la suma efectivamente recibida (Valor Actual $V_2$) aplicando la tasa periódica nominal de interés $j$. A diferencia del descuento comercial, este régimen es **racional** porque respeta la lógica de que el interés debe devengarse sobre el capital del que se dispone realmente durante el período de antelación."
+    "content": `**Definición y Concepto**
+
+El **Descuento Racional Simple** (también llamado matemático o real) se define como el interés simple calculado sobre la suma efectivamente recibida (Valor Actual $V_2$) aplicando la tasa periódica nominal de interés $j$. A diferencia del descuento comercial, este régimen es **racional** porque respeta la lógica de que el interés debe devengarse sobre el capital del que se dispone realmente durante el período de antelación.`
   },
   {
     "type": "text",
-    "content": "**Condición de Racionalidad**\n\nPara que este descuento sea válido, se debe verificar que si el valor efectivo $V_2$ se coloca en un régimen de interés simple durante el tiempo $n$ a la tasa $j$, se obtenga al final el valor nominal $N$: $$V_2 \\cdot (1 + j \\cdot n) = N$$"
+    "content": `**Condición de Racionalidad**
+
+Para que este descuento sea válido, se debe verificar que si el valor efectivo $V_2$ se coloca en un régimen de interés simple durante el tiempo $n$ a la tasa $j$, se obtenga al final el valor nominal $N$: $$V_2 \\cdot (1 + j \\cdot n) = N$$`
   },
   {
     "type": "text",
-    "content": "**Deducción de Fórmulas**\n\nA partir de la condición de racionalidad, podemos deducir las expresiones fundamentales:\n**1. Valor Actual ($V_2$):** Despejando $V_2$ de la identidad fundamental: $$V_2 = \\frac{N}{1 + j \\cdot n} = N \\cdot (1 + j \\cdot n)^{-1}$$\n**2. Descuento Total ($D_2$):** Por definición, el descuento es la diferencia entre el nominal y el valor actual ($D_2 = N - V_2$). Podemos expresarlo de dos formas:\n\n- **En función del Valor Efectivo ($V_2$):** Sustituyendo $N$ por su equivalente capitalizado: $$D_2 = V_2 \\cdot (1 + j \\cdot n) - V_2$$ $$D_2 = V_2 + V_2 \\cdot j \\cdot n - V_2$$ $$D_2 = V_2 \\cdot j \\cdot n$$ *El descuento racional simple es el interés simple calculado sobre el valor efectivo.*\n\n*- ***En función del Valor Nominal ($N$):** Sustituyendo $V_2$ en la definición de descuento: $$D_2 = N - \\frac{N}{1 + j \\cdot n}$$ \n $$D_2 = N \\cdot\\frac{ (1 + j \\cdot n)}{1 + j \\cdot n} - \\frac{N}{1 + j \\cdot n}$$ \n $$D_2 = \\frac{N \\cdot (1 + j \\cdot n) - N}{1 + j \\cdot n}$$ \n $$D_2 = \\frac{N \\cdot j \\cdot n}{1 + j \\cdot n}$$"
+    "content": `**Deducción de Fórmulas**
+
+A partir de la condición de racionalidad, podemos deducir las expresiones fundamentales:
+**1. Valor Actual ($V_2$):** Despejando $V_2$ de la identidad fundamental: $$V_2 = \\frac{N}{1 + j \\cdot n} = N \\cdot (1 + j \\cdot n)^{-1}$$
+**2. Descuento Total ($D_2$):** Por definición, el descuento es la diferencia entre el nominal y el valor actual ($D_2 = N - V_2$). Podemos expresarlo de dos formas:
+
+- **En función del Valor Efectivo ($V_2$):** Sustituyendo $N$ por su equivalente capitalizado: $$D_2 = V_2 \\cdot (1 + j \\cdot n) - V_2$$ $$D_2 = V_2 + V_2 \\cdot j \\cdot n - V_2$$ $$D_2 = V_2 \\cdot j \\cdot n$$ *El descuento racional simple es el interés simple calculado sobre el valor efectivo.*
+
+`
   },
   {
     "type": "text",
-    "content": "Desarrollo matemático paso a paso para obtener la fórmula del **Descuento Racional Simple ($D_2$)** en función del **Valor Nominal ($N$)**, partiendo de la identidad fundamental del descuento. \n\n**Deducción Paso a Paso**\n\n**1. Definición inicial de Descuento ($D_2$):** El descuento se define como la diferencia entre el capital futuro (Valor Nominal) y el capital presente (Valor Actual o Efectivo): $$D_2 = N - V_2$$\n\n**2. Sustitución del Valor Actual ($V_2$):** En el régimen racional simple, el valor actual se despeja de la condición de racionalidad ($N = V_2 \\cdot (1 + j \\cdot n)$). Por lo tanto, sustituimos $V_2$ por su expresión equivalente: $$V_2 = \\frac{N}{1 + j \\cdot n}$$ Al integrar esto en la fórmula inicial, obtenemos: $$D_2 = N - \\frac{N}{1 + j \\cdot n}$$\n\n**3. Búsqueda de común denominador:** Para realizar la resta de los términos, tomamos como común denominador la expresión $(1 + j \\cdot n)$: $$D_2 = \\frac{N \\cdot (1 + j \\cdot n) - N}{1 + j \\cdot n}$$\n\n**4. Aplicación de la propiedad distributiva:** Multiplicamos el Valor Nominal ($N$) por los términos dentro del paréntesis en el numerador: $$D_2 = \\frac{N + N \\cdot j \\cdot n - N}{1 + j \\cdot n}$$\n\n**5. Simplificación de términos:** Observamos que en el numerador conviven un término $N$ positivo y un término $N$ negativo, los cuales se anulan entre sí: $$D_2 = \\frac{\\cancel{N} + N \\cdot j \\cdot n - \\cancel{N}}{1 + j \\cdot n}$$\n\n**6. Función resultante:** Tras la simplificación, arribamos a la fórmula final del descuento racional simple expresada exclusivamente en términos del valor nominal, la tasa y el tiempo: $$D_2 = \\frac{N \\cdot j \\cdot n}{1 + j \\cdot n}$$\n\n**Análisis Didáctico de la Fórmula**\n**     ****Numerador ($N \\cdot j \\cdot n$):** Representa el interés simple calculado sobre el valor nominal. Si el descuento fuera comercial, esta sería la fórmula final.\n**     ****Denominador ($1 + j \\cdot n$):** Actúa como un factor de corrección. Al dividir el interés nominal por este factor, se logra que el descuento se calcule, en última instancia, sobre el valor efectivo $V_2$ y no sobre el nominal $N$, cumpliendo así con la premisa de **racionalidad**."
+    "content": `*- ***En función del Valor Nominal ($N$):**
+
+**1. Definición inicial de Descuento ($D_2$):** El descuento se define como la diferencia entre el capital futuro (Valor Nominal) y el capital presente (Valor Actual o Efectivo): $$D_2 = N - V_2$$
+
+**2. Sustitución del Valor Actual ($V_2$):** En el régimen racional simple, el valor actual se despeja de la condición de racionalidad ($N = V_2 \\cdot (1 + j \\cdot n)$). Por lo tanto, sustituimos $V_2$ por su expresión equivalente: $$V_2 = \\frac{N}{1 + j \\cdot n}$$ Al integrar esto en la fórmula inicial, obtenemos: $$D_2 = N - \\frac{N}{1 + j \\cdot n}$$
+
+**3. Búsqueda de común denominador:** Para realizar la resta de los términos, tomamos como común denominador la expresión $(1 + j \\cdot n)$: $$D_2 = \\frac{N \\cdot (1 + j \\cdot n) - N}{1 + j \\cdot n}$$
+
+**4. Aplicación de la propiedad distributiva:** Multiplicamos el Valor Nominal ($N$) por los términos dentro del paréntesis en el numerador: $$D_2 = \\frac{N + N \\cdot j \\cdot n - N}{1 + j \\cdot n}$$
+
+**5. Simplificación de términos:** Observamos que en el numerador conviven un término $N$ positivo y un término $N$ negativo, los cuales se anulan entre sí: $$D_2 = \\frac{\\cancel{N} + N \\cdot j \\cdot n - \\cancel{N}}{1 + j \\cdot n}$$
+
+**6. Función resultante:** Tras la simplificación, arribamos a la fórmula final del descuento racional simple expresada exclusivamente en términos del valor nominal, la tasa y el tiempo: $$D_2 = \\frac{N \\cdot j \\cdot n}{1 + j \\cdot n}$$
+
+**Análisis Didáctico de la Fórmula**
+**     ****Numerador ($N \\cdot j \\cdot n$):** Representa el interés simple calculado sobre el valor nominal. Si el descuento fuera comercial, esta sería la fórmula final.
+**     ****Denominador ($1 + j \\cdot n$):** Actúa como un factor de corrección. Al dividir el interés nominal por este factor, se logra que el descuento se calcule, en última instancia, sobre el valor efectivo $V_2$ y no sobre el nominal $N$, cumpliendo así con la premisa de **racionalidad**.`
   },
   {
     "type": "text",
-    "content": "**Características Principales**\n**- **El **descuento periódico** es constante e igual a $V_2 \\cdot j$\n- Es la ley de actualización **conjugada** del interés simple.\n- A diferencia del descuento comercial, el valor actual nunca puede ser negativo, ya que la función es asintótica al eje del tiempo."
+    "content": `**Características Principales**
+**- **El **descuento periódico** es constante e igual a $V_2 \\cdot j$
+- Es la ley de actualización **conjugada** del interés simple.
+- A diferencia del descuento comercial, el valor actual nunca puede ser negativo, ya que la función es asintótica al eje del tiempo.`
   },
   {
     "type": "interactive_graphic",
@@ -40,95 +71,97 @@ const data: TopicData = {
   "Glosario": [
   {
     "type": "text",
-    "content": "**Actualización**: Proceso financiero que consiste en valuar un capital futuro en un momento anterior en el tiempo."
+    "content": `**Actualización**: Proceso financiero que consiste en valuar un capital futuro en un momento anterior en el tiempo.`
   },
   {
     "type": "text",
-    "content": "**Descuento Racional**: Régimen donde los intereses se calculan sobre el capital efectivamente recibido (valor actual) y no sobre el valor nominal."
+    "content": `**Descuento Racional**: Régimen donde los intereses se calculan sobre el capital efectivamente recibido (valor actual) y no sobre el valor nominal.`
   },
   {
     "type": "text",
-    "content": "**Valor Nominal ($N$)**: Monto de capital escrito en un documento, disponible solo al momento de su vencimiento."
+    "content": `**Valor Nominal ($N$)**: Monto de capital escrito en un documento, disponible solo al momento de su vencimiento.`
   },
   {
     "type": "text",
-    "content": "**Valor Actual ($V_2$)**: Capital equivalente hoy de una suma futura; es el importe neto recibido tras descontar los intereses."
+    "content": `**Valor Actual ($V_2$)**: Capital equivalente hoy de una suma futura; es el importe neto recibido tras descontar los intereses.`
   },
   {
     "type": "text",
-    "content": "**Tasa Nominal Vencida ($j$)**: Tasa de interés simple aplicada en operaciones de actualización racional."
+    "content": `**Tasa Nominal Vencida ($j$)**: Tasa de interés simple aplicada en operaciones de actualización racional.`
   },
   {
     "type": "text",
-    "content": "**Racionalidad**: Condición que exige que el valor actual, capitalizado a la misma tasa y plazo, reproduzca exactamente el valor nominal."
+    "content": `**Racionalidad**: Condición que exige que el valor actual, capitalizado a la misma tasa y plazo, reproduzca exactamente el valor nominal.`
   },
   {
     "type": "text",
-    "content": "**Reversibilidad**: Propiedad de las leyes racionales que permite volver al capital original mediante la operación inversa (capitalización)."
+    "content": `**Reversibilidad**: Propiedad de las leyes racionales que permite volver al capital original mediante la operación inversa (capitalización).`
   },
   {
     "type": "text",
-    "content": "**Descuento Periódico**: Interés generado en una unidad de tiempo; en el régimen racional simple es constante respecto al valor actual."
+    "content": `**Descuento Periódico**: Interés generado en una unidad de tiempo; en el régimen racional simple es constante respecto al valor actual.`
   },
   {
     "type": "text",
-    "content": "**Factor de Actualización**: Expresión matemática $(1 + j \\cdot n)^{-1}$ que permite hallar el valor presente de un nominal."
+    "content": `**Factor de Actualización**: Expresión matemática $(1 + j \\cdot n)^{-1}$ que permite hallar el valor presente de un nominal.`
   },
   {
     "type": "text",
-    "content": "**Leyes Conjugadas**: Relación entre una ley de capitalización y una de actualización cuando sus factores son recíprocos."
+    "content": `**Leyes Conjugadas**: Relación entre una ley de capitalización y una de actualización cuando sus factores son recíprocos.`
   }
 ],
   "Casos Prácticos": [
   {
     "type": "case",
     "title": "Caso 1: Descuento de un documento estándar",
-    "enunciado": "Se desea conocer el valor efectivo de un pagaré con valor nominal de \\$15.000 que vence en 4 meses, si se le aplica una tasa de interés del \\$3%\\$ mensual bajo el régimen racional simple.",
-    "planteo_solucion": "**Datos:** $N = 15.000$; $n = 4$ meses; $j = 0,03$.\n**Resolución:** $$V_2 = \\frac{15.000}{1 + 0,03 \\cdot 4} = \\frac{15.000}{1,12} = 13.392,86$$ $$D_2 = 15.000 - 13.392,86 = 1.607,14$$",
-    "highlights": "",
-    "content": ""
+    "enunciado": `Se desea conocer el valor efectivo de un pagaré con valor nominal de \\$15.000 que vence en 4 meses, si se le aplica una tasa de interés del \\$3%\\$ mensual bajo el régimen racional simple.`,
+    "planteo_solucion": `**Datos:** $N = 15.000$; $n = 4$ meses; $j = 0,03$.
+**Resolución:** $$V_2 = \\frac{15.000}{1 + 0,03 \\cdot 4} = \\frac{15.000}{1,12} = 13.392,86$$ $$D_2 = 15.000 - 13.392,86 = 1.607,14$$`,
+    "highlights": ``,
+    "content": ``
   },
   {
     "type": "case",
     "title": "Caso 2: Mercado Financiero Argentino (E-cheq)",
-    "enunciado": "Una PYME argentina descuenta un E-cheq en la bolsa (MAV) con valor nominal de \\$500.000 que vence en 60 días. Se pacta una TNA de interés del \\$45%\\$. Se utiliza el régimen racional simple para el cálculo (año de 365 días).",
-    "planteo_solucion": "**Datos:** $N = 500.000$; $n = 60/365$; $j = 0,45$ (anual).\n**Resolución:** $$V_2 = \\frac{500.000}{1 + 0,45 \\cdot \\frac{60}{365}} = \\frac{500.000}{1,07397} = 465.561,37$$ El descuento realizado (intereses cedidos por la PYME) es de \\$34.438,63.",
-    "highlights": "",
-    "content": ""
+    "enunciado": `Una PYME argentina descuenta un E-cheq en la bolsa (MAV) con valor nominal de \\$500.000 que vence en 60 días. Se pacta una TNA de interés del \\$45%\\$. Se utiliza el régimen racional simple para el cálculo (año de 365 días).`,
+    "planteo_solucion": `**Datos:** $N = 500.000$; $n = 60/365$; $j = 0,45$ (anual).
+**Resolución:** $$V_2 = \\frac{500.000}{1 + 0,45 \\cdot \\frac{60}{365}} = \\frac{500.000}{1,07397} = 465.561,37$$ El descuento realizado (intereses cedidos por la PYME) es de \\$34.438,63.`,
+    "highlights": ``,
+    "content": ``
   }
 ],
   "Autoevaluación": [
   {
     "type": "quiz",
-    "question": "¿Cuál es la base de cálculo para determinar el descuento en el régimen racional simple?",
+    "question": `¿Cuál es la base de cálculo para determinar el descuento en el régimen racional simple?`,
     "options": [
       "A) El Valor Nominal",
       "B) El Valor Actual o Efectivo",
       "C) El interés acumulado"
     ],
-    "feedback": "Según Fransolini, el descuento racional se calcula sobre la suma efectivamente recibida, siendo análogo al capital inicial en el interés simple.",
+    "feedback": `Según Fransolini, el descuento racional se calcula sobre la suma efectivamente recibida, siendo análogo al capital inicial en el interés simple.`,
     "correctIndex": 1
   },
   {
     "type": "quiz",
-    "question": "¿Qué sucede con el Valor Actual ($V_2$) en este régimen si el tiempo de antelación ($n$) tiende a infinito?",
+    "question": `¿Qué sucede con el Valor Actual ($V_2$) en este régimen si el tiempo de antelación ($n$) tiende a infinito?`,
     "options": [
       "A) Se vuelve negativo",
       "B) Tiende a cero de forma asintótica",
       "C) Se mantiene constante"
     ],
-    "feedback": "López Dumrauf explica que, al estar el tiempo en el denominador $(1+jn)$, la función es decreciente y su límite es cero, pero nunca toma valores negativos.",
+    "feedback": `López Dumrauf explica que, al estar el tiempo en el denominador $(1+jn)$, la función es decreciente y su límite es cero, pero nunca toma valores negativos.`,
     "correctIndex": 1
   },
   {
     "type": "quiz",
-    "question": "¿Por qué se considera que esta ley es \"racional\"?",
+    "question": `¿Por qué se considera que esta ley es "racional"?`,
     "options": [
       "A) Porque utiliza tasas nominales anuales",
       "B) Porque permite recuperar el Valor Nominal capitalizando el Valor Actual",
       "C) Porque el descuento es siempre igual al interés comercial"
     ],
-    "feedback": "La racionalidad implica reversibilidad: el valor efectivo colocado a interés simple por el mismo plazo y tasa reproduce el nominal.",
+    "feedback": `La racionalidad implica reversibilidad: el valor efectivo colocado a interés simple por el mismo plazo y tasa reproduce el nominal.`,
     "correctIndex": 1
   }
 ],

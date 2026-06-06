@@ -473,7 +473,7 @@
             } else {
                 const fPercent = (calc.f * 100).toFixed(2);
                 const diffPercent = (baseRate - fPercent).toFixed(2);
-                didacticExplanation.innerHTML = `Si fijamos una tasa de interés de <strong class="text-indigo-800">${baseRate.toFixed(1)}%</strong>, al extender el plazo hasta <strong class="text-indigo-800">${days} días</strong> ($n = \\frac{${days}}{365}$), la tasa de descuento equivalente ($f$) disminuye hasta <strong class="text-emerald-700">${fPercent}%</strong> (una diferencia de <strong class="text-indigo-600">${diffPercent}%</strong>). Dado que el descuento comercial se aplica sobre una base de cálculo mayor (el valor nominal al vencimiento), se requiere una tasa porcentual menor para mantener la equivalencia con el interés simple.`;
+                didacticExplanation.innerHTML = `Si fijamos una tasa de interés de <strong class="text-indigo-800">${baseRate.toFixed(1)}%</strong>, al extender el plazo hasta <strong class="text-indigo-800">${days} días</strong> ($n = \\frac{${days}}{365}$), la tasa de descuento equivalente ($f$) disminuye hasta <strong class="text-emerald-700">${fPercent}%</strong> (una diferencia de <strong class="text-indigo-600">${diffPercent}%</strong>). <strong><u>Dado que el descuento comercial se aplica sobre una base de cálculo mayor (el valor nominal al vencimiento), se requiere una tasa porcentual menor para mantener la equivalencia con el interés simple.</u></strong>`;
             }
             // Volver a aplicar KaTeX en el bloque explicativo para renderizar las fórmulas $...$
             renderMathInElement(didacticExplanation, {
