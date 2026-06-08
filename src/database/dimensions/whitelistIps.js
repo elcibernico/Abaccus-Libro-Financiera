@@ -37,7 +37,7 @@ export async function getWhitelistIps(provider, options = {}) {
       const prismaClient = await queryDatabase({ provider: 'prisma', target: 'whitelistIP' });
       return await prismaClient.findMany();
     } else if (provider === 'supabase') {
-      const supabase = await queryDatabase({ provider: 'supabase' });
+      const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
       const { data: ips, error } = await supabase
         .from('whitelist_ips')
         .select('*');
@@ -95,7 +95,7 @@ export async function addWhitelistIp(ipAddress, description, createdBy, provider
       });
       return { success: true, ip: created.ipAddress };
     } else if (provider === 'supabase') {
-      const supabase = await queryDatabase({ provider: 'supabase' });
+      const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
       const { data: created, error } = await supabase
         .from('whitelist_ips')
         .insert([
@@ -154,7 +154,7 @@ export async function removeWhitelistIp(ipIdOrAddress, provider, options = {}) {
       });
       return { success: true };
     } else if (provider === 'supabase') {
-      const supabase = await queryDatabase({ provider: 'supabase' });
+      const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
       
       // Intentar eliminar por id o ip_address de forma segura para los tipos de PostgREST
       const isIpAddress = String(ipIdOrAddress).includes('.') || String(ipIdOrAddress).includes(':');
