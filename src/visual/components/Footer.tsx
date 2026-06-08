@@ -17,6 +17,9 @@ export default function Footer() {
   const getDynamicVersionInfo = () => {
     if (pathname.startsWith('/admin')) {
       return `Admin v${versions.Modulo_Admin}`;
+    } else if (pathname.startsWith('/perfil')) {
+      // @ts-ignore - en caso de desincronización de tipos JSON de tsconfig durante compilación rápida
+      return `Perfil v${versions.Modulo_Perfil}`;
     } else if (pathname.startsWith('/libro')) {
       return `Libro v${versions.Modulo_Libro}`;
     } else if (pathname.startsWith('/bibliografia')) {

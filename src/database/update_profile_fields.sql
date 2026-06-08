@@ -7,6 +7,7 @@ ALTER TABLE public.whitelist_users
   ADD COLUMN IF NOT EXISTS nombre text,
   ADD COLUMN IF NOT EXISTS fecha_nacimiento date,
   ADD COLUMN IF NOT EXISTS legajo text,
+  ADD COLUMN IF NOT EXISTS dni text,
   ADD COLUMN IF NOT EXISTS is_active boolean DEFAULT true,
   ADD COLUMN IF NOT EXISTS deleted_at timestamp with time zone;
 
@@ -16,6 +17,7 @@ ALTER TABLE public.whitelist_pending
   ADD COLUMN IF NOT EXISTS nombre text,
   ADD COLUMN IF NOT EXISTS fecha_nacimiento date,
   ADD COLUMN IF NOT EXISTS legajo text,
+  ADD COLUMN IF NOT EXISTS dni text,
   ADD COLUMN IF NOT EXISTS is_active boolean DEFAULT true,
   ADD COLUMN IF NOT EXISTS deleted_at timestamp with time zone;
 

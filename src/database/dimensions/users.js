@@ -112,6 +112,7 @@ export async function getAuthorizedUserByEmail(email, provider, options = {}) {
           name: displayName,
           nombre: user.nombre || '',
           apellido: user.apellido || '',
+          dni: user.dni || '',
           fecha_nacimiento: user.fecha_nacimiento || null,
           legajo: user.legajo || '',
           celular: user.celular || '',

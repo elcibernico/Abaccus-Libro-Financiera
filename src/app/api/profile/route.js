@@ -33,6 +33,7 @@ export async function GET() {
         nombre: dbUser.nombre || '',
         apellido: dbUser.apellido || '',
         name: dbUser.name || '',
+        dni: dbUser.dni || '',
         fecha_nacimiento: dbUser.fecha_nacimiento || '',
         legajo: dbUser.legajo || '',
         celular: dbUser.celular || '',
@@ -55,7 +56,7 @@ export async function PUT(request) {
       return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
     }
 
-    const { nombre, apellido, fecha_nacimiento, legajo, celular } = await request.json();
+    const { nombre, apellido, dni, fecha_nacimiento, legajo, celular } = await request.json();
 
     if (!nombre || !nombre.trim()) {
       return NextResponse.json({ error: 'El nombre es obligatorio.' }, { status: 400 });
@@ -63,10 +64,14 @@ export async function PUT(request) {
     if (!apellido || !apellido.trim()) {
       return NextResponse.json({ error: 'El apellido es obligatorio.' }, { status: 400 });
     }
+    if (!dni || !dni.trim()) {
+      return NextResponse.json({ error: 'El DNI es obligatorio.' }, { status: 400 });
+    }
 
     const result = await updateUserProfile(user.email, {
       nombre,
       apellido,
+      dni,
       fecha_nacimiento: fecha_nacimiento || null,
       legajo: legajo || null,
       celular: celular || null

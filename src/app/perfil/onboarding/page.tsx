@@ -13,9 +13,11 @@ export default function OnboardingPage() {
   // Form states
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
+  const [dni, setDni] = useState('');
   const [fechaNacimiento, setFechaNacimiento] = useState('');
   const [legajo, setLegajo] = useState('');
   const [celular, setCelular] = useState('');
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
     fetchProfile();
@@ -33,12 +35,14 @@ export default function OnboardingPage() {
         const p = data.profile;
         setNombre(p.nombre || '');
         setApellido(p.apellido || '');
+        setDni(p.dni || '');
         setFechaNacimiento(p.fecha_nacimiento ? p.fecha_nacimiento.substring(0, 10) : '');
         setLegajo(p.legajo || '');
         setCelular(p.celular || '');
+        setEmail(p.email || '');
         
-        // Si ya tiene cargada la fecha de nacimiento, ya completó el onboarding, redirigir
-        if (p.fecha_nacimiento) {
+        // Si ya tiene cargada la fecha de nacimiento y dni, ya completó el onboarding, redirigir
+        if (p.fecha_nacimiento && p.dni) {
           router.push('/');
         }
       } else {
@@ -57,6 +61,10 @@ export default function OnboardingPage() {
 
     if (!nombre.trim() || !apellido.trim()) {
       setErrorMsg('El Nombre y Apellido son obligatorios.');
+      return;
+    }
+    if (!dni.trim()) {
+      setErrorMsg('El DNI es obligatorio.');
       return;
     }
     if (!fechaNacimiento) {
@@ -80,6 +88,7 @@ export default function OnboardingPage() {
         body: JSON.stringify({
           nombre: nombre.trim(),
           apellido: apellido.trim(),
+          dni: dni.trim(),
           fecha_nacimiento: fechaNacimiento,
           legajo: legajo.trim() || null,
           celular: celular.trim()
@@ -158,6 +167,20 @@ export default function OnboardingPage() {
 
         <form onSubmit={handleSubmit} className="onboarding-form">
           <div className="form-grid">
+            <div className="form-group full-width">
+              <label className="form-label">Correo Electrónico (No editable)</label>
+              <div className="input-wrapper active-wrapper" style={{ opacity: 0.7, background: 'rgba(255,255,255,0.03)' }}>
+                <User className="input-icon" size={16} style={{ color: 'var(--primary-color)' }} />
+                <input
+                  type="email"
+                  value={email}
+                  disabled
+                  className="onboarding-input"
+                  style={{ cursor: 'not-allowed' }}
+                />
+              </div>
+            </div>
+
             <div className="form-group">
               <label className="form-label highlight-label">Nombre *</label>
               <div className="input-wrapper active-wrapper">
@@ -182,6 +205,21 @@ export default function OnboardingPage() {
                   placeholder="Tu apellido"
                   value={apellido}
                   onChange={(e) => setApellido(e.target.value)}
+                  required
+                  className="onboarding-input active-input"
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label highlight-label">DNI *</label>
+              <div className="input-wrapper active-wrapper">
+                <Hash className="input-icon active-icon" size={16} />
+                <input
+                  type="text"
+                  placeholder="Tu DNI"
+                  value={dni}
+                  onChange={(e) => setDni(e.target.value)}
                   required
                   className="onboarding-input active-input"
                 />

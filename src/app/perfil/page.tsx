@@ -17,10 +17,12 @@ export default function ProfilePage() {
   const [email, setEmail] = useState('');
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
+  const [dni, setDni] = useState('');
   const [fechaNacimiento, setFechaNacimiento] = useState('');
   const [legajo, setLegajo] = useState('');
   const [celular, setCelular] = useState('');
   const [role, setRole] = useState('guest');
+  const [realRole, setRealRole] = useState('guest');
 
   useEffect(() => {
     fetchProfile();
@@ -39,12 +41,21 @@ export default function ProfilePage() {
         setEmail(p.email);
         setNombre(p.nombre);
         setApellido(p.apellido);
+        setDni(p.dni || '');
         setFechaNacimiento(p.fecha_nacimiento ? p.fecha_nacimiento.substring(0, 10) : '');
         setLegajo(p.legajo || '');
         setCelular(p.celular || '');
         setRole(p.role || 'guest');
       } else {
         setErrorMsg(data.error || 'No se pudieron cargar los datos de perfil.');
+      }
+
+      // Obtener el rol real e impersonated del endpoint /api/auth/me
+      const meResponse = await fetch('/api/auth/me');
+      const meData = await meResponse.json();
+      if (meResponse.ok && meData.authenticated) {
+        setRealRole(meData.user.realRole || meData.user.role || 'guest');
+        setRole(meData.user.role || 'guest');
       }
     } catch (err) {
       console.error(err);
@@ -58,6 +69,10 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!nombre.trim() || !apellido.trim()) {
       setErrorMsg('Nombre y Apellido son campos obligatorios.');
+      return;
+    }
+    if (!dni.trim()) {
+      setErrorMsg('El DNI es obligatorio.');
       return;
     }
 
@@ -74,6 +89,7 @@ export default function ProfilePage() {
         body: JSON.stringify({
           nombre: nombre.trim(),
           apellido: apellido.trim(),
+          dni: dni.trim(),
           fecha_nacimiento: fechaNacimiento || null,
           legajo: legajo.trim() || null,
           celular: celular.trim() || null,
@@ -92,6 +108,66 @@ export default function ProfilePage() {
     } catch (err) {
       console.error(err);
       setErrorMsg('No se pudo establecer conexión para guardar los cambios.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleImpersonate = async (targetRole: string) => {
+    setSaving(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    try {
+      const response = await fetch('/api/auth/impersonate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ role: targetRole }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSuccessMsg(data.message);
+        window.location.reload();
+      } else {
+        setErrorMsg(data.error || 'No se pudo simular el rol.');
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('Error de red al intentar simular el rol.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRestoreRole = async () => {
+    setSaving(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    try {
+      const response = await fetch('/api/auth/impersonate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ role: null }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSuccessMsg(data.message);
+        window.location.reload();
+      } else {
+        setErrorMsg(data.error || 'No se pudo restaurar el rol original.');
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('Error de red al intentar restaurar el rol.');
     } finally {
       setSaving(false);
     }
@@ -139,6 +215,15 @@ export default function ProfilePage() {
         return { text: 'INVITADO', bg: 'bg-guest' };
     }
   };
+
+  const IMPERSONATION_TARGETS: Record<string, string[]> = {
+    root: ['admin', 'docente', 'user', 'guest'],
+    admin: ['docente', 'user', 'guest'],
+    docente: ['user', 'guest']
+  };
+
+  const targets = IMPERSONATION_TARGETS[realRole] || [];
+  const isImpersonating = role !== realRole;
 
   const badge = getRoleBadge(role);
 
@@ -251,6 +336,20 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-group">
+                  <label className="form-label">DNI *</label>
+                  <div className="input-wrapper active-wrapper">
+                    <Hash className="input-icon active-icon" size={16} />
+                    <input
+                      type="text"
+                      value={dni}
+                      onChange={(e) => setDni(e.target.value)}
+                      required
+                      className="profile-input active-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
                   <label className="form-label">Correo Electrónico (No editable)</label>
                   <div className="input-wrapper disabled-wrapper">
                     <Mail className="input-icon" size={16} />
@@ -311,6 +410,59 @@ export default function ProfilePage() {
               </button>
             </form>
           </div>
+
+          {/* Simulación de Roles */}
+          {(targets.length > 0 || isImpersonating) && (
+            <div className="glass-card impersonation-card">
+              <h3 className="card-title">Simulación de Roles (Role Impersonation)</h3>
+              <p className="impersonation-desc">
+                Como usuario con rol jerárquico (<strong>{realRole.toUpperCase()}</strong>), puedes simular temporalmente un rol inferior para ver el sistema tal como lo vería ese usuario.
+              </p>
+
+              {isImpersonating ? (
+                <div className="impersonation-active-box">
+                  <div className="active-warning">
+                    <Shield className="warning-icon" size={20} style={{ color: '#eab308' }} />
+                    <span>
+                      Estás navegando en modo de simulación como: <strong>{role.toUpperCase()}</strong>.
+                    </span>
+                  </div>
+                  <button 
+                    type="button" 
+                    className="btn-restore" 
+                    disabled={saving}
+                    onClick={handleRestoreRole}
+                  >
+                    Restaurar Rol Real ({realRole.toUpperCase()})
+                  </button>
+                </div>
+              ) : (
+                <div className="impersonation-select-box">
+                  <div className="form-group select-group">
+                    <label className="form-label">Selecciona el rol a simular</label>
+                    <div className="select-wrapper">
+                      <select 
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            handleImpersonate(e.target.value);
+                          }
+                        }}
+                        defaultValue=""
+                        className="impersonation-select"
+                      >
+                        <option value="" disabled>-- Selecciona un rol --</option>
+                        {targets.map(t => (
+                          <option key={t} value={t}>
+                            {t === 'user' ? 'Alumno/Usuario' : t.toUpperCase()}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Zona de peligro (Desuscripción) */}
           <div className="glass-card danger-card">
@@ -594,6 +746,66 @@ export default function ProfilePage() {
         .btn-submit:disabled {
           opacity: 0.6;
           cursor: not-allowed;
+        }
+
+        /* Impersonation card */
+        .impersonation-card {
+          padding: 2.2rem;
+          border-color: rgba(99, 102, 241, 0.2);
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.02), rgba(0, 0, 0, 0));
+        }
+        .impersonation-desc {
+          font-size: 0.9rem;
+          opacity: 0.8;
+          line-height: 1.5;
+          margin-bottom: 1.5rem;
+        }
+        .impersonation-active-box {
+          background: rgba(234, 179, 8, 0.05);
+          border: 1px solid rgba(234, 179, 8, 0.2);
+          padding: 1.25rem;
+          border-radius: 0.85rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+        .active-warning {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          font-size: 0.9rem;
+          font-weight: 600;
+        }
+        .btn-restore {
+          background: #eab308;
+          color: black;
+          border: none;
+          padding: 0.6rem 1.2rem;
+          border-radius: 0.6rem;
+          font-weight: 700;
+          font-size: 0.85rem;
+          cursor: pointer;
+          transition: var(--transition);
+        }
+        .btn-restore:hover {
+          background: #ca8a04;
+          color: white;
+        }
+        .impersonation-select {
+          width: 100%;
+          background: var(--card-bg);
+          border: 1px solid var(--border-color);
+          padding: 0.8rem 1rem;
+          border-radius: 0.85rem;
+          color: var(--text-color);
+          outline: none;
+          cursor: pointer;
+          font-weight: 600;
+        }
+        .impersonation-select:focus {
+          border-color: var(--primary-color);
         }
 
         /* Danger card */

@@ -68,7 +68,7 @@ export async function middleware(request) {
     try {
       const { data: dbUser } = await supabase
         .from('whitelist_users')
-        .select('is_active, fecha_nacimiento')
+        .select('is_active, fecha_nacimiento, dni')
         .eq('email', user.email.toLowerCase().trim())
         .maybeSingle();
 
@@ -78,8 +78,8 @@ export async function middleware(request) {
           return NextResponse.redirect(new URL('/perfil/reactivar', request.url));
         }
 
-        // 2. Validar Onboarding (fecha de nacimiento vacía)
-        if (!dbUser.fecha_nacimiento) {
+        // 2. Validar Onboarding (fecha de nacimiento o dni vacíos)
+        if (!dbUser.fecha_nacimiento || !dbUser.dni) {
           return NextResponse.redirect(new URL('/perfil/onboarding', request.url));
         }
       }

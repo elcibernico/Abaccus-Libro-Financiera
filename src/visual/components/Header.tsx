@@ -12,6 +12,7 @@ export default function Header() {
   const { theme, toggleTheme } = usePreferences();
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [roleInfo, setRoleInfo] = useState<{ role: string; realRole: string } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -38,6 +39,24 @@ export default function Header() {
     };
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      fetch('/api/auth/me')
+        .then(res => res.json())
+        .then(data => {
+          if (data.authenticated) {
+            setRoleInfo({
+              role: data.user.role,
+              realRole: data.user.realRole
+            });
+          }
+        })
+        .catch(err => console.error('Error fetching role info:', err));
+    } else {
+      setRoleInfo(null);
+    }
+  }, [user]);
+
   const handleLogout = async () => {
     const res = await signOutUser();
     if (res.success) {
@@ -53,6 +72,23 @@ export default function Header() {
 
   return (
     <header className={`header-main ${scrolled ? 'scrolled' : ''}`}>
+      {roleInfo && roleInfo.role !== roleInfo.realRole && (
+        <div className="impersonation-banner">
+          <span>
+            Simulando rol: <strong>{roleInfo.role.toUpperCase()}</strong> (Rol real: {roleInfo.realRole.toUpperCase()})
+          </span>
+          <button onClick={async () => {
+            await fetch('/api/auth/impersonate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ role: null })
+            });
+            window.location.reload();
+          }} className="banner-restore-btn">
+            Restaurar Rol Real
+          </button>
+        </div>
+      )}
       <div className="header-content">
         {/* Lado Izquierdo: Logo y Títulos */}
         <div className="header-left">
@@ -127,6 +163,40 @@ export default function Header() {
       </div>
 
       <style jsx>{`
+        .impersonation-banner {
+          background-color: #ea580c;
+          color: white;
+          padding: 0.5rem 2rem;
+          font-size: 0.85rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1rem;
+          font-weight: 600;
+          width: calc(100% + 4rem);
+          margin-top: -1rem;
+          margin-left: -2rem;
+          margin-bottom: 1rem;
+        }
+        .header-main.scrolled .impersonation-banner {
+          margin-top: -0.6rem;
+          margin-bottom: 0.6rem;
+        }
+        .banner-restore-btn {
+          background: rgba(255, 255, 255, 0.2);
+          border: 1px solid white;
+          color: white;
+          padding: 0.2rem 0.6rem;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: 750;
+          font-size: 0.75rem;
+          transition: var(--transition);
+        }
+        .banner-restore-btn:hover {
+          background: white;
+          color: #ea580c;
+        }
         .header-main {
           position: fixed;
           top: 0;

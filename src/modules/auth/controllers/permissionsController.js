@@ -183,7 +183,7 @@ export async function checkUserPermission(email, permissionKey) {
 /**
  * Agrega un nuevo usuario a la lista blanca.
  */
-export async function addAuthorizedUser(email, name = '', role = 'user', celular = '', permissions = {}, nombre = '', apellido = '', fecha_nacimiento = null, legajo = '') {
+export async function addAuthorizedUser(email, name = '', role = 'user', celular = '', permissions = {}, nombre = '', apellido = '', fecha_nacimiento = null, legajo = '', dni = '') {
   try {
     const formattedEmail = email.toLowerCase().trim();
     const formattedName = name.trim();
@@ -239,6 +239,7 @@ export async function addAuthorizedUser(email, name = '', role = 'user', celular
             permissions: defaults, // Guardar objeto JSONB
             nombre: nombre.trim() || null,
             apellido: apellido.trim() || null,
+            dni: dni.trim() || null,
             fecha_nacimiento: fecha_nacimiento || null,
             legajo: legajo.trim() || null,
             is_active: true
@@ -406,7 +407,10 @@ export async function approvePendingUser(email, role = 'user', celular = '') {
       userCelular,
       {},
       pending.nombre || '',
-      pending.apellido || ''
+      pending.apellido || '',
+      pending.fecha_nacimiento || null,
+      pending.legajo || '',
+      pending.dni || ''
     );
     if (!addRes.success) {
       return addRes;
@@ -464,6 +468,7 @@ export async function updateUserProfile(email, profileData) {
       .update({
         nombre: profileData.nombre?.trim() || null,
         apellido: profileData.apellido?.trim() || null,
+        dni: profileData.dni?.trim() || null,
         fecha_nacimiento: profileData.fecha_nacimiento || null,
         legajo: profileData.legajo?.trim() || null,
         celular: profileData.celular?.trim() || null,

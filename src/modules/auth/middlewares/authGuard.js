@@ -3,7 +3,9 @@ import { createClient } from '@/core/security/supabaseServer';
 import { verifyUserAndIP, getClientIp } from '@/core/security/securityService';
 import { checkUserPermission } from '../controllers/permissionsController';
 import { NextResponse } from 'next/server';
-import { headers } from 'next/headers';
+import { headers, cookies } from 'next/headers';
+import { ROLE_HIERARCHY, getDefaultPermissionsForRole } from '@/config/rolesConfig';
+import { getAuthorizedUserByEmail } from '@/database/dimensions/users';
 
 /**
  * Verifica si el usuario actual está autenticado en Supabase.
@@ -35,19 +37,47 @@ export async function requirePermission(permissionKey) {
     };
   }
 
-  const hasPermission = await checkUserPermission(user.email, permissionKey);
-  
-  if (!hasPermission) {
+  // Obtener el rol real de la base de datos
+  const dbUser = await getAuthorizedUserByEmail(user.email, 'supabase');
+  if (!dbUser) {
     return {
       authorized: false,
       response: NextResponse.json(
-        { error: 'Acceso denegado. Permisos insuficientes.' },
+        { error: 'Acceso denegado. Usuario no encontrado en la whitelist.' },
         { status: 403 }
       )
     };
   }
 
-  return { authorized: true, user };
+  const cookieStore = await cookies();
+  const activeRoleCookie = cookieStore.get('active_role')?.value;
+
+  const realRole = dbUser.role || 'guest';
+  let activeRole = realRole;
+
+  if (activeRoleCookie && ROLE_HIERARCHY[activeRoleCookie] < ROLE_HIERARCHY[realRole]) {
+    activeRole = activeRoleCookie;
+  }
+
+  let hasPermission = false;
+  if (activeRole !== realRole) {
+    const defaultPerms = getDefaultPermissionsForRole(activeRole);
+    hasPermission = !!defaultPerms[permissionKey];
+  } else {
+    hasPermission = await checkUserPermission(user.email, permissionKey);
+  }
+  
+  if (!hasPermission) {
+    return {
+      authorized: false,
+      response: NextResponse.json(
+        { error: `Acceso denegado. Permisos insuficientes${activeRole !== realRole ? ` (simulando ${activeRole})` : ''}.` },
+        { status: 403 }
+      )
+    };
+  }
+
+  return { authorized: true, user: { ...user, role: activeRole } };
 }
 
 /**
@@ -85,6 +115,19 @@ export async function requireAdmin() {
 
   const authorizedUser = securityCheck.user;
 
+  // Evaluar suplantación de rol (Role Impersonation)
+  const cookieStore = await cookies();
+  const activeRoleCookie = cookieStore.get('active_role')?.value;
+  const realRole = authorizedUser.role || 'guest';
+  let activeRole = realRole;
+
+  if (activeRoleCookie && ROLE_HIERARCHY[activeRoleCookie] < ROLE_HIERARCHY[realRole]) {
+    activeRole = activeRoleCookie;
+    // Sobrescribir los datos en memoria para esta validación
+    authorizedUser.role = activeRole;
+    authorizedUser.permissions = getDefaultPermissionsForRole(activeRole);
+  }
+
   // Únicamente se permite el paso si el rol es admin o root
   if (authorizedUser.role !== 'admin' && authorizedUser.role !== 'root') {
     return {
@@ -95,3 +138,4 @@ export async function requireAdmin() {
 
   return { authorized: true, user: authorizedUser };
 }
+
