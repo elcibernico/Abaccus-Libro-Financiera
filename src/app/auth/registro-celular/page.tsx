@@ -9,6 +9,8 @@ function RegistroCelularForm() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState('');
   const [celular, setCelular] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -24,11 +26,26 @@ function RegistroCelularForm() {
     }
     if (nameParam) {
       setName(nameParam);
+      const parts = nameParam.trim().split(/\s+/);
+      if (parts.length > 1) {
+        setNombre(parts[0]);
+        setApellido(parts.slice(1).join(' '));
+      } else {
+        setNombre(nameParam);
+      }
     }
   }, [searchParams, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!nombre.trim()) {
+      setErrorMsg('Por favor ingresa tu nombre.');
+      return;
+    }
+    if (!apellido.trim()) {
+      setErrorMsg('Por favor ingresa tu apellido.');
+      return;
+    }
     if (!celular.trim()) {
       setErrorMsg('Por favor ingresa tu número de celular.');
       return;
@@ -45,7 +62,9 @@ function RegistroCelularForm() {
         },
         body: JSON.stringify({
           email,
-          name,
+          name: `${nombre.trim()} ${apellido.trim()}`.trim(),
+          nombre: nombre.trim(),
+          apellido: apellido.trim(),
           celular: celular.trim(),
         }),
       });
@@ -191,20 +210,35 @@ function RegistroCelularForm() {
           </div>
         </div>
 
-        {name && (
-          <div className="form-group">
-            <label className="form-label">Nombre Completo</label>
-            <div className="input-wrapper disabled-wrapper">
-              <User className="input-icon" size={16} />
-              <input
-                type="text"
-                value={name}
-                disabled
-                className="register-input"
-              />
-            </div>
+        <div className="form-group">
+          <label className="form-label highlight-label">Nombre</label>
+          <div className="input-wrapper active-wrapper">
+            <User className="input-icon active-icon" size={16} />
+            <input
+              type="text"
+              placeholder="Tu nombre"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              required
+              className="register-input active-input"
+            />
           </div>
-        )}
+        </div>
+
+        <div className="form-group">
+          <label className="form-label highlight-label">Apellido</label>
+          <div className="input-wrapper active-wrapper">
+            <User className="input-icon active-icon" size={16} />
+            <input
+              type="text"
+              placeholder="Tu apellido"
+              value={apellido}
+              onChange={(e) => setApellido(e.target.value)}
+              required
+              className="register-input active-input"
+            />
+          </div>
+        </div>
 
         <div className="form-group">
           <label className="form-label highlight-label">Número de Celular / Teléfono</label>

@@ -99,12 +99,25 @@ export async function getAuthorizedUserByEmail(email, provider, options = {}) {
 
       if (user) {
         const jsonbPermissions = typeof user.permissions === 'object' ? user.permissions : {};
+        
+        // Construir name de forma robusta a partir de nombre y apellido si existen
+        let displayName = user.name || '';
+        if (user.nombre || user.apellido) {
+          displayName = `${user.nombre || ''} ${user.apellido || ''}`.trim();
+        }
+
         dbUser = {
           id: user.id,
           email: user.email,
-          name: user.name || '',
+          name: displayName,
+          nombre: user.nombre || '',
+          apellido: user.apellido || '',
+          fecha_nacimiento: user.fecha_nacimiento || null,
+          legajo: user.legajo || '',
           celular: user.celular || '',
           role: user.role || 'guest',
+          is_active: user.is_active !== false,
+          deleted_at: user.deleted_at || null,
           permissions: {
             may_export_pdf: user.may_export_pdf === true || jsonbPermissions.may_export_pdf === true,
             may_edit_records: user.may_edit_records === true || jsonbPermissions.may_edit_records === true,

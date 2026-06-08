@@ -99,7 +99,7 @@ function formatPhoneNumber(rawPhone, countryPrefix) {
 
 export async function POST(request) {
   try {
-    const { email, name, celular } = await request.json();
+    const { email, name, nombre, apellido, celular } = await request.json();
 
     if (!email) {
       return NextResponse.json({ error: 'El email es requerido.' }, { status: 400 });
@@ -122,7 +122,7 @@ export async function POST(request) {
     
     console.log(`[Register Pending]: Registrando ${email} con celular formateado: ${formattedCelular} (IP: ${ip}, País: ${ipInfo.country})`);
 
-    const result = await registerPendingUser(email, name, formattedCelular);
+    const result = await registerPendingUser(email, name, formattedCelular, nombre, apellido);
 
     if (result.success) {
       return NextResponse.json({ success: true });

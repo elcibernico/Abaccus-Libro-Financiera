@@ -186,6 +186,25 @@ export default function DashboardClient({ user, modules, versions }: DashboardCl
               );
             })}
 
+          {/* Tarjeta especial "Mi Perfil" */}
+          <div 
+            className="module-card glass-card clickable profile-card"
+            onClick={() => router.push('/perfil')}
+            style={{ cursor: 'pointer' }}
+          >
+            <div className="card-gradient bg-gradient-to-br from-emerald-500 to-teal-600" />
+            <div className="card-content-inner">
+              <div className="card-header">
+                <div className="icon-wrapper profile-icon" style={{ color: 'hsl(var(--primary))' }}>
+                  <Users size={24} />
+                </div>
+                <span className="status-tag tag-active" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>Ingresar</span>
+              </div>
+              <h4 className="module-name">Mi Perfil</h4>
+              <p className="module-desc">Visualiza tu legajo, edita tu información personal y gestiona el estado de tu suscripción.</p>
+            </div>
+          </div>
+
           {/* Tarjeta especial del Administrador */}
           {(user.role === 'admin' || user.role === 'root') && (
             <div 

@@ -56,6 +56,36 @@ export async function middleware(request) {
     if (pathname === '/login') {
       return NextResponse.redirect(new URL('/', request.url));
     }
+
+    // Evitar bucle de redirección en las páginas de onboarding y reactivación
+    if (
+      pathname.startsWith('/perfil/onboarding') ||
+      pathname.startsWith('/perfil/reactivar')
+    ) {
+      return response;
+    }
+
+    try {
+      const { data: dbUser } = await supabase
+        .from('whitelist_users')
+        .select('is_active, fecha_nacimiento')
+        .eq('email', user.email.toLowerCase().trim())
+        .maybeSingle();
+
+      if (dbUser) {
+        // 1. Validar si está inactivo (Soft Deleted / Suspendido)
+        if (dbUser.is_active === false) {
+          return NextResponse.redirect(new URL('/perfil/reactivar', request.url));
+        }
+
+        // 2. Validar Onboarding (fecha de nacimiento vacía)
+        if (!dbUser.fecha_nacimiento) {
+          return NextResponse.redirect(new URL('/perfil/onboarding', request.url));
+        }
+      }
+    } catch (err) {
+      console.error('[Middleware DB Query Error]:', err);
+    }
   } else {
     // Si NO está logueado y trata de acceder a cualquier página que no sea /login, forzar login
     if (pathname !== '/login') {

@@ -183,7 +183,7 @@ export async function checkUserPermission(email, permissionKey) {
 /**
  * Agrega un nuevo usuario a la lista blanca.
  */
-export async function addAuthorizedUser(email, name = '', role = 'user', celular = '', permissions = {}) {
+export async function addAuthorizedUser(email, name = '', role = 'user', celular = '', permissions = {}, nombre = '', apellido = '', fecha_nacimiento = null, legajo = '') {
   try {
     const formattedEmail = email.toLowerCase().trim();
     const formattedName = name.trim();
@@ -201,7 +201,7 @@ export async function addAuthorizedUser(email, name = '', role = 'user', celular
       const rowValues = [
         newId,
         formattedEmail,
-        formattedName,
+        formattedName || `${nombre.trim()} ${apellido.trim()}`.trim(),
         role,
         defaults.may_export_pdf ? 'TRUE' : 'FALSE',
         defaults.may_edit_records ? 'TRUE' : 'FALSE',
@@ -217,7 +217,7 @@ export async function addAuthorizedUser(email, name = '', role = 'user', celular
       await prismaClient.create({
         data: {
           email: formattedEmail,
-          name: formattedName,
+          name: formattedName || `${nombre.trim()} ${apellido.trim()}`.trim(),
           role,
           celular: formattedCelular,
           permissions: {
@@ -233,10 +233,15 @@ export async function addAuthorizedUser(email, name = '', role = 'user', celular
         .insert([
           {
             email: formattedEmail,
-            name: formattedName,
+            name: formattedName || `${nombre.trim()} ${apellido.trim()}`.trim(),
             role,
             celular: formattedCelular,
             permissions: defaults, // Guardar objeto JSONB
+            nombre: nombre.trim() || null,
+            apellido: apellido.trim() || null,
+            fecha_nacimiento: fecha_nacimiento || null,
+            legajo: legajo.trim() || null,
+            is_active: true
           }
         ]);
 
@@ -295,7 +300,7 @@ export async function removeAuthorizedUser(email) {
 /**
  * Registra un intento de acceso fallido en la lista de usuarios en suspenso.
  */
-export async function registerPendingUser(email, name = '', celular = '') {
+export async function registerPendingUser(email, name = '', celular = '', nombre = '', apellido = '') {
   try {
     const formattedEmail = email.toLowerCase().trim();
     if (DB_PROVIDER !== 'supabase') {
@@ -317,14 +322,16 @@ export async function registerPendingUser(email, name = '', celular = '') {
       return { success: true };
     }
 
-    // Insertar en la tabla
+    // Insertar en la tabla con los nuevos campos
     const { error } = await supabase
       .from('whitelist_pending')
       .insert([
         {
           email: formattedEmail,
-          name: name.trim(),
+          name: name.trim() || `${nombre.trim()} ${apellido.trim()}`.trim(),
           celular: celular.trim(),
+          nombre: nombre.trim() || null,
+          apellido: apellido.trim() || null
         }
       ]);
 
@@ -335,7 +342,7 @@ export async function registerPendingUser(email, name = '', celular = '') {
     // Disparar correo de aviso a ndemartis@fcecon.unr.edu.ar
     await sendPendingUserAlertEmail({
       email: formattedEmail,
-      name,
+      name: name.trim() || `${nombre.trim()} ${apellido.trim()}`.trim(),
       celular
     });
 
@@ -391,8 +398,16 @@ export async function approvePendingUser(email, role = 'user', celular = '') {
     // Usar celular de la cola si no se pasa uno nuevo
     const userCelular = celular || pending.celular || '';
 
-    // 2. Mover a la lista blanca
-    const addRes = await addAuthorizedUser(formattedEmail, pending.name || '', role, userCelular);
+    // 2. Mover a la lista blanca con todos los datos disponibles
+    const addRes = await addAuthorizedUser(
+      formattedEmail,
+      pending.name || '',
+      role,
+      userCelular,
+      {},
+      pending.nombre || '',
+      pending.apellido || ''
+    );
     if (!addRes.success) {
       return addRes;
     }
@@ -432,6 +447,82 @@ export async function rejectPendingUser(email) {
     return { success: true };
   } catch (error) {
     console.error('[Permissions Controller Error] Error al rechazar usuario pendiente:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Actualiza el perfil de un usuario registrado en whitelist_users.
+ */
+export async function updateUserProfile(email, profileData) {
+  try {
+    const formattedEmail = email.toLowerCase().trim();
+    const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
+    
+    const { error } = await supabase
+      .from('whitelist_users')
+      .update({
+        nombre: profileData.nombre?.trim() || null,
+        apellido: profileData.apellido?.trim() || null,
+        fecha_nacimiento: profileData.fecha_nacimiento || null,
+        legajo: profileData.legajo?.trim() || null,
+        celular: profileData.celular?.trim() || null,
+        name: `${profileData.nombre || ''} ${profileData.apellido || ''}`.trim()
+      })
+      .eq('email', formattedEmail);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('[Permissions Controller Error] Error en updateUserProfile:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Desuscribir a un usuario (Soft Delete: is_active = false, deleted_at = NOW()).
+ */
+export async function softDeleteUser(email) {
+  try {
+    const formattedEmail = email.toLowerCase().trim();
+    const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
+    
+    const { error } = await supabase
+      .from('whitelist_users')
+      .update({
+        is_active: false,
+        deleted_at: new Date().toISOString()
+      })
+      .eq('email', formattedEmail);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('[Permissions Controller Error] Error en softDeleteUser:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Reactivar un usuario (is_active = true, deleted_at = null).
+ */
+export async function reactivateUser(email) {
+  try {
+    const formattedEmail = email.toLowerCase().trim();
+    const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
+    
+    const { error } = await supabase
+      .from('whitelist_users')
+      .update({
+        is_active: true,
+        deleted_at: null
+      })
+      .eq('email', formattedEmail);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('[Permissions Controller Error] Error en reactivateUser:', error);
     return { success: false, error: error.message };
   }
 }
