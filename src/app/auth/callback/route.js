@@ -16,7 +16,7 @@ export async function GET(request) {
       const email = session.user.email;
       
       // Obtener proveedor de persistencia activa y spreadsheetId desde env
-      const dbProvider = process.env.NEXT_PUBLIC_DATABASE_PROVIDER || 'spreadsheet';
+      const dbProvider = process.env.NEXT_PUBLIC_DATABASE_PROVIDER || 'supabase';
       const spreadsheetId = process.env.NEXT_PUBLIC_SPREADSHEET_ID || '';
       
       // Consultar la dimensión de usuarios autorizados (whitelist)

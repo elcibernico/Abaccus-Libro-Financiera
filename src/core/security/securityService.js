@@ -9,7 +9,7 @@ import { getWhitelistIps } from '@/database/dimensions/whitelistIps';
  * @returns {Promise<{authorized: boolean, error?: 'whitelist_rejected'|'ip_restricted', user?: object}>}
  */
 export async function verifyUserAndIP(email, clientIp) {
-  const provider = process.env.NEXT_PUBLIC_DATABASE_PROVIDER || 'spreadsheet';
+  const provider = process.env.NEXT_PUBLIC_DATABASE_PROVIDER || 'supabase';
   const spreadsheetId = process.env.NEXT_PUBLIC_SPREADSHEET_ID || '';
 
   // 1. Validar existencia en Whitelist (Lista blanca) de usuarios

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { requireAuth } from '@/modules/auth/middlewares/authGuard';
 import { getAuthorizedUserByEmail } from '@/database/dimensions/users';
 
-const DB_PROVIDER = process.env.NEXT_PUBLIC_DATABASE_PROVIDER || 'spreadsheet';
+const DB_PROVIDER = process.env.NEXT_PUBLIC_DATABASE_PROVIDER || 'supabase';
 const SPREADSHEET_ID = process.env.NEXT_PUBLIC_SPREADSHEET_ID || '';
 
 export async function GET() {

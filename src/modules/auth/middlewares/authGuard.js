@@ -54,18 +54,22 @@ export async function requirePermission(permissionKey) {
  * Guard para proteger vistas de administración (requiere rol de administrador/root e IP autorizada).
  */
 export async function requireAdmin() {
+  const headerList = await headers();
+  const host = headerList.get('host') || 'localhost:3000';
+  const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
+  const protocol = isLocal ? 'http' : (headerList.get('x-forwarded-proto') || 'https');
+  const siteUrl = `${protocol}://${host}`;
+
   const user = await requireAuth();
   
   if (!user) {
     return {
       authorized: false,
-      response: NextResponse.redirect(new URL('/login?error=session_expired', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'))
+      response: NextResponse.redirect(new URL('/login?error=session_expired', siteUrl))
     };
   }
 
   // Detectar la IP del cliente (Evitando IP Spoofing)
-  const headerList = await headers();
-  
   // 1. Priorizar cabeceras seguras inyectadas por proveedores de nube (Vercel, Cloudflare)
   const trustedIp = headerList.get('x-vercel-forwarded-for') || 
                     headerList.get('cf-connecting-ip') || 
@@ -95,7 +99,7 @@ export async function requireAdmin() {
     const errorType = securityCheck.error || 'unauthorized';
     return {
       authorized: false,
-      response: NextResponse.redirect(new URL(`/login?error=${errorType}`, process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'))
+      response: NextResponse.redirect(new URL(`/login?error=${errorType}`, siteUrl))
     };
   }
 
@@ -105,7 +109,7 @@ export async function requireAdmin() {
   if (authorizedUser.role !== 'admin' && authorizedUser.role !== 'root') {
     return {
       authorized: false,
-      response: NextResponse.redirect(new URL('/?error=unauthorized', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'))
+      response: NextResponse.redirect(new URL('/?error=unauthorized', siteUrl))
     };
   }
 
