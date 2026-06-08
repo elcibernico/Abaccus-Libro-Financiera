@@ -4,6 +4,8 @@ import { getAuthorizedUserByEmail } from '@/database/dimensions/users';
 import { getModulesList } from '@/database/dimensions/modules';
 import DashboardClient from './DashboardClient';
 import versions from '../versions.json';
+import { headers } from 'next/headers';
+import { verifyUserAndIP, getClientIp } from '@/core/security/securityService';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -17,14 +19,16 @@ export default async function DashboardPage() {
   const DB_PROVIDER = 'supabase';
   const SPREADSHEET_ID = process.env.NEXT_PUBLIC_SPREADSHEET_ID || '';
 
-  // Obtener rol y datos extendidos del usuario
-  const authorizedUser = await getAuthorizedUserByEmail(user.email, DB_PROVIDER, { spreadsheetId: SPREADSHEET_ID });
+  // Validar IP e integridad del usuario contra el Firewall de IPs
+  const headerList = await headers();
+  const clientIp = getClientIp(headerList);
+  const securityCheck = await verifyUserAndIP(user.email, clientIp);
 
-
-  // Si no está registrado en la whitelist, redirigir al login con error
-  if (!authorizedUser) {
-    redirect('/login?error=unauthorized');
+  if (!securityCheck.authorized) {
+    redirect(`/login?error=${securityCheck.error || 'unauthorized'}`);
   }
+
+  const authorizedUser = securityCheck.user;
 
   // Mapear el usuario autorizado de forma segura para satisfacer los tipos de TypeScript
   const userProps = {

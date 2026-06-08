@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/modules/auth/middlewares/authGuard';
 import { getAuthorizedUserByEmail } from '@/database/dimensions/users';
+import { headers } from 'next/headers';
+import { verifyUserAndIP, getClientIp } from '@/core/security/securityService';
 
 const DB_PROVIDER = 'supabase';
 const SPREADSHEET_ID = process.env.NEXT_PUBLIC_SPREADSHEET_ID || '';
@@ -12,7 +14,23 @@ export async function GET() {
     return NextResponse.json({ authenticated: false });
   }
 
-  const authorizedUser = await getAuthorizedUserByEmail(user.email, DB_PROVIDER, { spreadsheetId: SPREADSHEET_ID });
+  // Validar la IP contra el cortafuegos
+  const headerList = await headers();
+  const clientIp = getClientIp(headerList);
+  const securityCheck = await verifyUserAndIP(user.email, clientIp);
+
+  if (!securityCheck.authorized) {
+    return NextResponse.json(
+      { 
+        authenticated: false, 
+        error: securityCheck.error || 'unauthorized', 
+        blocked: true 
+      },
+      { status: 403 }
+    );
+  }
+
+  const authorizedUser = securityCheck.user;
   return NextResponse.json({
     authenticated: true,
     user: {

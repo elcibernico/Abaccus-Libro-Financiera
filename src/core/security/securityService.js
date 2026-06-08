@@ -9,6 +9,33 @@ let lastCacheTime = 0;
 const CACHE_TTL_MS = 60000; // 1 minuto de TTL
 
 /**
+ * Extrae de forma segura la IP real del cliente desde la lista de headers (evitando IP spoofing).
+ * @param {Headers} headerList Objeto de headers de Next.js
+ * @returns {string} IP extraída del cliente
+ */
+export function getClientIp(headerList) {
+  if (!headerList) return '127.0.0.1';
+  
+  // 1. Priorizar cabeceras seguras inyectadas por proveedores de nube (Vercel, Cloudflare, etc.)
+  const trustedIp = headerList.get('x-vercel-forwarded-for') || 
+                    headerList.get('cf-connecting-ip') || 
+                    headerList.get('x-real-ip');
+
+  if (trustedIp) {
+    return trustedIp.split(',')[0].trim();
+  }
+
+  // 2. Fallback a x-forwarded-for (tomando el último elemento para evitar spoofing)
+  const forwardedFor = headerList.get('x-forwarded-for');
+  if (forwardedFor) {
+    const ips = forwardedFor.split(',').map(ip => ip.trim());
+    return ips[ips.length - 1];
+  }
+
+  return '127.0.0.1';
+}
+
+/**
  * Valida de forma transversal si un usuario y su IP de origen tienen permitido el ingreso.
  * @param {string} email Correo a validar
  * @param {string} clientIp IP de origen del cliente

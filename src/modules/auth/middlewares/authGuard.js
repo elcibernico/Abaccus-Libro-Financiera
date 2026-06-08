@@ -1,6 +1,6 @@
 // authGuard.js - Interceptor de rutas protegidas y validación de ACL/RBAC en el servidor
 import { createClient } from '@/core/security/supabaseServer';
-import { verifyUserAndIP } from '@/core/security/securityService';
+import { verifyUserAndIP, getClientIp } from '@/core/security/securityService';
 import { checkUserPermission } from '../controllers/permissionsController';
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
@@ -70,27 +70,7 @@ export async function requireAdmin() {
   }
 
   // Detectar la IP del cliente (Evitando IP Spoofing)
-  // 1. Priorizar cabeceras seguras inyectadas por proveedores de nube (Vercel, Cloudflare)
-  const trustedIp = headerList.get('x-vercel-forwarded-for') || 
-                    headerList.get('cf-connecting-ip') || 
-                    headerList.get('x-real-ip');
-
-  let clientIp = '127.0.0.1';
-
-  if (trustedIp) {
-    // Si existe una cabecera segura, suele venir limpia o con la IP real primero.
-    clientIp = trustedIp.split(',')[0].trim();
-  } else {
-    // 2. Fallback a x-forwarded-for
-    // Precaución: El cliente puede forjar "x-forwarded-for: IP_FALSA". 
-    // El proxy añade la IP real al final de la cadena -> "IP_FALSA, IP_REAL_PROXY1"
-    // Por ende, NUNCA debemos tomar el índice [0] ciegamente. Tomamos el último.
-    const forwardedFor = headerList.get('x-forwarded-for');
-    if (forwardedFor) {
-      const ips = forwardedFor.split(',').map(ip => ip.trim());
-      clientIp = ips[ips.length - 1];
-    }
-  }
+  const clientIp = getClientIp(headerList);
 
   // Validar IP e integridad de Whitelist del usuario
   const securityCheck = await verifyUserAndIP(user.email, clientIp);

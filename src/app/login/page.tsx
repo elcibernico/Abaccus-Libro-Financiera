@@ -20,6 +20,8 @@ function LoginForm() {
     const errorParam = searchParams.get('error');
     if (errorParam === 'unauthorized') {
       setErrorMsg('Acceso denegado: Tu correo no se encuentra en la lista blanca de usuarios autorizados.');
+    } else if (errorParam === 'ip_restricted') {
+      setErrorMsg('Acceso bloqueado: Tu dirección IP actual no se encuentra en la lista de acceso permitido por el cortafuegos.');
     } else if (errorParam === 'pending') {
       setErrorMsg('Acceso en suspenso: Tu solicitud de ingreso ha sido registrada. Podrás acceder una vez que sea aprobada por el administrador.');
     } else if (errorParam === 'auth_failed') {
