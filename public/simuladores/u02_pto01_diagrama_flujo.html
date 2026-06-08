@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Capitalización y Actualización</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+  <style>
+    body {
+      background-color: #0f172a; /* bg-slate-900 */
+      color: white;
+      margin: 0;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+  </style>
+</head>
+<body class="flex flex-col md:flex-row h-screen w-screen p-4 gap-4">
+
+  <!-- Panel de Controles -->
+  <div class="w-full md:w-1/3 bg-slate-800 p-6 rounded-2xl shadow-xl flex flex-col gap-6 overflow-y-auto">
+    <h1 class="text-2xl font-bold text-blue-400">Diagrama Dinámico de Flujo</h1>
+    <p class="text-slate-300 text-sm">Visualiza la relación entre Capitalización y Actualización (Descuento).</p>
+
+    <!-- Tipo de Interés/Descuento -->
+    <div class="flex flex-col gap-2">
+      <label class="text-slate-200 font-semibold text-sm">Régimen</label>
+      <div class="flex gap-2 bg-slate-700 p-1 rounded-lg">
+        <button id="btn-simple" class="flex-1 py-2 text-sm font-semibold bg-blue-500 text-white rounded-md shadow transition-colors">Simple</button>
+        <button id="btn-compuesto" class="flex-1 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-colors">Compuesto</button>
+      </div>
+    </div>
+
+    <!-- Valor Base -->
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between">
+        <label class="text-slate-200 font-semibold text-sm">Valor Base ($C$ o $N$)</label>
+        <span id="val-base" class="text-emerald-400 font-bold">5000</span>
+      </div>
+      <input type="range" id="slider-base" min="1000" max="10000" step="500" value="5000" class="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer">
+    </div>
+
+    <!-- Tasa -->
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between">
+        <label class="text-slate-200 font-semibold text-sm">Tasa ($i$ o $d$)</label>
+        <span id="val-tasa" class="text-emerald-400 font-bold">10%</span>
+      </div>
+      <input type="range" id="slider-tasa" min="1" max="20" step="1" value="10" class="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer">
+    </div>
+
+    <!-- Tiempo -->
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between">
+        <label class="text-slate-200 font-semibold text-sm">Tiempo ($n$)</label>
+        <span id="val-tiempo" class="text-emerald-400 font-bold">5 períodos</span>
+      </div>
+      <input type="range" id="slider-tiempo" min="1" max="12" step="1" value="5" class="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer">
+    </div>
+
+    <!-- Fórmulas KaTeX -->
+    <div class="mt-auto bg-slate-900 p-4 rounded-xl shadow-inner border border-slate-700">
+      <div class="text-center text-sm font-semibold mb-2 text-emerald-400">Capitalización</div>
+      <div id="formula-cap" class="text-center text-lg">\KaTeX formula 1</div>
+      <div class="text-center text-sm font-semibold mb-2 mt-4 text-blue-400">Actualización</div>
+      <div id="formula-act" class="text-center text-lg">\KaTeX formula 2</div>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="w-full md:w-2/3 bg-slate-950 rounded-2xl shadow-xl relative overflow-hidden flex flex-col">
+    <canvas id="sim-canvas" class="w-full h-full"></canvas>
+  </div>
+
+  <script>
+    // Variables de Estado
+    let regimen = 'simple'; // 'simple' | 'compuesto'
+    let C = 5000;
+    let tasa = 0.10;
+    let n = 5;
+
+    // Referencias UI
+    const btnSimple = document.getElementById('btn-simple');
+    const btnCompuesto = document.getElementById('btn-compuesto');
+    const sliderBase = document.getElementById('slider-base');
+    const valBase = document.getElementById('val-base');
+    const sliderTasa = document.getElementById('slider-tasa');
+    const valTasa = document.getElementById('val-tasa');
+    const sliderTiempo = document.getElementById('slider-tiempo');
+    const valTiempo = document.getElementById('val-tiempo');
+    const formulaCap = document.getElementById('formula-cap');
+    const formulaAct = document.getElementById('formula-act');
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Partículas
+    let particlesCap = [];
+    let particlesAct = [];
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function updateMath() {
+      let fCap, fAct;
+      let M, V;
+
+      if (regimen === 'simple') {
+        fCap = `M = C(1 + i \\cdot n) \\Rightarrow M = ${C}(1 + ${tasa.toFixed(2)} \\cdot ${n})`;
+        fAct = `V = N(1 - d \\cdot n) \\Rightarrow V = ${C}(1 - ${tasa.toFixed(2)} \\cdot ${n})`;
+        M = C * (1 + tasa * n);
+        V = C * (1 - tasa * n);
+      } else {
+        fCap = `M = C(1 + i)^n \\Rightarrow M = ${C}(1 + ${tasa.toFixed(2)})^{${n}}`;
+        fAct = `V = N(1 - d)^n \\Rightarrow V = ${C}(1 - ${tasa.toFixed(2)})^{${n}}`;
+        M = C * Math.pow(1 + tasa, n);
+        V = C * Math.pow(1 - tasa, n);
+      }
+
+      formulaCap.innerHTML = `\\[${fCap}\\] \\[M = ${M.toFixed(2)}\\]`;
+      formulaAct.innerHTML = `\\[${fAct}\\] \\[V = ${Math.max(0, V).toFixed(2)}\\]`;
+
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body);
+      }
+    }
+
+    function updateState() {
+      C = parseInt(sliderBase.value);
+      valBase.innerText = C;
+      tasa = parseInt(sliderTasa.value) / 100;
+      valTasa.innerText = parseInt(sliderTasa.value) + '%';
+      n = parseInt(sliderTiempo.value);
+      valTiempo.innerText = n + (n === 1 ? ' período' : ' períodos');
+      updateMath();
+    }
+
+    // Event Listeners
+    btnSimple.addEventListener('click', () => {
+      regimen = 'simple';
+      btnSimple.classList.replace('bg-slate-700', 'bg-blue-500');
+      btnSimple.classList.replace('text-slate-300', 'text-white');
+      btnCompuesto.classList.replace('bg-blue-500', 'bg-slate-700');
+      btnCompuesto.classList.replace('text-white', 'text-slate-300');
+      btnCompuesto.classList.add('bg-transparent');
+      btnSimple.classList.remove('bg-transparent');
+      updateState();
+    });
+
+    btnCompuesto.addEventListener('click', () => {
+      regimen = 'compuesto';
+      btnCompuesto.classList.add('bg-blue-500', 'text-white');
+      btnCompuesto.classList.remove('bg-transparent', 'text-slate-300');
+      btnSimple.classList.add('bg-transparent', 'text-slate-300');
+      btnSimple.classList.remove('bg-blue-500', 'text-white');
+      updateState();
+    });
+
+    sliderBase.addEventListener('input', updateState);
+    sliderTasa.addEventListener('input', updateState);
+    sliderTiempo.addEventListener('input', updateState);
+
+    class Particle {
+      constructor(x, y, targetX, targetY, color) {
+        this.startX = x;
+        this.startY = y;
+        this.x = x;
+        this.y = y;
+        this.targetX = targetX;
+        this.targetY = targetY;
+        this.progress = 0;
+        this.speed = 0.005 + Math.random() * 0.005;
+        this.color = color;
+        this.offsetY = (Math.random() - 0.5) * 40;
+      }
+      update() {
+        this.progress += this.speed;
+        if (this.progress > 1) this.progress = 0;
+        this.x = this.startX + (this.targetX - this.startX) * this.progress;
+        this.y = this.startY + Math.sin(this.progress * Math.PI * 2) * this.offsetY;
+      }
+      draw(ctx) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
+      }
+    }
+
+    function spawnParticles() {
+      const padding = 100;
+      const startX = padding;
+      const endX = canvas.width - padding;
+      
+      const topY = canvas.height * 0.3;
+      const botY = canvas.height * 0.7;
+
+      if (particlesCap.length < 50) {
+        particlesCap.push(new Particle(startX, topY, endX, topY, '#34d399')); // emerald-400
+      }
+      if (particlesAct.length < 50) {
+        particlesAct.push(new Particle(endX, botY, startX, botY, '#60a5fa')); // blue-400
+      }
+    }
+
+    function drawScene() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const padding = 100;
+      const startX = padding;
+      const endX = canvas.width - padding;
+      const topY = canvas.height * 0.3;
+      const botY = canvas.height * 0.7;
+
+      // Calcular montos
+      let M, V;
+      if (regimen === 'simple') {
+        M = C * (1 + tasa * n);
+        V = C * (1 - tasa * n);
+      } else {
+        M = C * Math.pow(1 + tasa, n);
+        V = C * Math.pow(1 - tasa, n);
+      }
+
+      // Tamaños relativos
+      const baseRadius = 30 + (C / 10000) * 20;
+      const mRadius = 30 + (M / 10000) * 20;
+      const vRadius = Math.max(10, 30 + (V / 10000) * 20);
+
+      // Líneas centrales
+      ctx.beginPath();
+      ctx.moveTo(startX, topY);
+      ctx.lineTo(endX, topY);
+      ctx.strokeStyle = '#334155'; // slate-700
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(startX, botY);
+      ctx.lineTo(endX, botY);
+      ctx.stroke();
+
+      // Esferas Capitalización
+      drawSphere(startX, topY, baseRadius, '#059669', 'C (Capital)');
+      drawSphere(endX, topY, mRadius, '#10b981', 'M (Monto)');
+      
+      // Flecha Cap
+      drawArrow(startX + baseRadius + 10, topY - 50, endX - mRadius - 10, topY - 50, '#34d399', 'Capitalización (t=0 -> t=n)');
+
+      // Esferas Actualización
+      drawSphere(endX, botY, baseRadius, '#2563eb', 'N (Nominal)');
+      drawSphere(startX, botY, vRadius, '#3b82f6', 'V (Actual)');
+      
+      // Flecha Act
+      drawArrow(endX - baseRadius - 10, botY - 50, startX + vRadius + 10, botY - 50, '#60a5fa', 'Actualización (t=n -> t=0)');
+
+      // Partículas
+      spawnParticles();
+      particlesCap.forEach(p => { p.update(); p.draw(ctx); });
+      particlesAct.forEach(p => { p.update(); p.draw(ctx); });
+
+      requestAnimationFrame(drawScene);
+    }
+
+    function drawSphere(x, y, radius, color, label) {
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = color;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = '#fff';
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x, y + radius + 20);
+    }
+
+    function drawArrow(x1, y1, x2, y2, color, text) {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Cabeza
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - 15 * Math.cos(angle - Math.PI/6), y2 - 15 * Math.sin(angle - Math.PI/6));
+      ctx.lineTo(x2 - 15 * Math.cos(angle + Math.PI/6), y2 - 15 * Math.sin(angle + Math.PI/6));
+      ctx.lineTo(x2, y2);
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      // Texto
+      ctx.fillStyle = '#94a3b8'; // slate-400
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, (x1 + x2)/2, Math.min(y1, y2) - 10);
+    }
+
+    // Init
+    btnCompuesto.classList.add('bg-transparent');
+    updateState();
+    drawScene();
+  </script>
+</body>
+</html>

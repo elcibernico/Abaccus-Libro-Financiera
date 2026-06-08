@@ -22,10 +22,25 @@ export async function GET(request) {
       // Consultar la dimensión de usuarios autorizados (whitelist)
       const authorizedUser = await getAuthorizedUserByEmail(email, dbProvider, { spreadsheetId });
       
-      // Si no existe ID de usuario (no está registrado en la lista blanca) o tiene rol restrictivo 'guest'
-      // Cerramos la sesión de inmediato por seguridad y denegamos el ingreso.
-      if (!authorizedUser || !authorizedUser.id || authorizedUser.role === 'guest') {
-        console.warn(`[Auth Security Whitelist]: Acceso denegado para el correo: ${email}`);
+      // Si no existe el usuario en la lista blanca, lo redirigimos a completar celular
+      if (!authorizedUser || !authorizedUser.id) {
+        console.warn(`[Auth Security Whitelist]: Usuario no registrado en la lista blanca: ${email}. Redirigiendo a registro de celular.`);
+        
+        const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || '';
+        
+        // Cerramos la sesión activa de Supabase inmediatamente por seguridad
+        await supabase.auth.signOut();
+        
+        // Redirigir a la página de carga de celular
+        const redirectUrl = new URL('/auth/registro-celular', request.url);
+        redirectUrl.searchParams.set('email', email);
+        redirectUrl.searchParams.set('name', name);
+        return NextResponse.redirect(redirectUrl);
+      }
+
+      // Si existe pero su rol es restrictivo 'guest' (invitado / suspendido voluntariamente)
+      if (authorizedUser.role === 'guest') {
+        console.warn(`[Auth Security Whitelist]: Acceso denegado por rol restrictivo 'guest' para el correo: ${email}`);
         await supabase.auth.signOut();
         return NextResponse.redirect(new URL('/login?error=unauthorized', request.url));
       }

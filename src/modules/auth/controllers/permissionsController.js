@@ -2,6 +2,8 @@
 import { queryDatabase } from '@/database/connection';
 import { updateSpreadsheetRow } from '@/database/connections/spreadsheet';
 import { getAuthorizedUserByEmail } from '@/database/dimensions/users';
+import { sendPendingUserAlertEmail } from '../services/emailService';
+import { getDefaultPermissionsForRole } from '@/config/rolesConfig';
 
 const DB_PROVIDER = process.env.NEXT_PUBLIC_DATABASE_PROVIDER || 'spreadsheet';
 const SPREADSHEET_ID = process.env.NEXT_PUBLIC_SPREADSHEET_ID || '';
@@ -13,13 +15,12 @@ const SPREADSHEET_ID = process.env.NEXT_PUBLIC_SPREADSHEET_ID || '';
 export async function getAllUsers() {
   try {
     if (DB_PROVIDER === 'spreadsheet') {
-      // Usamos un rango A1:G100 para abarcar todas las columnas de permisos
       const usersList = await queryDatabase({
         provider: 'spreadsheet',
         target: 'Usuarios!A1:G100',
         options: {
           spreadsheetId: SPREADSHEET_ID,
-          forceRefresh: true // Forzar refresco para ver cambios en tiempo real
+          forceRefresh: true
         }
       });
 
@@ -27,6 +28,7 @@ export async function getAllUsers() {
         id: u.id,
         email: u.email,
         name: u.name || '',
+        celular: u.celular || '',
         role: u.role || 'guest',
         permissions: {
           may_export_pdf: u.may_export_pdf === 'TRUE' || u.may_export_pdf === true || String(u.may_export_pdf).toUpperCase() === 'TRUE',
@@ -35,12 +37,37 @@ export async function getAllUsers() {
         }
       }));
     } else if (DB_PROVIDER === 'firestore') {
-      // Implementación Firestore si aplica en el futuro
       return [];
     } else if (DB_PROVIDER === 'prisma') {
       const prismaClient = await queryDatabase({ provider: 'prisma', target: 'user' });
       return await prismaClient.findMany({
         include: { permissions: true }
+      });
+    } else if (DB_PROVIDER === 'supabase') {
+      const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
+      const { data: users, error } = await supabase
+        .from('whitelist_users')
+        .select('*')
+        .order('email', { ascending: true });
+      if (error) {
+        throw error;
+      }
+      return (users || []).map(u => {
+        // Combinar columna jsonb con individuales para máxima compatibilidad
+        const jsonbPermissions = typeof u.permissions === 'object' ? u.permissions : {};
+        return {
+          id: u.id,
+          email: u.email,
+          name: u.name || '',
+          celular: u.celular || '',
+          role: u.role || 'guest',
+          permissions: {
+            may_export_pdf: u.may_export_pdf === true || jsonbPermissions.may_export_pdf === true,
+            may_edit_records: u.may_edit_records === true || jsonbPermissions.may_edit_records === true,
+            may_view_advanced_charts: u.may_view_advanced_charts === true || jsonbPermissions.may_view_advanced_charts === true,
+            ...jsonbPermissions
+          }
+        };
       });
     }
     return [];
@@ -51,18 +78,18 @@ export async function getAllUsers() {
 }
 
 /**
- * Actualiza los permisos y rol de un usuario específico.
+ * Actualiza los permisos, celular y rol de un usuario específico.
  * @param {string} email Correo del usuario
  * @param {object} permissions Mapa de permisos a actualizar
- * @param {string} role Rol del usuario (ej: 'admin', 'user', 'guest')
+ * @param {string} role Rol del usuario
+ * @param {string} celular Celular opcional a actualizar
  * @returns {Promise<{success: boolean, error?: string}>}
  */
-export async function updateUserPermissions(email, permissions, role) {
+export async function updateUserPermissions(email, permissions, role, celular = undefined) {
   try {
     const formattedEmail = email.toLowerCase().trim();
 
     if (DB_PROVIDER === 'spreadsheet') {
-      // 1. Obtener los usuarios para encontrar el índice de fila
       const rawUsers = await queryDatabase({
         provider: 'spreadsheet',
         target: 'Usuarios!A1:G100',
@@ -72,10 +99,7 @@ export async function updateUserPermissions(email, permissions, role) {
         }
       });
 
-      // El índice de fila en Sheets es 1-based y la fila 1 son las cabeceras.
-      // Así que sumamos 2 al índice encontrado en rawUsers.
       const userIndex = rawUsers.findIndex(u => u.email && u.email.toLowerCase().trim() === formattedEmail);
-      
       if (userIndex === -1) {
         return { success: false, error: 'Usuario no encontrado en la lista blanca.' };
       }
@@ -83,8 +107,6 @@ export async function updateUserPermissions(email, permissions, role) {
       const rowNumber = userIndex + 2; 
       const userObj = rawUsers[userIndex];
 
-      // 2. Preparar los nuevos valores manteniendo ID y Nombre intactos
-      // Columnas: id, email, name, role, may_export_pdf, may_edit_records, may_view_advanced_charts
       const updatedRowValues = [
         userObj.id,
         userObj.email,
@@ -92,26 +114,50 @@ export async function updateUserPermissions(email, permissions, role) {
         role,
         permissions.may_export_pdf ? 'TRUE' : 'FALSE',
         permissions.may_edit_records ? 'TRUE' : 'FALSE',
-        permissions.may_view_advanced_charts ? 'TRUE' : 'FALSE'
+        permissions.may_view_advanced_charts ? 'TRUE' : 'FALSE',
+        celular !== undefined ? celular : (userObj.celular || '')
       ];
 
-      await updateSpreadsheetRow(SPREADSHEET_ID, `Usuarios!A${rowNumber}:G${rowNumber}`, updatedRowValues);
+      await updateSpreadsheetRow(SPREADSHEET_ID, `Usuarios!A${rowNumber}:H${rowNumber}`, updatedRowValues);
       return { success: true };
     } else if (DB_PROVIDER === 'prisma') {
       const prismaClient = await queryDatabase({ provider: 'prisma', target: 'user' });
+      const updateData = { role };
+      if (celular !== undefined) {
+        updateData.celular = celular;
+      }
       await prismaClient.update({
         where: { email: formattedEmail },
         data: {
-          role,
+          ...updateData,
           permissions: {
             update: permissions
           }
         }
       });
       return { success: true };
+    } else if (DB_PROVIDER === 'supabase') {
+      const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
+      const updatePayload = {
+        role,
+        permissions: permissions, // Guardar objeto JSONB
+      };
+
+      if (celular !== undefined) {
+        updatePayload.celular = celular;
+      }
+
+      const { error } = await supabase
+        .from('whitelist_users')
+        .update(updatePayload)
+        .eq('email', formattedEmail);
+      if (error) {
+        throw error;
+      }
+      return { success: true };
     }
 
-    return { success: false, error: 'Proveedor de base de datos no compatible con actualizaciones dinámicas.' };
+    return { success: false, error: 'Proveedor de base de datos no compatible.' };
   } catch (error) {
     console.error('[Permissions Controller Error] Error al actualizar permisos:', error);
     return { success: false, error: error.message };
@@ -120,21 +166,272 @@ export async function updateUserPermissions(email, permissions, role) {
 
 /**
  * Valida si un usuario posee un permiso específico.
- * @param {string} email Correo del usuario
- * @param {string} permissionKey Clave del permiso (ej: 'may_export_pdf')
- * @returns {Promise<boolean>}
  */
 export async function checkUserPermission(email, permissionKey) {
   try {
     const user = await getAuthorizedUserByEmail(email, DB_PROVIDER, { spreadsheetId: SPREADSHEET_ID });
     if (!user) return false;
-    
-    // Si es administrador tiene todos los permisos por defecto
-    if (user.role === 'admin') return true;
+    if (user.role === 'admin' || user.role === 'root') return true;
 
     return !!user.permissions?.[permissionKey];
   } catch (error) {
     console.error(`[Permissions Verification Error] Error al verificar ${permissionKey}:`, error);
     return false;
+  }
+}
+
+/**
+ * Agrega un nuevo usuario a la lista blanca.
+ */
+export async function addAuthorizedUser(email, name = '', role = 'user', celular = '', permissions = {}) {
+  try {
+    const formattedEmail = email.toLowerCase().trim();
+    const formattedName = name.trim();
+    const formattedCelular = celular.trim();
+    
+    // Obtener los permisos por defecto según el rol si no se envían explícitamente
+    const defaultRolePerms = getDefaultPermissionsForRole(role);
+    const defaults = {
+      ...defaultRolePerms,
+      ...permissions
+    };
+
+    if (DB_PROVIDER === 'spreadsheet') {
+      const newId = `usr_${Date.now()}`;
+      const rowValues = [
+        newId,
+        formattedEmail,
+        formattedName,
+        role,
+        defaults.may_export_pdf ? 'TRUE' : 'FALSE',
+        defaults.may_edit_records ? 'TRUE' : 'FALSE',
+        defaults.may_view_advanced_charts ? 'TRUE' : 'FALSE',
+        formattedCelular
+      ];
+
+      const { appendSpreadsheetData } = await import('@/database/connections/spreadsheet');
+      await appendSpreadsheetData(SPREADSHEET_ID, 'Usuarios!A2:H2', [rowValues]);
+      return { success: true };
+    } else if (DB_PROVIDER === 'prisma') {
+      const prismaClient = await queryDatabase({ provider: 'prisma', target: 'user' });
+      await prismaClient.create({
+        data: {
+          email: formattedEmail,
+          name: formattedName,
+          role,
+          celular: formattedCelular,
+          permissions: {
+            create: defaults
+          }
+        }
+      });
+      return { success: true };
+    } else if (DB_PROVIDER === 'supabase') {
+      const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
+      const { error } = await supabase
+        .from('whitelist_users')
+        .insert([
+          {
+            email: formattedEmail,
+            name: formattedName,
+            role,
+            celular: formattedCelular,
+            permissions: defaults, // Guardar objeto JSONB
+          }
+        ]);
+
+      if (error) {
+        throw error;
+      }
+      return { success: true };
+    }
+
+    return { success: false, error: 'Proveedor de base de datos no compatible.' };
+  } catch (error) {
+    console.error('[Permissions Controller Error] Error al agregar usuario:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Elimina un usuario de la lista blanca.
+ */
+export async function removeAuthorizedUser(email) {
+  try {
+    const formattedEmail = email.toLowerCase().trim();
+
+    if (DB_PROVIDER === 'spreadsheet') {
+      return await updateUserPermissions(formattedEmail, {
+        may_export_pdf: false,
+        may_edit_records: false,
+        may_view_advanced_charts: false
+      }, 'guest');
+    } else if (DB_PROVIDER === 'prisma') {
+      const prismaClient = await queryDatabase({ provider: 'prisma', target: 'user' });
+      await prismaClient.delete({
+        where: { email: formattedEmail }
+      });
+      return { success: true };
+    } else if (DB_PROVIDER === 'supabase') {
+      const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
+      const { error } = await supabase
+        .from('whitelist_users')
+        .delete()
+        .eq('email', formattedEmail);
+
+      if (error) {
+        throw error;
+      }
+      return { success: true };
+    }
+
+    return { success: false, error: 'Proveedor de base de datos no compatible.' };
+  } catch (error) {
+    console.error('[Permissions Controller Error] Error al eliminar usuario:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Registra un intento de acceso fallido en la lista de usuarios en suspenso.
+ */
+export async function registerPendingUser(email, name = '', celular = '') {
+  try {
+    const formattedEmail = email.toLowerCase().trim();
+    if (DB_PROVIDER !== 'supabase') {
+      console.warn(`[Register Pending]: Registro de pendientes solo soportado en Supabase. Saltando para ${email}`);
+      return { success: true };
+    }
+
+    const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
+    
+    // Verificar si ya está registrado para no duplicar filas
+    const { data: existing } = await supabase
+      .from('whitelist_pending')
+      .select('email')
+      .eq('email', formattedEmail)
+      .maybeSingle();
+
+    if (existing) {
+      console.log(`[Register Pending]: El usuario ${formattedEmail} ya se encuentra registrado como pendiente.`);
+      return { success: true };
+    }
+
+    // Insertar en la tabla
+    const { error } = await supabase
+      .from('whitelist_pending')
+      .insert([
+        {
+          email: formattedEmail,
+          name: name.trim(),
+          celular: celular.trim(),
+        }
+      ]);
+
+    if (error) {
+      throw error;
+    }
+
+    // Disparar correo de aviso a ndemartis@fcecon.unr.edu.ar
+    await sendPendingUserAlertEmail({
+      email: formattedEmail,
+      name,
+      celular
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('[Permissions Controller Error] Error en registerPendingUser:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Obtiene la lista de usuarios en suspenso.
+ */
+export async function getPendingUsers() {
+  try {
+    if (DB_PROVIDER !== 'supabase') return [];
+
+    const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
+    const { data, error } = await supabase
+      .from('whitelist_pending')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('[Permissions Controller Error] Error en getPendingUsers:', error);
+    return [];
+  }
+}
+
+/**
+ * Aprueba a un usuario pendiente, moviéndolo a la lista blanca y eliminándolo de la cola.
+ */
+export async function approvePendingUser(email, role = 'user', celular = '') {
+  try {
+    const formattedEmail = email.toLowerCase().trim();
+    if (DB_PROVIDER !== 'supabase') return { success: false, error: 'No soportado' };
+
+    const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
+
+    // 1. Buscar los datos en la tabla pendiente
+    const { data: pending, error: fetchErr } = await supabase
+      .from('whitelist_pending')
+      .select('*')
+      .eq('email', formattedEmail)
+      .maybeSingle();
+
+    if (fetchErr || !pending) {
+      return { success: false, error: 'No se encontraron registros pendientes para este email.' };
+    }
+
+    // Usar celular de la cola si no se pasa uno nuevo
+    const userCelular = celular || pending.celular || '';
+
+    // 2. Mover a la lista blanca
+    const addRes = await addAuthorizedUser(formattedEmail, pending.name || '', role, userCelular);
+    if (!addRes.success) {
+      return addRes;
+    }
+
+    // 3. Eliminar de la cola de pendientes
+    const { error: delErr } = await supabase
+      .from('whitelist_pending')
+      .delete()
+      .eq('email', formattedEmail);
+
+    if (delErr) {
+      console.error('[Permissions Controller Warning] Usuario aprobado pero falló al removerlo de pendientes:', delErr);
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('[Permissions Controller Error] Error al aprobar usuario pendiente:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Rechaza a un usuario pendiente, eliminándolo de la cola.
+ */
+export async function rejectPendingUser(email) {
+  try {
+    const formattedEmail = email.toLowerCase().trim();
+    if (DB_PROVIDER !== 'supabase') return { success: false, error: 'No soportado' };
+
+    const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
+    const { error } = await supabase
+      .from('whitelist_pending')
+      .delete()
+      .eq('email', formattedEmail);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('[Permissions Controller Error] Error al rechazar usuario pendiente:', error);
+    return { success: false, error: error.message };
   }
 }

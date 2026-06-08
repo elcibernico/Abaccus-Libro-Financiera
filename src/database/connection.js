@@ -37,6 +37,16 @@ export async function queryDatabase({ provider, target, options = {} }) {
       return await getSpreadsheetData(options.spreadsheetId, target, options.forceRefresh);
     }
 
+    case 'supabase': {
+      // Cliente Supabase Server
+      const { createClient, createAdminClient } = await import('@/core/security/supabaseServer');
+      if (options.useAdmin) {
+        const adminClient = await createAdminClient();
+        if (adminClient) return adminClient;
+      }
+      return await createClient();
+    }
+
     default:
       throw new Error(`[Database Error]: Proveedor de persistencia "${provider}" no soportado.`);
   }

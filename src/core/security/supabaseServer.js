@@ -1,5 +1,6 @@
 // supabaseServer.js - Inicialización del cliente Supabase del lado del servidor para Next.js
 import { createServerClient } from '@supabase/ssr';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
 export async function createClient() {
@@ -31,3 +32,25 @@ export async function createClient() {
     },
   });
 }
+
+export async function createAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl) {
+    throw new Error('[Supabase Error]: NEXT_PUBLIC_SUPABASE_URL no configurado.');
+  }
+
+  if (!supabaseServiceKey) {
+    console.warn('[Supabase Warning]: SUPABASE_SERVICE_ROLE_KEY no configurado en env.local. Se usará el cliente anon.');
+    return null;
+  }
+
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+}
+

@@ -1,12 +1,13 @@
 // authGuard.js - Interceptor de rutas protegidas y validación de ACL/RBAC en el servidor
 import { createClient } from '@/core/security/supabaseServer';
+import { verifyUserAndIP } from '@/core/security/securityService';
 import { checkUserPermission } from '../controllers/permissionsController';
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 
 /**
- * Verifica si el usuario actual está autenticado.
- * Si no está autenticado, puede redirigir o retornar null.
- * @returns {Promise<object|null>} Retorna el objeto user de Supabase si está autenticado.
+ * Verifica si el usuario actual está autenticado en Supabase.
+ * @returns {Promise<object|null>} Retorna el objeto user si está autenticado.
  */
 export async function requireAuth() {
   const supabase = await createClient();
@@ -20,8 +21,6 @@ export async function requireAuth() {
 
 /**
  * Guard para APIs (Route Handlers) que exige un permiso granular específico.
- * @param {string} permissionKey Clave del permiso requerido (ej. 'may_edit_records')
- * @returns {Promise<{authorized: boolean, user?: object, response?: NextResponse}>}
  */
 export async function requirePermission(permissionKey) {
   const user = await requireAuth();
@@ -52,8 +51,7 @@ export async function requirePermission(permissionKey) {
 }
 
 /**
- * Guard para proteger vistas de administración (requiere rol de administrador).
- * @returns {Promise<{authorized: boolean, user?: object, response?: NextResponse}>}
+ * Guard para proteger vistas de administración (requiere rol de administrador/root e IP autorizada).
  */
 export async function requireAdmin() {
   const user = await requireAuth();
@@ -65,13 +63,46 @@ export async function requireAdmin() {
     };
   }
 
-  // Obtenemos los detalles del usuario autorizado para validar si es administrador
-  const DB_PROVIDER = process.env.NEXT_PUBLIC_DATABASE_PROVIDER || 'spreadsheet';
-  const SPREADSHEET_ID = process.env.NEXT_PUBLIC_SPREADSHEET_ID || '';
-  const { getAuthorizedUserByEmail } = require('@/database/dimensions/users');
-  const authorizedUser = await getAuthorizedUserByEmail(user.email, DB_PROVIDER, { spreadsheetId: SPREADSHEET_ID });
+  // Detectar la IP del cliente (Evitando IP Spoofing)
+  const headerList = await headers();
+  
+  // 1. Priorizar cabeceras seguras inyectadas por proveedores de nube (Vercel, Cloudflare)
+  const trustedIp = headerList.get('x-vercel-forwarded-for') || 
+                    headerList.get('cf-connecting-ip') || 
+                    headerList.get('x-real-ip');
 
-  if (!authorizedUser || authorizedUser.role !== 'admin') {
+  let clientIp = '127.0.0.1';
+
+  if (trustedIp) {
+    // Si existe una cabecera segura, suele venir limpia o con la IP real primero.
+    clientIp = trustedIp.split(',')[0].trim();
+  } else {
+    // 2. Fallback a x-forwarded-for
+    // Precaución: El cliente puede forjar "x-forwarded-for: IP_FALSA". 
+    // El proxy añade la IP real al final de la cadena -> "IP_FALSA, IP_REAL_PROXY1"
+    // Por ende, NUNCA debemos tomar el índice [0] ciegamente. Tomamos el último.
+    const forwardedFor = headerList.get('x-forwarded-for');
+    if (forwardedFor) {
+      const ips = forwardedFor.split(',').map(ip => ip.trim());
+      clientIp = ips[ips.length - 1];
+    }
+  }
+
+  // Validar IP e integridad de Whitelist del usuario
+  const securityCheck = await verifyUserAndIP(user.email, clientIp);
+
+  if (!securityCheck.authorized) {
+    const errorType = securityCheck.error || 'unauthorized';
+    return {
+      authorized: false,
+      response: NextResponse.redirect(new URL(`/login?error=${errorType}`, process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'))
+    };
+  }
+
+  const authorizedUser = securityCheck.user;
+
+  // Únicamente se permite el paso si el rol es admin o root
+  if (authorizedUser.role !== 'admin' && authorizedUser.role !== 'root') {
     return {
       authorized: false,
       response: NextResponse.redirect(new URL('/?error=unauthorized', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'))

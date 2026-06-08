@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Accede a tu cuenta de Abaccus Financiera</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f3f4f6;
+      color: #1f2937;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      padding: 30px;
+      text-align: center;
+      color: #ffffff;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+    .content {
+      padding: 40px;
+      text-align: center;
+    }
+    .content p {
+      line-height: 1.6;
+      font-size: 16px;
+      margin-top: 0;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    .button-container {
+      text-align: center;
+      margin-top: 30px;
+      margin-bottom: 30px;
+    }
+    .button {
+      background-color: #10b981;
+      color: #ffffff;
+      padding: 14px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      display: inline-block;
+      transition: background-color 0.2s;
+    }
+    .button:hover {
+      background-color: #059669;
+    }
+    .link-alt {
+      font-size: 12px;
+      color: #6b7280;
+      word-break: break-all;
+      margin-top: 20px;
+      text-align: left;
+    }
+    .footer {
+      background-color: #f9fafb;
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #9ca3af;
+      border-top: 1px solid #e5e7eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Ecosistema Abaccus</h1>
+    </div>
+    <div class="content">
+      <p>Hola,</p>
+      <p>Has solicitado un enlace de inicio de sesión (Magic Link) para acceder al Ecosistema Abaccus de Matemática Financiera.</p>
+      <p>Haz clic en el siguiente botón para iniciar sesión en tu cuenta. Este enlace expirará en 1 hora y solo sirve para un único uso:</p>
+      
+      <div class="button-container">
+        <!-- En Supabase se usa la variable {{ .ConfirmationURL }} para renderizar el link -->
+        <a href="{{ .ConfirmationURL }}" class="button">Iniciar Sesión en Abaccus</a>
+      </div>
+
+      <p class="link-alt">Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:</p>
+      <p class="link-alt">{{ .ConfirmationURL }}</p>
+    </div>
+    <div class="footer">
+      Si no solicitaste acceso, puedes ignorarlo con seguridad.<br>
+      Ecosistema Financiero Abaccus.
+    </div>
+  </div>
+</body>
+</html>

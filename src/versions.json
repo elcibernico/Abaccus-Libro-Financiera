@@ -1,0 +1,11 @@
+{
+  "Core": "1.0.0",
+  "Modulo_Libro": "2.3.0",
+  "Modulo_Admin": "1.0.0",
+  "Modulo_Bibliografía": "0.1.0-beta",
+  "Modulo_Clases": "0.1.0-beta",
+  "Modulo_Examenes": "0.1.0-beta",
+  "Modulo_Alumnado": "0.1.0-beta",
+  "Modulo_Investigacion": "0.1.0-beta",
+  "Modulo_Reporteria": "0.1.0-beta"
+}

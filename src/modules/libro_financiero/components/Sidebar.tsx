@@ -1,14 +1,11 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import bookIndex from "../data/bookIndex.json";
 import { availableTopics } from "../data/dataRegistry";
-import { ChevronDown, ChevronRight, BookOpen } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { useNavigation } from "./NavigationProvider";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Checks recursively whether a node or any of its descendants has content */
 function nodeHasContent(node: any): boolean {
   if (node.dataFile && availableTopics.has(node.dataFile)) return true;
   for (const key of ['subtopics', 'topics'] as const) {
@@ -18,7 +15,6 @@ function nodeHasContent(node: any): boolean {
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-
 function TopicItem({
   topic,
   unitId,
@@ -36,7 +32,6 @@ function TopicItem({
   const isVisible = nodeHasContent(topic);
   const isActive = activeTopic === topic.dataFile;
 
-  // Auto-expand ancestor when this topic is active
   useEffect(() => {
     if (hasChildren && topic.subtopics?.some((s: any) => s.dataFile === activeTopic || nodeHasContent(s))) {
       setOpen(true);
@@ -45,7 +40,7 @@ function TopicItem({
 
   if (!isVisible) return null;
 
-  const paddingLeft = `${depth * 1.1 + 1}rem`;
+  const paddingLeft = `${depth * 1.1 + 0.5}rem`;
 
   const handleClick = () => {
     if (hasChildren) {
@@ -71,9 +66,9 @@ function TopicItem({
           padding: `0.45rem 1rem 0.45rem ${paddingLeft}`,
           borderRadius: "0.5rem",
           cursor: isClickable || hasChildren ? "pointer" : "default",
-          transition: "background 0.15s",
+          transition: "background 0.15s, color 0.15s",
           background: isActive
-            ? "rgba(129,140,248,0.15)"
+            ? "rgba(150, 150, 150, 0.15)"
             : "transparent",
           borderLeft: isActive ? "3px solid var(--primary-color)" : "3px solid transparent",
           color: isActive
@@ -96,7 +91,7 @@ function TopicItem({
           </span>
         )}
       </div>
-
+ 
       {hasChildren && open && (
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {topic.subtopics.map((sub: any) => (
@@ -107,81 +102,78 @@ function TopicItem({
     </li>
   );
 }
-
-// ── Main Sidebar ──────────────────────────────────────────────────────────────
-
+ 
+// ── Main Sidebar (Modulo Content) ──────────────────────────────────────────────
 export default function Sidebar() {
   const [expandedUnits, setExpandedUnits] = useState<Record<string, boolean>>({ U02: true });
-  const { isSidebarOpen, activeTopic, setActiveTopic, setActiveUnit, setIsSidebarOpen } = useNavigation();
-
+  const { activeTopic, setActiveTopic, setActiveUnit, setIsSidebarOpen } = useNavigation();
+ 
   const toggleUnit = (id: string) => {
     setExpandedUnits((prev) => ({ ...prev, [id]: !prev[id] }));
   };
-
+ 
   return (
-    <aside className={`sidebar ${isSidebarOpen ? "open" : "closed"}`}>
-      <div className="sidebar-header">
-        <h3 style={{ fontSize: "1rem", lineHeight: 1.4 }}>Programa de Matemática Financiera - UNR</h3>
-      </div>
+    <nav className="sidebar-nav-inner" style={{ width: "100%" }}>
+      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+        {bookIndex.units.map((unit: any) => {
+          const unitVisible = nodeHasContent(unit);
+          if (!unitVisible) return null;
+ 
+          const isUnitActive = activeTopic === unit.id;
+ 
+          const handleUnitClick = () => {
+            toggleUnit(unit.id);
+            setActiveUnit(unit.id);
+            setActiveTopic(unit.id);
+            if (typeof window !== 'undefined' && window.innerWidth < 768) {
+              setIsSidebarOpen(false);
+            }
+          };
+ 
+          return (
+            <li key={unit.id} className="chapter-item" style={{ marginBottom: "0.75rem" }}>
+              <div
+                className="chapter-title"
+                onClick={handleUnitClick}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "0.6rem 0.8rem",
+                  borderRadius: "0.375rem",
+                  cursor: "pointer",
+                  background: isUnitActive
+                    ? "rgba(150, 150, 150, 0.2)"
+                    : "transparent",
+                  borderLeft: isUnitActive ? "3px solid var(--primary-color)" : "3px solid transparent",
+                  color: isUnitActive ? "var(--primary-color)" : "var(--text-color)",
+                  fontWeight: 600,
+                  fontSize: "0.95rem"
+                }}
+              >
+                <span className="chapter-name" style={{ lineHeight: 1.4 }}>
+                  Unidad {unit.number}: {unit.title}
+                </span>
+                <span className="chapter-icon" style={{ flexShrink: 0 }}>
+                  {expandedUnits[unit.id] ? (
+                    <ChevronDown size={16} />
+                  ) : (
+                    <ChevronRight size={16} />
+                  )}
+                </span>
+              </div>
 
-      <nav className="sidebar-nav">
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {bookIndex.units.map((unit: any) => {
-            const unitVisible = nodeHasContent(unit);
-            if (!unitVisible) return null;
-
-            const isUnitActive = activeTopic === unit.id;
-
-            const handleUnitClick = () => {
-              toggleUnit(unit.id);
-              setActiveUnit(unit.id);
-              setActiveTopic(unit.id);
-              if (typeof window !== 'undefined' && window.innerWidth < 768) {
-                setIsSidebarOpen(false);
-              }
-            };
-
-            return (
-              <li key={unit.id} className="chapter-item">
-                <div
-                  className="chapter-title"
-                  onClick={handleUnitClick}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    cursor: "pointer",
-                    background: isUnitActive
-                      ? "rgba(129, 140, 248, 0.2)"
-                      : undefined,
-                    borderLeft: isUnitActive ? "3px solid var(--primary-color)" : "3px solid transparent",
-                    color: isUnitActive ? "var(--primary-color)" : undefined,
-                  }}
-                >
-                  <span className="chapter-name">
-                    Unidad {unit.number}: {unit.title}
-                  </span>
-                  <span className="chapter-icon">
-                    {expandedUnits[unit.id] ? (
-                      <ChevronDown size={16} />
-                    ) : (
-                      <ChevronRight size={16} />
-                    )}
-                  </span>
-                </div>
-
-                {expandedUnits[unit.id] && Array.isArray(unit.topics) && (
-                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                    {unit.topics.map((topic: any) => (
-                      <TopicItem key={topic.id} topic={topic} unitId={unit.id} depth={1} />
-                    ))}
-                  </ul>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-    </aside>
+              {expandedUnits[unit.id] && Array.isArray(unit.topics) && (
+                <ul style={{ listStyle: "none", padding: 0, margin: "0.25rem 0 0 0" }}>
+                  {unit.topics.map((topic: any) => (
+                    <TopicItem key={topic.id} topic={topic} unitId={unit.id} depth={1} />
+                  ))}
+                </ul>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
   );
 }

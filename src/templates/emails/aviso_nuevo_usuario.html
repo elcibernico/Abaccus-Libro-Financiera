@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Nuevo Usuario Pendiente de Aprobación</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f3f4f6;
+      color: #1f2937;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      padding: 30px;
+      text-align: center;
+      color: #ffffff;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+    .content {
+      padding: 40px;
+    }
+    .content p {
+      line-height: 1.6;
+      font-size: 16px;
+      margin-top: 0;
+      margin-bottom: 24px;
+    }
+    .details-box {
+      background-color: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #f3f4f6;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .details-row {
+      display: flex;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #f3f4f6;
+      padding-bottom: 12px;
+    }
+    .details-row:last-child {
+      margin-bottom: 0;
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .label {
+      font-weight: 600;
+      width: 140px;
+      color: #4b5563;
+      font-size: 14px;
+    }
+    .value {
+      flex: 1;
+      color: #111827;
+      font-size: 14px;
+      word-break: break-all;
+    }
+    .button-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .button {
+      background-color: #10b981;
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      display: inline-block;
+      transition: background-color 0.2s;
+    }
+    .button:hover {
+      background-color: #059669;
+    }
+    .footer {
+      background-color: #f9fafb;
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #9ca3af;
+      border-top: 1px solid #e5e7eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Ecosistema Abaccus</h1>
+    </div>
+    <div class="content">
+      <p>Hola Administrador,</p>
+      <p>Se ha registrado un intento de acceso no autorizado a la plataforma. El usuario ha quedado en estado de <strong>Suspenso</strong> y espera su aprobación desde el Panel Admin:</p>
+      
+      <div class="details-box">
+        <div class="details-row">
+          <div class="label">Email:</div>
+          <div class="value">{{email}}</div>
+        </div>
+        <div class="details-row">
+          <div class="label">Nombre:</div>
+          <div class="value">{{name}}</div>
+        </div>
+        <div class="details-row">
+          <div class="label">Celular:</div>
+          <div class="value">{{celular}}</div>
+        </div>
+        <div class="details-row">
+          <div class="label">Fecha y Hora:</div>
+          <div class="value">{{date}}</div>
+        </div>
+      </div>
+
+      <div class="button-container">
+        <a href="https://abaccus-libro-financiera.vercel.app/admin" class="button" target="_blank">Ir al Panel de Administración</a>
+      </div>
+    </div>
+    <div class="footer">
+      Este es un correo automático enviado por el Ecosistema Financiero Abaccus.
+    </div>
+  </div>
+</body>
+</html>

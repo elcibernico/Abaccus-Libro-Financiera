@@ -1,15 +1,18 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import config from '../../../data_content/locales/config.json';
-
 import { usePreferences } from '@/modules/libro_financiero/components/UserPreferencesProvider';
-import { useNavigation } from '@/modules/libro_financiero/components/NavigationProvider';
+import { signOutUser } from '@/modules/auth/controllers/oauthController';
+import { supabase } from '@/core/security/supabaseClient';
 
 export default function Header() {
   const { theme, toggleTheme } = usePreferences();
-  const { toggleSidebar } = useNavigation();
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,6 +22,31 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    // Obtener sesión inicial
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Escuchar cambios de estado de autenticación
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    const res = await signOutUser();
+    if (res.success) {
+      router.push('/login');
+    } else {
+      alert('Error al cerrar sesión: ' + res.error);
+    }
+  };
+
   const logoUrl = theme === 'dark' 
     ? config.header.logoDarkModeUrl 
     : config.header.logoLightModeUrl;
@@ -26,34 +54,19 @@ export default function Header() {
   return (
     <header className={`header-main ${scrolled ? 'scrolled' : ''}`}>
       <div className="header-content">
-        {/* Lado Izquierdo: Logo y 3 Líneas de Título */}
+        {/* Lado Izquierdo: Logo y Títulos */}
         <div className="header-left">
-          <button 
-            className="menu-toggle-btn" 
-            onClick={toggleSidebar} 
-            aria-label="Toggle menu"
-            title="Abrir/Cerrar Menú del Programa"
-          >
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
-          <div 
-            className="logo-wrapper" 
-            onClick={toggleSidebar} 
-            style={{ cursor: 'pointer' }}
-            title="Contraer / Expandir Menú Lateral"
-          >
-            <Image 
-              src={logoUrl} 
-              alt="Logo Principal" 
-              fill
-              style={{ objectFit: 'contain' }}
-              priority
-            />
-          </div>
+          <Link href="/" className="logo-link" title="Ir al Dashboard del Ecosistema">
+            <div className="logo-wrapper">
+              <Image 
+                src={logoUrl} 
+                alt="Logo Principal" 
+                fill
+                style={{ objectFit: 'contain' }}
+                priority
+              />
+            </div>
+          </Link>
           <div className="header-titles">
             <h1 className="title-line-1">
               <span className="desktop-title">{config.header.titleLine1}</span>
@@ -64,8 +77,24 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Lado Derecho: Acciones / Toggle de Tema */}
+        {/* Lado Derecho: Acciones (Toggle de Tema y Logout) */}
         <div className="header-right">
+          {user && (
+            <button 
+              className="logout-btn" 
+              onClick={handleLogout}
+              title="Cerrar Sesión"
+              aria-label="Cerrar sesión"
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span className="logout-text">Salir</span>
+            </button>
+          )}
+
           {toggleTheme && (
             <button 
               className="theme-toggle-btn" 
@@ -126,6 +155,10 @@ export default function Header() {
           align-items: center;
           gap: 1.25rem;
         }
+        .logo-link {
+          display: flex;
+          align-items: center;
+        }
         .logo-wrapper {
           position: relative;
           height: 64px;
@@ -169,7 +202,6 @@ export default function Header() {
         .desktop-title {
           display: inline;
         }
-        /* Colapsar líneas secundarias en scroll */
         .header-main.scrolled .title-line-2,
         .header-main.scrolled .title-line-3 {
           opacity: 0;
@@ -177,24 +209,6 @@ export default function Header() {
           overflow: hidden;
           margin: 0;
           transform: translateY(-5px);
-        }
-        .menu-toggle-btn {
-          display: none;
-          background: transparent;
-          color: var(--text-color);
-          opacity: 0.8;
-          border: none;
-          padding: 0.5rem;
-          cursor: pointer;
-          transition: var(--transition);
-          align-items: center;
-          justify-content: center;
-          margin-right: 0.1rem;
-        }
-        .menu-toggle-btn:hover {
-          color: var(--primary-color);
-          opacity: 1;
-          transform: scale(1.1);
         }
         .header-right {
           display: flex;
@@ -219,7 +233,36 @@ export default function Header() {
           opacity: 1;
           transform: scale(1.1);
         }
+        .logout-btn {
+          background: rgba(239, 68, 68, 0.08);
+          color: #ef4444;
+          border: 1px solid rgba(239, 68, 68, 0.2);
+          padding: 0.5rem 1rem;
+          border-radius: var(--radius);
+          cursor: pointer;
+          transition: var(--transition);
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-weight: 600;
+          font-size: 0.9rem;
+        }
+        .logout-btn:hover {
+          background: #ef4444;
+          color: white;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+        .logout-text {
+          display: inline;
+        }
         @media (max-width: 768px) {
+          .logout-text {
+            display: none;
+          }
+          .logout-btn {
+            padding: 0.5rem;
+          }
           .header-main {
             padding: 0.5rem 1rem !important;
             height: 60px !important;
@@ -236,9 +279,6 @@ export default function Header() {
           .logo-wrapper {
             height: 36px !important;
             width: 36px !important;
-          }
-          .menu-toggle-btn {
-            display: flex !important;
           }
         }
       `}</style>

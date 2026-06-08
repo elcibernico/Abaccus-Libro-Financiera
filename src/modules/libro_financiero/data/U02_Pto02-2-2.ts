@@ -3,7 +3,7 @@ import { TopicData } from '@/types';
 
 const data: TopicData = {
   "id": "U02_Pto02-2-2",
-  "title": "Descuento comercial compuesto: Definición, características, modalidades de actualización. Deducción de la fórmula del valor efectivo con actualización discontinua periódica (para tasa constante). Tasa periódica \"efectiva\" de descuento. Tasa efectiva de descuento en caso de actualización periódica. Fórmula general del Valor Efectivo en Régimen de Descuento Comercial Compuesto con actualización discontinua periódica (caso de tasas variables en cada período).",
+  "title": "Descuento comercial compuesto: \nDefinición, características, modalidades de actualización. Deducción de la fórmula del valor efectivo con actualización discontinua periódica (para tasa constante). Tasa periódica \"efectiva\" de descuento. Tasa efectiva de descuento en caso de actualización periódica. Fórmula general del Valor Efectivo en Régimen de Descuento Comercial Compuesto con actualización discontinua periódica (caso de tasas variables en cada período).",
   "Desarrollo": [
   {
     "type": "text",

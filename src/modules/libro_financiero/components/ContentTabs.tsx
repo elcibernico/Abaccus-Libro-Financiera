@@ -50,9 +50,10 @@ export default function ContentTabs({ activeTab, setActiveTab, availableTabs }: 
           display: flex;
           justify-content: flex-end;
           gap: 1.5rem;
-          padding: 0 1.5rem;
-          max-width: 1200px;
-          margin: 0 auto;
+          padding: 0 2rem;
+          width: 100%;
+          max-width: 100% !important;
+          margin: 0;
         }
         .tab-button {
           background: none;

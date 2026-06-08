@@ -8,6 +8,7 @@ interface UserPermission {
   may_export_pdf: boolean;
   may_edit_records: boolean;
   may_view_advanced_charts: boolean;
+  [key: string]: boolean;
 }
 
 interface UserData {
@@ -15,28 +16,80 @@ interface UserData {
   email: string;
   name: string;
   role: string;
+  celular: string;
   permissions: UserPermission;
+}
+
+interface PendingUserData {
+  id: string;
+  email: string;
+  name: string;
+  celular: string;
+  created_at: string;
+}
+
+interface IpData {
+  id: string;
+  ip_address: string;
+  description: string;
+  created_by: string;
+  created_at?: string;
 }
 
 export default function AdminPage() {
   const { theme } = usePreferences();
+  const [activeTab, setActiveTab] = useState<'users' | 'pending' | 'ips' | 'templates'>('users');
   const [users, setUsers] = useState<UserData[]>([]);
+  const [pendingUsers, setPendingUsers] = useState<PendingUserData[]>([]);
+  const [ips, setIps] = useState<IpData[]>([]);
+  const [currentIp, setCurrentIp] = useState<string>('');
+  
+  // Plantillas de Correo
+  const [templates, setTemplates] = useState<{ id: string; name: string; filename: string; content: string }[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('aviso_nuevo_usuario');
+  const [templateContent, setTemplateContent] = useState<string>('');
+  const [savingTemplate, setSavingTemplate] = useState<boolean>(false);
+  
   const [loading, setLoading] = useState<boolean>(true);
   const [updatingUser, setUpdatingUser] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isAdminUser, setIsAdminUser] = useState<boolean>(false);
   const [currentUserEmail, setCurrentUserEmail] = useState<string>('');
+
+  // Formulario Usuarios
+  const [newUserEmail, setNewUserEmail] = useState<string>('');
+  const [newUserName, setNewUserName] = useState<string>('');
+  const [newUserCelular, setNewUserCelular] = useState<string>('');
+  const [newUserRole, setNewUserRole] = useState<string>('user');
+  const [newUserPermissions, setNewUserPermissions] = useState<UserPermission>({
+    may_export_pdf: false,
+    may_edit_records: false,
+    may_view_advanced_charts: false,
+  });
+  const [submittingUser, setSubmittingUser] = useState<boolean>(false);
+
+  // Formulario de Aprobación de Usuario Pendiente (Inline)
+  const [approvingEmail, setApprovingEmail] = useState<string | null>(null);
+  const [approveRole, setApproveRole] = useState<string>('user');
+  const [approveCelular, setApproveCelular] = useState<string>('');
+  const [submittingApprove, setSubmittingApprove] = useState<boolean>(false);
+
+  // Formulario IPs
+  const [newIpAddress, setNewIpAddress] = useState<string>('');
+  const [newIpDescription, setNewIpDescription] = useState<string>('');
+  const [submittingIp, setSubmittingIp] = useState<boolean>(false);
 
   useEffect(() => {
     // 1. Verificar si el usuario actual es admin
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
-        if (data.authenticated && data.user.role === 'admin') {
+        if (data.authenticated && (data.user.role === 'admin' || data.user.role === 'root')) {
           setIsAdminUser(true);
           setCurrentUserEmail(data.user.email);
-          // 2. Cargar lista de usuarios
-          fetchUsers();
+          // Cargar datos
+          initData();
         } else {
           setIsAdminUser(false);
           setLoading(false);
@@ -49,35 +102,126 @@ export default function AdminPage() {
       });
   }, []);
 
-  const fetchUsers = async () => {
+  const initData = async () => {
+    setLoading(true);
+    setErrorMsg(null);
     try {
-      setLoading(true);
-      setErrorMsg(null);
-      const res = await fetch('/api/admin/users');
-      if (!res.ok) throw new Error('Error al obtener la lista de usuarios.');
-      const data = await res.json();
-      setUsers(data.users || []);
+      await Promise.all([fetchUsers(), fetchPendingUsers(), fetchIps(), fetchTemplates()]);
     } catch (err: any) {
-      setErrorMsg(err.message);
+      setErrorMsg('Error al inicializar datos del panel de control.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdate = async (email: string, updatedFields: { role?: string; permissions?: Partial<UserPermission> }) => {
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch('/api/admin/users', { cache: 'no-store' });
+      if (!res.ok) throw new Error('Error al obtener la lista de usuarios.');
+      const data = await res.json();
+      setUsers(data.users || []);
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const fetchPendingUsers = async () => {
+    try {
+      const res = await fetch('/api/admin/users/pending', { cache: 'no-store' });
+      if (!res.ok) throw new Error('Error al obtener la lista de usuarios pendientes.');
+      const data = await res.json();
+      setPendingUsers(data.pending || []);
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const fetchIps = async () => {
+    try {
+      const res = await fetch('/api/admin/ips', { cache: 'no-store' });
+      if (!res.ok) throw new Error('Error al obtener la lista de IPs autorizadas.');
+      const data = await res.json();
+      setIps(data.ips || []);
+      setCurrentIp(data.currentIp || '');
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const res = await fetch('/api/admin/templates', { cache: 'no-store' });
+      if (!res.ok) throw new Error('Error al obtener las plantillas de correo.');
+      const data = await res.json();
+      setTemplates(data.templates || []);
+      
+      // Inicializar contenido con la seleccionada por defecto
+      const defTemplate = (data.templates || []).find((t: any) => t.id === 'aviso_nuevo_usuario');
+      if (defTemplate) {
+        setTemplateContent(defTemplate.content);
+      }
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const handleSaveTemplate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    setSavingTemplate(true);
+    try {
+      const res = await fetch('/api/admin/templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: selectedTemplateId,
+          content: templateContent
+        })
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al guardar la plantilla.');
+      }
+      setSuccessMsg('Plantilla de correo guardada exitosamente.');
+      // Actualizar estado local
+      setTemplates(prev => prev.map(t => t.id === selectedTemplateId ? { ...t, content: templateContent } : t));
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
+
+  const handleTemplateChange = (id: string) => {
+    setSelectedTemplateId(id);
+    const match = templates.find(t => t.id === id);
+    if (match) {
+      setTemplateContent(match.content);
+    } else {
+      setTemplateContent('');
+    }
+  };
+
+  // Modificar rol, celular o permisos de usuario existente
+  const handleUpdateUser = async (email: string, updatedFields: { role?: string; celular?: string; permissions?: Partial<UserPermission> }) => {
     setUpdatingUser(email);
     setErrorMsg(null);
+    setSuccessMsg(null);
 
-    // Encontrar el usuario actual en el estado local
     const userToUpdate = users.find((u) => u.email === email);
     if (!userToUpdate) return;
 
-    // Fusionar los valores
     const updatedRole = updatedFields.role ?? userToUpdate.role;
-    const updatedPermissions = {
+    const updatedCelular = updatedFields.celular ?? userToUpdate.celular;
+    const updatedPermissions: UserPermission = {
       ...userToUpdate.permissions,
       ...updatedFields.permissions,
-    };
+    } as UserPermission;
 
     try {
       const res = await fetch('/api/admin/users', {
@@ -86,6 +230,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           email,
           role: updatedRole,
+          celular: updatedCelular,
           permissions: updatedPermissions,
         }),
       });
@@ -95,18 +240,250 @@ export default function AdminPage() {
         throw new Error(errorData.error || 'Error al guardar los cambios.');
       }
 
-      // Actualizar estado local si el backend fue exitoso
       setUsers((prevUsers) =>
         prevUsers.map((u) =>
           u.email === email
-            ? { ...u, role: updatedRole, permissions: updatedPermissions }
+            ? { ...u, role: updatedRole, celular: updatedCelular, permissions: updatedPermissions }
             : u
         )
       );
+      setSuccessMsg(`Usuario ${email} actualizado correctamente.`);
     } catch (err: any) {
       setErrorMsg(err.message);
     } finally {
       setUpdatingUser(null);
+    }
+  };
+
+  // Agregar nuevo usuario a la lista blanca directamente
+  const handleAddUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUserEmail) return;
+
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    setSubmittingUser(true);
+
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: newUserEmail.trim(),
+          name: newUserName.trim(),
+          celular: newUserCelular.trim(),
+          role: newUserRole,
+          permissions: newUserPermissions,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al agregar el usuario.');
+      }
+
+      await fetchUsers();
+      
+      // Limpiar formulario
+      setNewUserEmail('');
+      setNewUserName('');
+      setNewUserCelular('');
+      setNewUserRole('user');
+      setNewUserPermissions({
+        may_export_pdf: false,
+        may_edit_records: false,
+        may_view_advanced_charts: false,
+      });
+
+      setSuccessMsg('Usuario agregado exitosamente a la lista blanca.');
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    } finally {
+      setSubmittingUser(false);
+    }
+  };
+
+  // Eliminar usuario de la lista blanca
+  const handleDeleteUser = async (email: string) => {
+    if (email === currentUserEmail) {
+      setErrorMsg('No puedes eliminarte a ti mismo de la lista blanca.');
+      return;
+    }
+
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar al usuario "${email}" de la lista blanca? Esto revocará su acceso de inmediato.`)) {
+      return;
+    }
+
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      const res = await fetch(`/api/admin/users?email=${encodeURIComponent(email)}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al eliminar el usuario.');
+      }
+
+      setUsers(users.filter((u) => u.email !== email));
+      setSuccessMsg(`Usuario "${email}" eliminado exitosamente.`);
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    }
+  };
+
+  // Aprobar usuario en suspenso
+  const handleApprovePending = async (pendingUser: PendingUserData) => {
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    setSubmittingApprove(true);
+
+    try {
+      const res = await fetch('/api/admin/users/pending', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: pendingUser.email,
+          role: approveRole,
+          celular: approveCelular.trim() || pendingUser.celular || '',
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al aprobar al usuario.');
+      }
+
+      // Actualizar estados locales
+      setPendingUsers(pendingUsers.filter(u => u.email !== pendingUser.email));
+      await fetchUsers(); // Recargar lista blanca activa
+      setApprovingEmail(null);
+      setSuccessMsg(`Usuario "${pendingUser.email}" aprobado y movido a la lista blanca.`);
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    } finally {
+      setSubmittingApprove(false);
+    }
+  };
+
+  // Rechazar usuario en suspenso (borrar intento)
+  const handleRejectPending = async (email: string) => {
+    if (!window.confirm(`¿Estás seguro de que deseas rechazar y borrar la solicitud del usuario "${email}"?`)) {
+      return;
+    }
+
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      const res = await fetch(`/api/admin/users/pending?email=${encodeURIComponent(email)}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al rechazar la solicitud.');
+      }
+
+      setPendingUsers(pendingUsers.filter((u) => u.email !== email));
+      setSuccessMsg(`Solicitud del usuario "${email}" rechazada y eliminada.`);
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    }
+  };
+
+  // Agregar nueva IP
+  const handleAddIp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newIpAddress) return;
+
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    setSubmittingIp(true);
+
+    try {
+      const res = await fetch('/api/admin/ips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ip_address: newIpAddress.trim(),
+          description: newIpDescription.trim() || 'Agregada desde Panel Admin',
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al agregar la IP.');
+      }
+
+      await fetchIps();
+      setNewIpAddress('');
+      setNewIpDescription('');
+      setSuccessMsg('Dirección IP agregada exitosamente a la lista blanca.');
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    } finally {
+      setSubmittingIp(false);
+    }
+  };
+
+  // Agregar mi IP actual automáticamente
+  const handleAddCurrentIp = async () => {
+    if (!currentIp) {
+      setErrorMsg('No se detectó tu dirección IP actual.');
+      return;
+    }
+
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      const res = await fetch('/api/admin/ips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ip_address: currentIp,
+          description: 'Mi IP actual (Autodetectada)',
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al autorizar la IP actual.');
+      }
+
+      await fetchIps();
+      setSuccessMsg(`Tu IP actual (${currentIp}) ha sido autorizada correctamente.`);
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    }
+  };
+
+  // Eliminar IP de la lista blanca
+  const handleDeleteIp = async (id: string, ipAddress: string) => {
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar la IP "${ipAddress}" del cortafuegos de acceso?`)) {
+      return;
+    }
+
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      const res = await fetch(`/api/admin/ips?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al eliminar la IP.');
+      }
+
+      setIps(ips.filter((ip) => ip.id !== id));
+      setSuccessMsg(`IP "${ipAddress}" eliminada exitosamente.`);
+    } catch (err: any) {
+      setErrorMsg(err.message);
     }
   };
 
@@ -188,11 +565,12 @@ export default function AdminPage() {
   return (
     <div className="admin-container">
       <div className="admin-card glass-card">
+        {/* Encabezado */}
         <div className="admin-header">
           <div className="admin-header-content-left">
-            <h1 className="admin-title">Panel de Control General</h1>
+            <h1 className="admin-title">Panel de Control de Seguridad</h1>
             <p className="admin-subtitle">
-              Estado general y gestión en tiempo real de permisos y lista blanca.
+              Configura los correos aprobados, IP autorizadas y usuarios en suspenso.
             </p>
           </div>
           <div className="admin-header-content-right">
@@ -202,133 +580,594 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {errorMsg && <div className="alert alert-error">{errorMsg}</div>}
+        {/* Notificaciones */}
+        {errorMsg && (
+          <div className="alert alert-error">
+            <span className="alert-icon">⚠️</span>
+            <div className="alert-text">{errorMsg}</div>
+          </div>
+        )}
+        {successMsg && (
+          <div className="alert alert-success">
+            <span className="alert-icon">✨</span>
+            <div className="alert-text">{successMsg}</div>
+          </div>
+        )}
 
+        {/* Métricas Generales */}
         <div className="stats-grid">
           <div className="stat-card">
-            <h3>Seguridad y Accesos</h3>
+            <h3>Estado del Sistema</h3>
             <p className="stat-value">Activo</p>
-            <p className="stat-desc">OAuth / Whitelist Protegido</p>
+            <p className="stat-desc">Supabase / RLS Protegido</p>
           </div>
 
           <div className="stat-card">
-            <h3>Usuarios Autorizados</h3>
+            <h3>Lista Blanca Activa</h3>
             <p className="stat-value">{users.length}</p>
-            <p className="stat-desc">Usuarios registrados en lista blanca</p>
+            <p className="stat-desc">Correos autorizados</p>
           </div>
 
           <div className="stat-card">
-            <h3>Administradores</h3>
-            <p className="stat-value">
-              {users.filter((u) => u.role === 'admin').length}
-            </p>
-            <p className="stat-desc">Con control total de permisos</p>
+            <h3>En Suspenso</h3>
+            <p className="stat-value pending-value">{pendingUsers.length}</p>
+            <p className="stat-desc">Usuarios esperando aprobación</p>
           </div>
 
           <div className="stat-card">
-            <h3>Tema Visual</h3>
-            <p className="stat-value" style={{ textTransform: 'capitalize' }}>
-              {theme}
-            </p>
-            <p className="stat-desc">Preferencia de visualización activa</p>
+            <h3>IPs Permitidas</h3>
+            <p className="stat-value">{ips.length}</p>
+            <p className="stat-desc">Acceso firewall habilitado</p>
           </div>
         </div>
 
-        <div className="whitelist-section">
-          <h2>Gestión de Permisos y Lista Blanca</h2>
-          <p className="section-desc">
-            Los cambios se guardan automáticamente en tiempo real en la base de datos de persistencia.
-          </p>
-
-          <div className="table-responsive">
-            <table className="user-table">
-              <thead>
-                <tr>
-                  <th>Usuario</th>
-                  <th>Rol</th>
-                  <th>Exportar PDF</th>
-                  <th>Editar Registros</th>
-                  <th>Gráficos Avanzados</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.email} className={user.email === currentUserEmail ? 'current-user-row' : ''}>
-                    <td>
-                      <div className="user-info">
-                        <span className="user-name">{user.name || 'Sin Nombre'}</span>
-                        <span className="user-email">
-                          {user.email} {user.email === currentUserEmail && <span className="self-badge">(Tú)</span>}
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <select
-                        value={user.role}
-                        onChange={(e) => handleUpdate(user.email, { role: e.target.value })}
-                        disabled={updatingUser === user.email}
-                        className="role-select"
-                      >
-                        <option value="admin">Administrador</option>
-                        <option value="user">Usuario</option>
-                        <option value="guest">Invitado (Bloqueado)</option>
-                      </select>
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={user.permissions.may_export_pdf}
-                        onChange={(e) =>
-                          handleUpdate(user.email, {
-                            permissions: { may_export_pdf: e.target.checked },
-                          })
-                        }
-                        disabled={updatingUser === user.email || user.role === 'admin'}
-                        className="permission-checkbox"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={user.permissions.may_edit_records}
-                        onChange={(e) =>
-                          handleUpdate(user.email, {
-                            permissions: { may_edit_records: e.target.checked },
-                          })
-                        }
-                        disabled={updatingUser === user.email || user.role === 'admin'}
-                        className="permission-checkbox"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={user.permissions.may_view_advanced_charts}
-                        onChange={(e) =>
-                          handleUpdate(user.email, {
-                            permissions: { may_view_advanced_charts: e.target.checked },
-                          })
-                        }
-                        disabled={updatingUser === user.email || user.role === 'admin'}
-                        className="permission-checkbox"
-                      />
-                    </td>
-                    <td className="status-cell">
-                      {updatingUser === user.email ? (
-                        <span className="saving-text">Guardando...</span>
-                      ) : user.role === 'admin' ? (
-                        <span className="all-granted-badge" title="Los administradores tienen todos los permisos">Todo Permitido</span>
-                      ) : (
-                        <span className="saved-badge">Guardado</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {/* Menú de Pestañas */}
+        <div className="admin-tabs">
+          <button
+            className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('users');
+              setErrorMsg(null);
+              setSuccessMsg(null);
+            }}
+          >
+            📂 Lista Blanca de Usuarios
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'pending' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('pending');
+              setErrorMsg(null);
+              setSuccessMsg(null);
+            }}
+          >
+            ⏳ Usuarios en Suspenso {pendingUsers.length > 0 && <span className="tab-badge">{pendingUsers.length}</span>}
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'ips' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('ips');
+              setErrorMsg(null);
+              setSuccessMsg(null);
+            }}
+          >
+            🛡️ Firewall de IPs
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'templates' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('templates');
+              setErrorMsg(null);
+              setSuccessMsg(null);
+            }}
+          >
+            ✉️ Plantillas de Correo
+          </button>
         </div>
+
+        {/* Pestaña de Usuarios (Lista Blanca) */}
+        {activeTab === 'users' && (
+          <div className="tab-pane fade-in">
+            {/* Formulario para agregar usuario */}
+            <div className="crud-form-card">
+              <h3>Invitar / Agregar Nuevo Usuario</h3>
+              <form onSubmit={handleAddUser} className="crud-form">
+                <div className="form-group">
+                  <label htmlFor="user-email">Correo Electrónico (Email Google)</label>
+                  <input
+                    id="user-email"
+                    type="email"
+                    placeholder="ejemplo@gmail.com"
+                    value={newUserEmail}
+                    onChange={(e) => setNewUserEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="user-name">Nombre (Opcional)</label>
+                  <input
+                    id="user-name"
+                    type="text"
+                    placeholder="Juan Pérez"
+                    value={newUserName}
+                    onChange={(e) => setNewUserName(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="user-celular">Celular / Teléfono</label>
+                  <input
+                    id="user-celular"
+                    type="text"
+                    placeholder="+5493416123456"
+                    value={newUserCelular}
+                    onChange={(e) => setNewUserCelular(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="user-role">Rol Inicial</label>
+                  <select
+                    id="user-role"
+                    value={newUserRole}
+                    onChange={(e) => setNewUserRole(e.target.value)}
+                  >
+                    <option value="user">Usuario</option>
+                    <option value="docente">Docente</option>
+                    <option value="admin">Administrador</option>
+                    <option value="guest">Invitado (Bloqueado)</option>
+                  </select>
+                </div>
+
+                {newUserRole !== 'admin' && (
+                  <div className="form-group full-width">
+                    <label>Permisos Especiales</label>
+                    <div className="permissions-checkbox-group">
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={newUserPermissions.may_export_pdf}
+                          onChange={(e) =>
+                            setNewUserPermissions({
+                              ...newUserPermissions,
+                              may_export_pdf: e.target.checked,
+                            })
+                          }
+                        />
+                        Exportar Reportes PDF
+                      </label>
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={newUserPermissions.may_edit_records}
+                          onChange={(e) =>
+                            setNewUserPermissions({
+                              ...newUserPermissions,
+                              may_edit_records: e.target.checked,
+                            })
+                          }
+                        />
+                        Editar / Crear Registros
+                      </label>
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={newUserPermissions.may_view_advanced_charts}
+                          onChange={(e) =>
+                            setNewUserPermissions({
+                              ...newUserPermissions,
+                              may_view_advanced_charts: e.target.checked,
+                            })
+                          }
+                        />
+                        Visualizar Gráficos Avanzados
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                <div className="form-actions">
+                  <button type="submit" className="btn-primary" disabled={submittingUser}>
+                    {submittingUser ? 'Agregando...' : '➕ Agregar a Lista Blanca'}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Tabla de Usuarios */}
+            <div className="whitelist-section">
+              <div className="section-header">
+                <h2>Usuarios Registrados</h2>
+                <span className="badge">{users.length} total</span>
+              </div>
+              <div className="table-responsive">
+                <table className="user-table">
+                  <thead>
+                    <tr>
+                      <th>Usuario</th>
+                      <th>Celular</th>
+                      <th>Rol</th>
+                      <th>Exportar PDF</th>
+                      <th>Editar Registros</th>
+                      <th>Gráficos Avanzados</th>
+                      <th style={{ textAlign: 'center' }}>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user.email} className={user.email === currentUserEmail ? 'current-user-row' : ''}>
+                        <td>
+                          <div className="user-info">
+                            <span className="user-name">{user.name || 'Sin Nombre'}</span>
+                            <span className="user-email">
+                              {user.email} {user.email === currentUserEmail && <span className="self-badge">(Tú)</span>}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <input
+                            key={user.email + '_' + (user.celular || '')}
+                            type="text"
+                            defaultValue={user.celular || ''}
+                            onBlur={(e) => handleUpdateUser(user.email, { celular: e.target.value })}
+                            placeholder="Agregar celular"
+                            className="inline-input"
+                            disabled={updatingUser === user.email}
+                          />
+                        </td>
+                        <td>
+                          <select
+                            value={user.role}
+                            onChange={(e) => handleUpdateUser(user.email, { role: e.target.value })}
+                            disabled={updatingUser === user.email || user.email === currentUserEmail}
+                            className="role-select"
+                          >
+                            <option value="admin">Administrador</option>
+                            <option value="docente">Docente</option>
+                            <option value="user">Usuario</option>
+                            <option value="guest">Invitado (Bloqueado)</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={user.permissions?.may_export_pdf || false}
+                            onChange={(e) =>
+                              handleUpdateUser(user.email, {
+                                permissions: { may_export_pdf: e.target.checked },
+                              })
+                            }
+                            disabled={updatingUser === user.email || user.role === 'admin' || user.role === 'root'}
+                            className="permission-checkbox"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={user.permissions?.may_edit_records || false}
+                            onChange={(e) =>
+                              handleUpdateUser(user.email, {
+                                permissions: { may_edit_records: e.target.checked },
+                              })
+                            }
+                            disabled={updatingUser === user.email || user.role === 'admin' || user.role === 'root'}
+                            className="permission-checkbox"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={user.permissions?.may_view_advanced_charts || false}
+                            onChange={(e) =>
+                              handleUpdateUser(user.email, {
+                                permissions: { may_view_advanced_charts: e.target.checked },
+                              })
+                            }
+                            disabled={updatingUser === user.email || user.role === 'admin' || user.role === 'root'}
+                            className="permission-checkbox"
+                          />
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <button
+                            onClick={() => handleDeleteUser(user.email)}
+                            disabled={user.email === currentUserEmail || updatingUser === user.email}
+                            className="btn-danger-action"
+                            title="Eliminar de la lista blanca"
+                          >
+                            🗑️
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pestaña de Usuarios en Suspenso */}
+        {activeTab === 'pending' && (
+          <div className="tab-pane fade-in">
+            <div className="whitelist-section">
+              <div className="section-header">
+                <h2>Usuarios Esperando Aprobación</h2>
+                <span className="badge">{pendingUsers.length} en espera</span>
+              </div>
+              <div className="table-responsive">
+                <table className="user-table">
+                  <thead>
+                    <tr>
+                      <th>Usuario</th>
+                      <th>Celular Opcional</th>
+                      <th>Fecha de Intento</th>
+                      <th style={{ textAlign: 'center', width: '220px' }}>Configuración de Aprobación</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingUsers.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} style={{ textAlign: 'center', opacity: 0.6, padding: '2.5rem' }}>
+                          No hay solicitudes de acceso pendientes en la cola. Todo está en orden.
+                        </td>
+                      </tr>
+                    ) : (
+                      pendingUsers.map((pending) => (
+                        <tr key={pending.email}>
+                          <td>
+                            <div className="user-info">
+                              <span className="user-name">{pending.name || 'Invitado sin Nombre'}</span>
+                              <span className="user-email">{pending.email}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <span className="celular-text">{pending.celular || 'No proveído'}</span>
+                          </td>
+                          <td>
+                            <span className="date-text">
+                              {new Date(pending.created_at).toLocaleString('es-AR')}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            {approvingEmail === pending.email ? (
+                              <div className="approve-settings-box">
+                                <div className="approve-setting-group">
+                                  <label>Rol:</label>
+                                  <select
+                                    value={approveRole}
+                                    onChange={(e) => setApproveRole(e.target.value)}
+                                    className="role-select-small"
+                                  >
+                                    <option value="user">Usuario</option>
+                                    <option value="docente">Docente</option>
+                                    <option value="admin">Administrador</option>
+                                    <option value="guest">Invitado</option>
+                                  </select>
+                                </div>
+                                <div className="approve-setting-group">
+                                  <label>Celular:</label>
+                                  <input
+                                    type="text"
+                                    value={approveCelular}
+                                    onChange={(e) => setApproveCelular(e.target.value)}
+                                    placeholder="Nro Celular"
+                                    className="inline-input-small"
+                                  />
+                                </div>
+                                <div className="approve-actions-row">
+                                  <button
+                                    onClick={() => handleApprovePending(pending)}
+                                    disabled={submittingApprove}
+                                    className="btn-approve-confirm"
+                                    title="Confirmar Aprobación"
+                                  >
+                                    {submittingApprove ? '...' : '✓ Aprobar'}
+                                  </button>
+                                  <button
+                                    onClick={() => setApprovingEmail(null)}
+                                    className="btn-approve-cancel"
+                                    title="Cancelar"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="actions-pending-row">
+                                <button
+                                  onClick={() => {
+                                    setApprovingEmail(pending.email);
+                                    setApproveRole('user');
+                                    setApproveCelular(pending.celular || '');
+                                  }}
+                                  className="btn-approve-trigger"
+                                  title="Configurar y Aprobar"
+                                >
+                                  👍 Aprobar...
+                                </button>
+                                <button
+                                  onClick={() => handleRejectPending(pending.email)}
+                                  className="btn-reject-trigger"
+                                  title="Rechazar y Eliminar solicitud"
+                                >
+                                  ✕ Rechazar
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pestaña de IPs */}
+        {activeTab === 'ips' && (
+          <div className="tab-pane fade-in">
+            {/* Acciones Rápidas */}
+            <div className="quick-action-card">
+              <div className="quick-action-content">
+                <h4>🔑 Autorización Rápida</h4>
+                <p>
+                  Para simplificar la configuración, puedes autorizar de forma inmediata la dirección IP desde la que estás conectado actualmente:
+                </p>
+                <div className="ip-display-row">
+                  <code>{currentIp || 'Desconocida'}</code>
+                  <button onClick={handleAddCurrentIp} className="btn-success">
+                    ⚡ Autorizar mi IP Actual
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Formulario Manual de IP */}
+            <div className="crud-form-card">
+              <h3>Agregar Dirección IP Manualmente</h3>
+              <form onSubmit={handleAddIp} className="crud-form">
+                <div className="form-group" style={{ flex: 1.5 }}>
+                  <label htmlFor="ip-address">Dirección IP (IPv4 o IPv6)</label>
+                  <input
+                    id="ip-address"
+                    type="text"
+                    placeholder="190.111.45.23"
+                    value={newIpAddress}
+                    onChange={(e) => setNewIpAddress(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ flex: 2 }}>
+                  <label htmlFor="ip-desc">Descripción / Nota</label>
+                  <input
+                    id="ip-desc"
+                    type="text"
+                    placeholder="Oficina central, casa de administrador, etc."
+                    value={newIpDescription}
+                    onChange={(e) => setNewIpDescription(e.target.value)}
+                  />
+                </div>
+                <div className="form-actions" style={{ alignSelf: 'flex-end', marginBottom: '0.1rem' }}>
+                  <button type="submit" className="btn-primary" disabled={submittingIp}>
+                    {submittingIp ? 'Guardando...' : '➕ Agregar IP'}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Tabla de IPs */}
+            <div className="whitelist-section">
+              <div className="section-header">
+                <h2>IPs Autorizadas en el Cortafuegos</h2>
+                <span className="badge">{ips.length} total</span>
+              </div>
+              <div className="table-responsive">
+                <table className="user-table">
+                  <thead>
+                    <tr>
+                      <th>Dirección IP</th>
+                      <th>Descripción / Nota</th>
+                      <th>Creado Por</th>
+                      <th style={{ textAlign: 'center' }}>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ips.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} style={{ textAlign: 'center', opacity: 0.6, padding: '2rem' }}>
+                          No hay direcciones IP autorizadas. El firewall no está bloqueando ninguna IP, o todos están accediendo mediante bypass.
+                        </td>
+                      </tr>
+                    ) : (
+                      ips.map((ip) => (
+                        <tr key={ip.id} className={ip.ip_address === currentIp ? 'current-user-row' : ''}>
+                          <td>
+                            <div className="ip-info">
+                              <span className="ip-address">{ip.ip_address}</span>
+                              {ip.ip_address === currentIp && <span className="self-badge">Tu IP</span>}
+                            </div>
+                          </td>
+                          <td>
+                            <span className="ip-desc">{ip.description || 'Sin notas'}</span>
+                          </td>
+                          <td>
+                            <span className="ip-author">{ip.created_by || 'Sistema'}</span>
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <button
+                              onClick={() => handleDeleteIp(ip.id, ip.ip_address)}
+                              className="btn-danger-action"
+                              title="Remover de la lista blanca de IPs"
+                            >
+                              🗑️
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pestaña de Plantillas de Correo */}
+        {activeTab === 'templates' && (
+          <div className="tab-pane fade-in">
+            <div className="crud-form-card">
+              <h3>Editor de Plantillas de Correo Electrónico</h3>
+              <p style={{ fontSize: '0.85rem', opacity: 0.8, marginBottom: '1.5rem', lineHeight: '1.4' }}>
+                Modifica directamente los archivos de correo en el servidor de la aplicación. Estos archivos se utilizan para las notificaciones transaccionales automáticas. Puedes usar sintaxis HTML con las etiquetas correspondientes como <code>{"{{email}}"}</code>, <code>{"{{name}}"}</code>, <code>{"{{celular}}"}</code> y <code>{"{{date}}"}</code>.
+              </p>
+
+              <div className="template-selector-container" style={{ marginBottom: '1.5rem' }}>
+                <label style={{ fontSize: '0.9rem', fontWeight: 600, marginRight: '1rem' }}>Seleccionar Plantilla:</label>
+                <select
+                  value={selectedTemplateId}
+                  onChange={(e) => handleTemplateChange(e.target.value)}
+                  className="role-select"
+                  style={{ minWidth: '300px' }}
+                >
+                  {templates.map(t => (
+                    <option key={t.id} value={t.id}>{t.name} ({t.filename})</option>
+                  ))}
+                </select>
+              </div>
+
+              <form onSubmit={handleSaveTemplate} className="space-y-4">
+                <div className="form-group full-width">
+                  <label htmlFor="template-editor-content">Contenido HTML / MD de la Plantilla</label>
+                  <textarea
+                    id="template-editor-content"
+                    value={templateContent}
+                    onChange={(e) => setTemplateContent(e.target.value)}
+                    rows={18}
+                    required
+                    style={{
+                      width: '100%',
+                      fontFamily: 'monospace',
+                      fontSize: '0.9rem',
+                      background: 'var(--card-bg)',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-color)',
+                      padding: '1rem',
+                      borderRadius: '0.5rem',
+                      outline: 'none',
+                      resize: 'vertical',
+                      lineHeight: '1.5'
+                    }}
+                  />
+                </div>
+                <div className="form-actions" style={{ marginTop: '1rem' }}>
+                  <button type="submit" className="btn-success" disabled={savingTemplate}>
+                    {savingTemplate ? 'Guardando cambios...' : '💾 Guardar Plantilla'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
 
       <style jsx>{`
@@ -407,11 +1246,29 @@ export default function AdminPage() {
           opacity: 0.7;
         }
 
+        /* Alertas */
         .alert {
-          padding: 1rem;
+          padding: 1rem 1.25rem;
           border-radius: 0.75rem;
           font-size: 0.9rem;
           margin-bottom: 1.5rem;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+          from { transform: translateY(-10px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+
+        .alert-icon {
+          font-size: 1.25rem;
+        }
+
+        .alert-text {
+          font-weight: 500;
         }
 
         .alert-error {
@@ -420,11 +1277,239 @@ export default function AdminPage() {
           border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
+        .alert-success {
+          background: rgba(16, 185, 129, 0.1);
+          color: var(--primary-color);
+          border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        /* Pestañas */
+        .admin-tabs {
+          display: flex;
+          gap: 0.5rem;
+          border-bottom: 1px solid var(--border-color);
+          padding-bottom: 1px;
+          margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+          background: transparent;
+          border: none;
+          border-bottom: 2px solid transparent;
+          padding: 0.75rem 1.5rem;
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: var(--text-color);
+          opacity: 0.6;
+          cursor: pointer;
+          transition: var(--transition);
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+          opacity: 0.9;
+          background: var(--hover-color);
+          border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        .tab-btn.active {
+          opacity: 1;
+          color: var(--primary-color);
+          border-bottom-color: var(--primary-color);
+        }
+
+        .tab-badge {
+          background: #ef4444;
+          color: white;
+          font-size: 0.75rem;
+          font-weight: 700;
+          padding: 0.1rem 0.4rem;
+          border-radius: 10px;
+          margin-left: 0.25rem;
+        }
+
+        .tab-pane {
+          width: 100%;
+        }
+
+        .fade-in {
+          animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(5px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Formularios */
+        .crud-form-card {
+          background: var(--hover-color);
+          border: 1px solid var(--border-color);
+          border-radius: 1rem;
+          padding: 1.5rem;
+          margin-bottom: 2rem;
+        }
+
+        .crud-form-card h3 {
+          font-size: 1.1rem;
+          font-weight: 700;
+          margin-bottom: 1.25rem;
+          color: var(--text-color);
+        }
+
+        .crud-form {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1.25rem;
+        }
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          flex: 1 1 200px;
+        }
+
+        .form-group.full-width {
+          flex: 1 1 100%;
+        }
+
+        .form-group label {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: var(--text-color);
+          opacity: 0.8;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group select {
+          background: var(--card-bg);
+          border: 1px solid var(--border-color);
+          color: var(--text-color);
+          padding: 0.6rem 0.75rem;
+          border-radius: 0.5rem;
+          font-size: 0.95rem;
+          outline: none;
+          transition: var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+          border-color: var(--primary-color);
+          box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+        }
+
+        .permissions-checkbox-group {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1.5rem;
+          background: var(--card-bg);
+          padding: 0.75rem 1rem;
+          border-radius: 0.5rem;
+          border: 1px solid var(--border-color);
+        }
+
+        .checkbox-label {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.9rem;
+          font-weight: 500;
+          cursor: pointer;
+        }
+
+        .checkbox-label input {
+          width: 1.1rem;
+          height: 1.1rem;
+          accent-color: var(--primary-color);
+        }
+
+        .form-actions {
+          display: flex;
+          align-items: center;
+          margin-top: 0.5rem;
+        }
+
+        /* Botones Especiales */
+        .btn-success {
+          background: var(--primary-color);
+          color: white;
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: var(--transition);
+        }
+
+        .btn-success:hover {
+          background: var(--primary-hover);
+        }
+
+        .btn-danger-action {
+          background: transparent;
+          border: none;
+          font-size: 1.1rem;
+          cursor: pointer;
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
+          transition: var(--transition);
+        }
+
+        .btn-danger-action:hover {
+          background: rgba(239, 68, 68, 0.15);
+          transform: scale(1.1);
+        }
+
+        /* Cartas de Acciones Rápidas (IP) */
+        .quick-action-card {
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+          border: 1px solid rgba(16, 185, 129, 0.15);
+          border-radius: 1rem;
+          padding: 1.5rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .quick-action-content h4 {
+          font-size: 1.05rem;
+          font-weight: 700;
+          color: var(--text-color);
+          margin-bottom: 0.5rem;
+        }
+
+        .quick-action-content p {
+          font-size: 0.9rem;
+          opacity: 0.8;
+          margin-bottom: 1rem;
+          line-height: 1.4;
+        }
+
+        .ip-display-row {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+
+        .ip-display-row code {
+          background: var(--card-bg);
+          border: 1px solid var(--border-color);
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
+          font-weight: 700;
+          font-size: 1rem;
+          color: var(--primary-color);
+        }
+
+        /* Métricas */
         .stats-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
           gap: 1.5rem;
-          margin-bottom: 3rem;
+          margin-bottom: 2.5rem;
         }
 
         .stat-card {
@@ -445,10 +1530,21 @@ export default function AdminPage() {
         }
 
         .stat-value {
-          font-size: 2rem;
+          font-size: 1.75rem;
           font-weight: 800;
           color: var(--primary-color);
           margin-bottom: 0.5rem;
+        }
+
+        .stat-value.pending-value {
+          color: #f59e0b;
+        }
+
+        .stat-value.ip-detected {
+          font-size: 1.25rem;
+          font-family: monospace;
+          word-break: break-all;
+          line-height: 2.1rem;
         }
 
         .stat-desc {
@@ -457,18 +1553,32 @@ export default function AdminPage() {
           opacity: 0.7;
         }
 
-        .whitelist-section h2 {
-          font-size: 1.4rem;
+        /* Secciones de Tabla */
+        .whitelist-section {
+          margin-top: 1.5rem;
+        }
+
+        .section-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 1rem;
+        }
+
+        .section-header h2 {
+          font-size: 1.25rem;
           font-weight: 700;
-          margin-bottom: 0.25rem;
           color: var(--text-color);
         }
 
-        .section-desc {
-          font-size: 0.9rem;
+        .badge {
+          background: var(--hover-color);
+          border: 1px solid var(--border-color);
           color: var(--text-color);
-          opacity: 0.7;
-          margin-bottom: 1.5rem;
+          padding: 0.25rem 0.6rem;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          font-weight: 600;
         }
 
         .table-responsive {
@@ -497,7 +1607,7 @@ export default function AdminPage() {
           font-weight: 700;
           color: var(--text-color);
           opacity: 0.8;
-          font-size: 0.85rem;
+          font-size: 0.825rem;
           text-transform: uppercase;
           letter-spacing: 0.05em;
         }
@@ -506,10 +1616,11 @@ export default function AdminPage() {
           border-bottom: none;
         }
 
-        .user-info {
+        .user-info, .ip-info {
           display: flex;
           flex-direction: column;
           gap: 0.25rem;
+          align-items: flex-start;
         }
 
         .user-name {
@@ -517,13 +1628,35 @@ export default function AdminPage() {
           color: var(--text-color);
         }
 
-        .user-email {
+        .user-email, .ip-address {
           font-size: 0.85rem;
           color: var(--text-color);
           opacity: 0.6;
           display: flex;
           align-items: center;
           gap: 0.5rem;
+        }
+
+        .ip-address {
+          font-size: 1rem;
+          font-family: monospace;
+          font-weight: 700;
+          color: var(--text-color);
+          opacity: 1;
+        }
+
+        .ip-desc {
+          font-weight: 500;
+        }
+
+        .ip-author {
+          font-size: 0.85rem;
+          opacity: 0.7;
+        }
+
+        .celular-text, .date-text {
+          font-size: 0.9rem;
+          font-weight: 500;
         }
 
         .self-badge {
@@ -535,6 +1668,30 @@ export default function AdminPage() {
           font-size: 0.75rem;
         }
 
+        .inline-input {
+          background: transparent;
+          border: 1px solid transparent;
+          color: var(--text-color);
+          padding: 0.3rem 0.5rem;
+          border-radius: 0.375rem;
+          width: 100%;
+          min-width: 180px;
+          max-width: 220px;
+          font-size: 0.9rem;
+          transition: var(--transition);
+        }
+
+        .inline-input:hover {
+          border-color: var(--border-color);
+          background: var(--hover-color);
+        }
+
+        .inline-input:focus {
+          border-color: var(--primary-color);
+          background: var(--card-bg);
+          outline: none;
+        }
+
         .role-select {
           background: var(--card-bg);
           border: 1px solid var(--border-color);
@@ -544,6 +1701,11 @@ export default function AdminPage() {
           font-size: 0.9rem;
           outline: none;
           cursor: pointer;
+          transition: var(--transition);
+        }
+
+        .role-select:focus {
+          border-color: var(--primary-color);
         }
 
         .permission-checkbox {
@@ -553,32 +1715,157 @@ export default function AdminPage() {
           cursor: pointer;
         }
 
-        .status-cell {
-          font-size: 0.85rem;
-          font-weight: 600;
+        /* Pending settings box & triggers */
+        .actions-pending-row {
+          display: flex;
+          gap: 0.5rem;
+          justify-content: center;
         }
 
-        .saving-text {
-          color: var(--accent-color);
-        }
-
-        .saved-badge {
+        .btn-approve-trigger {
+          background: rgba(16, 185, 129, 0.12);
           color: var(--primary-color);
-          background: rgba(16, 185, 129, 0.1);
-          padding: 0.25rem 0.5rem;
-          border-radius: 0.25rem;
+          border: 1px solid rgba(16, 185, 129, 0.25);
+          padding: 0.4rem 0.8rem;
+          border-radius: 0.375rem;
+          font-size: 0.85rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: var(--transition);
         }
 
-        .all-granted-badge {
-          color: #3b82f6;
-          background: rgba(59, 130, 246, 0.1);
-          padding: 0.25rem 0.5rem;
+        .btn-approve-trigger:hover {
+          background: var(--primary-color);
+          color: white;
+        }
+
+        .btn-reject-trigger {
+          background: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+          border: 1px solid rgba(239, 68, 68, 0.2);
+          padding: 0.4rem 0.8rem;
+          border-radius: 0.375rem;
+          font-size: 0.85rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: var(--transition);
+        }
+
+        .btn-reject-trigger:hover {
+          background: #ef4444;
+          color: white;
+        }
+
+        .approve-settings-box {
+          background: var(--hover-color);
+          border: 1px solid var(--border-color);
+          padding: 0.75rem;
+          border-radius: 0.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          text-align: left;
+          width: 200px;
+          margin: 0 auto;
+        }
+
+        .approve-setting-group {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          justify-content: space-between;
+        }
+
+        .approve-setting-group label {
+          font-size: 0.8rem;
+          font-weight: 600;
+          opacity: 0.8;
+        }
+
+        .role-select-small {
+          background: var(--card-bg);
+          border: 1px solid var(--border-color);
+          color: var(--text-color);
+          padding: 0.2rem 0.4rem;
           border-radius: 0.25rem;
           font-size: 0.8rem;
         }
 
-        .current-user-row {
-          background: rgba(16, 185, 129, 0.02);
+        .inline-input-small {
+          background: var(--card-bg);
+          border: 1px solid var(--border-color);
+          color: var(--text-color);
+          padding: 0.2rem 0.4rem;
+          border-radius: 0.25rem;
+          font-size: 0.8rem;
+          width: 110px;
+        }
+
+        .approve-actions-row {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 0.25rem;
+          gap: 0.5rem;
+        }
+
+        .btn-approve-confirm {
+          flex: 1;
+          background: var(--primary-color);
+          color: white;
+          border: none;
+          font-weight: 700;
+          font-size: 0.8rem;
+          padding: 0.3rem;
+          border-radius: 0.25rem;
+          cursor: pointer;
+        }
+
+        .btn-approve-confirm:hover {
+          background: var(--primary-hover);
+        }
+
+        .btn-approve-cancel {
+          background: rgba(107, 114, 128, 0.15);
+          color: var(--text-color);
+          border: none;
+          font-size: 0.8rem;
+          padding: 0.3rem 0.5rem;
+          border-radius: 0.25rem;
+          cursor: pointer;
+        }
+
+        .btn-approve-cancel:hover {
+          background: rgba(107, 114, 128, 0.25);
+        }
+
+        @media (max-width: 768px) {
+          .admin-container {
+            padding: 1rem 0.5rem;
+          }
+          .admin-card {
+            padding: 1.25rem;
+            border-radius: 1rem;
+          }
+          .stats-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+          }
+          .admin-tabs {
+            flex-direction: column;
+            gap: 0.25rem;
+          }
+          .tab-btn {
+            width: 100%;
+            padding: 0.6rem 1rem;
+          }
+          .user-table th:nth-child(4),
+          .user-table td:nth-child(4),
+          .user-table th:nth-child(5),
+          .user-table td:nth-child(5),
+          .user-table th:nth-child(6),
+          .user-table td:nth-child(6) {
+            display: none; /* Ocultar checks de permisos en móvil */
+          }
         }
       `}</style>
     </div>

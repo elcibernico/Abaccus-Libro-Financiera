@@ -1,15 +1,42 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import config from '../../../data_content/locales/config.json';
 import { usePreferences } from '@/modules/libro_financiero/components/UserPreferencesProvider';
+import versions from '../../versions.json';
 
 export default function Footer() {
   const { theme } = usePreferences();
+  const pathname = usePathname();
   const whatsappUrl = `https://wa.me/${config.footer.whatsappPhone}`;
   const extraLogo = theme === 'dark' 
     ? config.footer.extraReferenceLogoDarkUrl 
     : config.footer.extraReferenceLogoLightUrl;
+
+  const getDynamicVersionInfo = () => {
+    if (pathname.startsWith('/admin')) {
+      return `Admin v${versions.Modulo_Admin}`;
+    } else if (pathname.startsWith('/libro')) {
+      return `Libro v${versions.Modulo_Libro}`;
+    } else if (pathname.startsWith('/bibliografia')) {
+      return `Bibliografía v${versions.Modulo_Bibliografía}`;
+    } else if (pathname.startsWith('/clases')) {
+      return `Clases v${versions.Modulo_Clases}`;
+    } else if (pathname.startsWith('/examenes')) {
+      return `Exámenes v${versions.Modulo_Examenes}`;
+    } else if (pathname.startsWith('/alumnado')) {
+      return `Alumnado v${versions.Modulo_Alumnado}`;
+    } else if (pathname.startsWith('/investigacion')) {
+      return `Investigación v${versions.Modulo_Investigacion}`;
+    } else if (pathname.startsWith('/reporteria')) {
+      return `Reportería v${versions.Modulo_Reporteria}`;
+    } else {
+      return `core v${versions.Core}`;
+    }
+  };
+
+  const dynamicInfo = getDynamicVersionInfo();
 
   return (
     <footer className="footer-container">
@@ -58,10 +85,10 @@ export default function Footer() {
       <div className="footer-right">
         <Link 
           href="/admin" 
-          title={`Panel de Control General (v${process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'})`}
+          title={`Ecosistema - ${dynamicInfo}`}
           className={`admin-pi-link ${theme}`}
         >
-          π<span className="version-tag">v{process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'}</span>
+          π<span className="version-tag">{dynamicInfo}</span>
         </Link>
       </div>
 

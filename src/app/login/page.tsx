@@ -10,8 +10,7 @@ function LoginForm() {
   const { theme } = usePreferences();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [emailCiudad, setEmailCiudad] = useState('');
-  const [emailArnet, setEmailArnet] = useState('');
+  const [emailOtp, setEmailOtp] = useState('');
   const [loading, setLoading] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -21,6 +20,8 @@ function LoginForm() {
     const errorParam = searchParams.get('error');
     if (errorParam === 'unauthorized') {
       setErrorMsg('Acceso denegado: Tu correo no se encuentra en la lista blanca de usuarios autorizados.');
+    } else if (errorParam === 'pending') {
+      setErrorMsg('Acceso en suspenso: Tu solicitud de ingreso ha sido registrada. Podrás acceder una vez que sea aprobada por el administrador.');
     } else if (errorParam === 'auth_failed') {
       setErrorMsg('Error de autenticación: Hubo un problema al iniciar sesión. Inténtalo de nuevo.');
     } else if (errorParam === 'session_expired') {
@@ -46,29 +47,29 @@ function LoginForm() {
     }
   };
 
-  const handleOtpLogin = async (email: string, domain: string, type: string) => {
+  const handleOtpLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setErrorMsg(null);
     setSuccessMsg(null);
-    const cleanEmail = email.trim();
+    const cleanEmail = emailOtp.trim();
 
     if (!cleanEmail) {
-      setErrorMsg(`Por favor ingresa un correo para @${domain}`);
+      setErrorMsg('Por favor ingresa tu dirección de correo electrónico.');
       return;
     }
 
-    const fullEmail = cleanEmail.includes('@') ? cleanEmail : `${cleanEmail}@${domain}`;
-    
-    if (!fullEmail.toLowerCase().endsWith(`@${domain}`)) {
-      setErrorMsg(`El correo debe pertenecer al dominio @${domain}`);
+    if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+      setErrorMsg('Por favor ingresa una dirección de correo electrónico válida (ejemplo@dominio.com).');
       return;
     }
 
-    setLoading(type);
-    const result = await signInWithEmailOtp(fullEmail);
+    setLoading('otp');
+    const result = await signInWithEmailOtp(cleanEmail);
     setLoading(null);
 
     if (result.success) {
-      setSuccessMsg(`Se ha enviado un enlace de acceso (Magic Link) a ${fullEmail}. Revisa tu bandeja de entrada.`);
+      setSuccessMsg(`Se ha enviado un enlace de acceso (Magic Link) a ${cleanEmail}. Revisa tu bandeja de entrada.`);
+      setEmailOtp('');
     } else {
       setErrorMsg(`Error al enviar el enlace de acceso: ${result.error}`);
     }
@@ -78,94 +79,102 @@ function LoginForm() {
     <div className="login-card glass-card">
       <div className="login-header">
         <h1 className="login-title">Iniciar Sesión</h1>
-        <p className="login-subtitle">Libro Digital Interactivo de Matemática Financiera</p>
+        <p className="login-subtitle">Ecosistema Digital de Matemática Financiera</p>
       </div>
 
-      {errorMsg && <div className="alert alert-error">{errorMsg}</div>}
-      {successMsg && <div className="alert alert-success">{successMsg}</div>}
+      {errorMsg && (
+        <div className="alert alert-error">
+          <span className="alert-icon">⚠️</span>
+          <div className="alert-text">{errorMsg}</div>
+        </div>
+      )}
+      {successMsg && (
+        <div className="alert alert-success">
+          <span className="alert-icon">✨</span>
+          <div className="alert-text">{successMsg}</div>
+        </div>
+      )}
 
+      {/* Proveedores Activos */}
       <div className="providers-section">
         <h3>Proveedores de Acceso Activos</h3>
-        <div className="oauth-grid">
+        <div className="oauth-row">
           <button 
-            className="provider-btn google-btn"
+            className="provider-btn"
             onClick={() => handleOAuthLogin('google')}
             disabled={loading !== null}
+            title="Entrar con Google"
           >
-            {loading === 'google' ? 'Conectando...' : 'Entrar con Google'}
+            {loading === 'google' ? (
+              <div className="spinner"></div>
+            ) : (
+              <img 
+                src="https://www.vectorlogo.zone/logos/google/google-icon.svg" 
+                alt="Google" 
+                className="provider-logo"
+              />
+            )}
           </button>
 
           <button 
-            className="provider-btn microsoft-btn"
+            className="provider-btn"
             onClick={() => handleOAuthLogin('azure')}
             disabled={loading !== null}
+            title="Entrar con Microsoft"
           >
-            {loading === 'azure' ? 'Conectando...' : 'Entrar con Microsoft'}
+            {loading === 'azure' ? (
+              <div className="spinner"></div>
+            ) : (
+              <img 
+                src="https://www.vectorlogo.zone/logos/microsoft/microsoft-icon.svg" 
+                alt="Microsoft" 
+                className="provider-logo"
+              />
+            )}
           </button>
 
           <button 
-            className="provider-btn yahoo-btn"
+            className="provider-btn"
             onClick={() => handleOAuthLogin('yahoo')}
             disabled={loading !== null}
+            title="Entrar con Yahoo"
           >
-            {loading === 'yahoo' ? 'Conectando...' : 'Entrar con Yahoo'}
+            {loading === 'yahoo' ? (
+              <div className="spinner"></div>
+            ) : (
+              <img 
+                src="https://www.vectorlogo.zone/logos/yahoo/yahoo-icon.svg" 
+                alt="Yahoo" 
+                className="provider-logo"
+              />
+            )}
           </button>
         </div>
 
-        <div className="otp-forms">
-          <div className="otp-card">
-            <label>Magic Link para @ciudad.com.ar</label>
+        {/* Acceso por Magic Link Unificado */}
+        <div className="otp-section">
+          <h3>Acceso por Enlace Directo (Magic Link)</h3>
+          <form onSubmit={handleOtpLogin} className="otp-form">
             <div className="otp-input-group">
               <input 
-                type="text" 
-                placeholder="usuario" 
-                value={emailCiudad}
-                onChange={(e) => setEmailCiudad(e.target.value)}
+                type="email" 
+                placeholder="tu-correo@ejemplo.com" 
+                value={emailOtp}
+                onChange={(e) => setEmailOtp(e.target.value)}
                 disabled={loading !== null}
+                required
               />
-              <span className="domain-badge">@ciudad.com.ar</span>
               <button 
-                onClick={() => handleOtpLogin(emailCiudad, 'ciudad.com.ar', 'ciudad')}
+                type="submit"
                 disabled={loading !== null}
               >
-                {loading === 'ciudad' ? 'Enviando...' : 'Enviar'}
+                {loading === 'otp' ? 'Enviando...' : 'Recibir Enlace'}
               </button>
             </div>
-          </div>
-
-          <div className="otp-card">
-            <label>Magic Link para @arnet.com.ar</label>
-            <div className="otp-input-group">
-              <input 
-                type="text" 
-                placeholder="usuario" 
-                value={emailArnet}
-                onChange={(e) => setEmailArnet(e.target.value)}
-                disabled={loading !== null}
-              />
-              <span className="domain-badge">@arnet.com.ar</span>
-              <button 
-                onClick={() => handleOtpLogin(emailArnet, 'arnet.com.ar', 'arnet')}
-                disabled={loading !== null}
-              >
-                {loading === 'arnet' ? 'Enviando...' : 'Enviar'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="divider" />
-
-      <div className="providers-section disabled-section">
-        <h3>Proveedores Deshabilitados Temporalmente</h3>
-        <div className="disabled-grid">
-          <div className="disabled-badge">Apple OAuth</div>
-          <div className="disabled-badge">Dropbox OAuth</div>
-          <div className="disabled-badge">Smartsheet OAuth</div>
-          <div className="disabled-badge">Box OAuth</div>
-          <div className="disabled-badge">GitHub OAuth</div>
-          <div className="disabled-badge">Salesforce OAuth</div>
+            <p className="otp-desc">
+              Ingresa cualquier dirección de correo electrónico autorizada para recibir un enlace de acceso instantáneo en tu bandeja de entrada.
+            </p>
+          </form>
         </div>
       </div>
 
@@ -189,12 +198,30 @@ function LoginForm() {
           opacity: 0.7;
         }
 
+        /* Alertas */
         .alert {
-          padding: 1rem;
+          padding: 1rem 1.25rem;
           border-radius: 0.75rem;
           font-size: 0.9rem;
           margin-bottom: 1.5rem;
-          line-height: 1.5;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+          from { transform: translateY(-10px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+
+        .alert-icon {
+          font-size: 1.25rem;
+        }
+
+        .alert-text {
+          font-weight: 500;
+          line-height: 1.4;
         }
 
         .alert-error {
@@ -212,89 +239,92 @@ function LoginForm() {
         .providers-section {
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
+          gap: 1.5rem;
         }
 
         .providers-section h3 {
-          font-size: 1rem;
+          font-size: 0.9rem;
           font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
           color: var(--text-color);
-          opacity: 0.9;
+          opacity: 0.6;
+          margin-bottom: 0.25rem;
+          text-align: center;
+        }
+
+        /* Fila de OAuth estilo Squircle */
+        .oauth-row {
+          display: flex;
+          justify-content: center;
+          gap: 1.25rem;
           margin-bottom: 0.5rem;
         }
 
-        .oauth-grid {
-          display: flex;
-          flex-direction: column;
-          gap: 0.75rem;
-        }
-
         .provider-btn {
-          width: 100%;
-          padding: 0.85rem;
-          border-radius: 0.75rem;
-          font-weight: 600;
-          font-size: 0.95rem;
-          cursor: pointer;
-          transition: var(--transition);
+          width: 72px;
+          height: 72px;
+          border-radius: 1.25rem;
+          background: var(--card-bg);
+          border: 1px solid var(--border-color);
           display: flex;
           align-items: center;
           justify-content: center;
+          cursor: pointer;
+          transition: var(--transition);
+          box-shadow: var(--shadow-sm);
+        }
+
+        .provider-btn:hover:not(:disabled) {
+          transform: translateY(-3px);
+          border-color: var(--primary-color);
+          box-shadow: var(--shadow-md), 0 0 12px rgba(16, 185, 129, 0.15);
+        }
+
+        .provider-logo {
+          width: 32px;
+          height: 32px;
+          object-fit: contain;
+          transition: var(--transition);
+        }
+
+        .provider-btn:hover .provider-logo {
+          transform: scale(1.1);
+        }
+
+        .spinner {
+          width: 24px;
+          height: 24px;
+          border: 3px solid var(--border-color);
+          border-top: 3px solid var(--primary-color);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        /* Magic Link Unificado */
+        .otp-section {
+          background: var(--hover-color);
           border: 1px solid var(--border-color);
-        }
-
-        .google-btn {
-          background: #ffffff;
-          color: #1f2937;
-        }
-
-        .google-btn:hover {
-          background: #f9fafb;
-          border-color: #d1d5db;
-        }
-
-        .microsoft-btn {
-          background: #2f2f2f;
-          color: #ffffff;
-          border-color: #2f2f2f;
-        }
-
-        .microsoft-btn:hover {
-          background: #1f1f1f;
-        }
-
-        .yahoo-btn {
-          background: #6001d2;
-          color: #ffffff;
-          border-color: #6001d2;
-        }
-
-        .yahoo-btn:hover {
-          background: #4b00a8;
-        }
-
-        .otp-forms {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
+          padding: 1.5rem;
+          border-radius: 1.25rem;
           margin-top: 0.5rem;
         }
 
-        .otp-card {
-          background: var(--hover-color);
-          border: 1px solid var(--border-color);
-          padding: 1rem;
-          border-radius: 1rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
+        .otp-section h3 {
+          text-align: left;
+          font-size: 0.95rem;
+          margin-bottom: 1rem;
         }
 
-        .otp-card label {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: var(--text-color);
-          opacity: 0.8;
+        .otp-form {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
         }
 
         .otp-input-group {
@@ -303,82 +333,55 @@ function LoginForm() {
           gap: 0.5rem;
           background: var(--card-bg);
           border: 1px solid var(--border-color);
-          padding: 0.25rem;
-          border-radius: 0.5rem;
+          padding: 0.35rem;
+          border-radius: 0.75rem;
+          transition: var(--transition);
+        }
+
+        .otp-input-group:focus-within {
+          border-color: var(--primary-color);
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
 
         .otp-input-group input {
           flex: 1;
           border: none;
           background: transparent;
-          padding: 0.5rem;
+          padding: 0.5rem 0.75rem;
           color: var(--text-color);
           font-size: 0.95rem;
           outline: none;
-        }
-
-        .domain-badge {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: var(--text-color);
-          opacity: 0.6;
-          padding: 0.25rem 0.5rem;
-          background: var(--hover-color);
-          border-radius: 0.25rem;
         }
 
         .otp-input-group button {
           background: var(--primary-color);
           color: white;
           border: none;
-          padding: 0.5rem 1rem;
-          border-radius: 0.375rem;
+          padding: 0.6rem 1.25rem;
+          border-radius: 0.5rem;
           font-weight: 600;
+          font-size: 0.9rem;
           cursor: pointer;
           transition: var(--transition);
         }
 
-        .otp-input-group button:hover {
+        .otp-input-group button:hover:not(:disabled) {
           background: var(--primary-hover);
         }
 
-        .divider {
-          height: 1px;
-          background: var(--border-color);
-          margin: 2rem 0;
+        .otp-desc {
+          font-size: 0.8rem;
+          opacity: 0.6;
+          line-height: 1.4;
+          margin-left: 0.25rem;
         }
 
-        .disabled-section h3 {
-          opacity: 0.5;
+        [data-theme='dark'] .provider-btn {
+          background: #141416;
         }
 
-        .disabled-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 0.5rem;
-        }
-
-        .disabled-badge {
-          background: var(--hover-color);
-          border: 1px solid var(--border-color);
-          padding: 0.75rem;
-          border-radius: 0.5rem;
-          text-align: center;
-          font-size: 0.85rem;
-          font-weight: 500;
-          color: var(--text-color);
-          opacity: 0.4;
-          user-select: none;
-        }
-
-        [data-theme='dark'] .google-btn {
-          background: #18181b;
-          color: #ffffff;
-          border-color: #27272a;
-        }
-
-        [data-theme='dark'] .google-btn:hover {
-          background: #27272a;
+        [data-theme='dark'] .provider-btn:hover {
+          background: #1e1e21;
         }
       `}</style>
     </div>
@@ -408,3 +411,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
