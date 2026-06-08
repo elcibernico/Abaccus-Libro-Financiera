@@ -283,6 +283,39 @@ export default function ProfilePage() {
             </h3>
             <p className="aside-email">{email}</p>
             <div className={`role-badge-style ${badge.bg}`}>{badge.text}</div>
+
+            {/* Borrar mi usuario */}
+            {!confirmDelete ? (
+              <button 
+                type="button" 
+                className="btn-delete-user" 
+                onClick={() => setConfirmDelete(true)}
+                title="Borrar mi usuario"
+              >
+                <Trash2 size={18} />
+              </button>
+            ) : (
+              <div className="delete-confirm-sidebar">
+                <p className="confirm-text">¿Confirmas borrar tu usuario?</p>
+                <div className="confirm-buttons">
+                  <button 
+                    type="button" 
+                    className="btn-confirm-yes" 
+                    disabled={saving} 
+                    onClick={handleUnsubscribe}
+                  >
+                    Sí
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn-confirm-no" 
+                    onClick={() => setConfirmDelete(false)}
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -464,49 +497,6 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* Zona de peligro (Desuscripción) */}
-          <div className="glass-card danger-card">
-            <h3 className="card-title text-destructive">Zona de Peligro</h3>
-            <p className="danger-desc">
-              Si solicitas la baja del sistema, ya no podrás acceder a los módulos de aprendizaje. 
-              Tus datos quedarán guardados de forma inactiva y podrás solicitar la reincorporación al volver a loguearte.
-            </p>
-
-            {!confirmDelete ? (
-              <button 
-                type="button" 
-                className="btn-danger-outline" 
-                onClick={() => setConfirmDelete(true)}
-              >
-                <Trash2 size={16} />
-                Desuscribirme de la Plataforma
-              </button>
-            ) : (
-              <div className="delete-confirmation-box">
-                <div className="confirmation-warning">
-                  <AlertTriangle className="warning-icon" size={20} />
-                  <span>¿Estás seguro de que deseas darte de baja? Perderás el acceso inmediato al sistema.</span>
-                </div>
-                <div className="confirmation-actions">
-                  <button 
-                    type="button" 
-                    disabled={saving} 
-                    className="btn-danger-confirm" 
-                    onClick={handleUnsubscribe}
-                  >
-                    Sí, confirmar baja
-                  </button>
-                  <button 
-                    type="button" 
-                    className="btn-cancel" 
-                    onClick={() => setConfirmDelete(false)}
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
@@ -808,101 +798,83 @@ export default function ProfilePage() {
           border-color: var(--primary-color);
         }
 
-        /* Danger card */
-        .danger-card {
-          padding: 2.2rem;
-          border-color: rgba(239, 68, 68, 0.2);
-          background: linear-gradient(135deg, rgba(239, 68, 68, 0.01), rgba(0, 0, 0, 0));
-        }
-
-        .danger-desc {
-          font-size: 0.9rem;
-          opacity: 0.8;
-          line-height: 1.5;
-          margin-bottom: 1.5rem;
-        }
-
-        .btn-danger-outline {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
+        /* Botón borrar usuario y confirmación en sidebar */
+        .btn-delete-user {
+          margin-top: 1.5rem;
           background: transparent;
           color: #ef4444;
-          border: 1px solid rgba(239, 68, 68, 0.4);
-          padding: 0.8rem 1.5rem;
-          border-radius: 0.85rem;
-          font-weight: 700;
-          font-size: 0.9rem;
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          padding: 0.5rem;
+          border-radius: 50%;
           cursor: pointer;
-          transition: var(--transition);
-        }
-
-        .btn-danger-outline:hover {
-          background: #ef4444;
-          color: white;
-          border-color: #ef4444;
-          box-shadow: 0 6px 12px rgba(239, 68, 68, 0.15);
-        }
-
-        .delete-confirmation-box {
-          background: rgba(239, 68, 68, 0.05);
-          border: 1px solid rgba(239, 68, 68, 0.15);
-          padding: 1.25rem;
-          border-radius: 0.85rem;
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          animation: slideDown 0.3s ease-out;
-        }
-
-        .confirmation-warning {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          justify-content: center;
+          transition: all 0.2s ease;
+          width: 38px;
+          height: 38px;
+        }
+
+        .btn-delete-user:hover {
+          background: rgba(239, 68, 68, 0.1);
+          border-color: #ef4444;
+          transform: scale(1.1);
+        }
+
+        .delete-confirm-sidebar {
+          margin-top: 1.25rem;
+          background: rgba(239, 68, 68, 0.05);
+          border: 1px solid rgba(239, 68, 68, 0.15);
+          padding: 0.75rem;
+          border-radius: 0.6rem;
+          animation: slideDown 0.2s ease-out;
+          width: 100%;
+        }
+
+        .confirm-text {
+          font-size: 0.8rem;
           color: #ef4444;
-          font-size: 0.9rem;
           font-weight: 600;
+          margin-bottom: 0.5rem;
+          text-align: center;
         }
 
-        .warning-icon {
-          flex-shrink: 0;
-        }
-
-        .confirmation-actions {
+        .confirm-buttons {
           display: flex;
-          gap: 0.75rem;
+          justify-content: center;
+          gap: 0.5rem;
         }
 
-        .btn-danger-confirm {
+        .btn-confirm-yes {
           background: #ef4444;
           color: white;
           border: none;
-          padding: 0.6rem 1.2rem;
-          border-radius: 0.6rem;
+          padding: 0.3rem 0.8rem;
+          border-radius: 0.35rem;
+          font-size: 0.75rem;
           font-weight: 700;
-          font-size: 0.85rem;
           cursor: pointer;
-          transition: var(--transition);
+          transition: all 0.2s ease;
         }
 
-        .btn-danger-confirm:hover {
+        .btn-confirm-yes:hover {
           background: #dc2626;
         }
 
-        .btn-cancel {
+        .btn-confirm-no {
           background: transparent;
           color: var(--text-color);
           opacity: 0.7;
           border: 1px solid var(--border-color);
-          padding: 0.6rem 1.2rem;
-          border-radius: 0.6rem;
+          padding: 0.3rem 0.8rem;
+          border-radius: 0.35rem;
+          font-size: 0.75rem;
           font-weight: 700;
-          font-size: 0.85rem;
           cursor: pointer;
-          transition: var(--transition);
+          transition: all 0.2s ease;
         }
 
-        .btn-cancel:hover {
+        .btn-confirm-no:hover {
           opacity: 1;
           background: rgba(120, 120, 120, 0.05);
         }

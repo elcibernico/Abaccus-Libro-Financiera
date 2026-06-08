@@ -98,8 +98,8 @@ export default function OnboardingPage() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Redirigir al inicio ahora que está todo cargado
-        router.push('/');
+        // Redirigir al inicio mediante window.location para limpiar la caché de middleware y sesion
+        window.location.href = '/';
       } else {
         setErrorMsg(data.error || 'Ocurrió un error al guardar tu perfil.');
       }
