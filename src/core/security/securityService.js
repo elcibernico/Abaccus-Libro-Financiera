@@ -1,6 +1,12 @@
 // securityService.js - Reglas unificadas de seguridad, Whitelist de usuarios y Firewall de IPs
 import { getAuthorizedUserByEmail, MEGA_ADMINS } from '@/database/dimensions/users';
 import { getWhitelistIps } from '@/database/dimensions/whitelistIps';
+import { getSetting } from '@/database/dimensions/settings';
+
+// Cache simple en memoria para evitar consultar la DB en cada petición API/Middleware
+let cachedEnableIp = null;
+let lastCacheTime = 0;
+const CACHE_TTL_MS = 60000; // 1 minuto de TTL
 
 /**
  * Valida de forma transversal si un usuario y su IP de origen tienen permitido el ingreso.
@@ -31,8 +37,24 @@ export async function verifyUserAndIP(email, clientIp) {
     };
   }
 
-  // 3. Evaluar el Firewall de IP
-  const enableIpRestriction = process.env.NEXT_PUBLIC_ENABLE_IP_RESTRICTION === 'true';
+  // 3. Evaluar el Firewall de IP (leído de Supabase system_settings con fallback a ENV)
+  let enableIpRestriction = process.env.NEXT_PUBLIC_ENABLE_IP_RESTRICTION === 'true';
+  try {
+    const now = Date.now();
+    if (cachedEnableIp === null || now - lastCacheTime > CACHE_TTL_MS) {
+      const dbValue = await getSetting('enable_ip_restriction');
+      if (dbValue !== null) {
+        cachedEnableIp = dbValue === 'true';
+      } else {
+        cachedEnableIp = process.env.NEXT_PUBLIC_ENABLE_IP_RESTRICTION === 'true';
+      }
+      lastCacheTime = now;
+    }
+    enableIpRestriction = cachedEnableIp;
+  } catch (error) {
+    console.error('[Firewall IP Error]: Error consultando enable_ip_restriction de DB, usando fallback:', error);
+  }
+
   if (enableIpRestriction) {
     const ipsList = await getWhitelistIps(provider, { spreadsheetId });
     

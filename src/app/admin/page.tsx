@@ -80,6 +80,10 @@ export default function AdminPage() {
   const [newIpDescription, setNewIpDescription] = useState<string>('');
   const [submittingIp, setSubmittingIp] = useState<boolean>(false);
 
+  // Configuración del Firewall de IPs
+  const [enableIpRestriction, setEnableIpRestriction] = useState<boolean>(true);
+  const [submittingSettings, setSubmittingSettings] = useState<boolean>(false);
+
   useEffect(() => {
     // 1. Verificar si el usuario actual es admin
     fetch('/api/auth/me')
@@ -106,11 +110,51 @@ export default function AdminPage() {
     setLoading(true);
     setErrorMsg(null);
     try {
-      await Promise.all([fetchUsers(), fetchPendingUsers(), fetchIps(), fetchTemplates()]);
+      await Promise.all([fetchUsers(), fetchPendingUsers(), fetchIps(), fetchTemplates(), fetchSettings()]);
     } catch (err: any) {
       setErrorMsg('Error al inicializar datos del panel de control.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch('/api/admin/settings', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.enable_ip_restriction !== undefined) {
+          setEnableIpRestriction(data.enable_ip_restriction);
+        }
+      }
+    } catch (err) {
+      console.error('Error al obtener la configuración del firewall:', err);
+    }
+  };
+
+  const handleToggleIpRestriction = async () => {
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    setSubmittingSettings(true);
+    const newValue = !enableIpRestriction;
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enable_ip_restriction: newValue }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al actualizar la configuración del cortafuegos.');
+      }
+
+      setEnableIpRestriction(newValue);
+      setSuccessMsg(`Cortafuegos de IPs ${newValue ? 'ACTIVADO' : 'DESACTIVADO'} correctamente.`);
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    } finally {
+      setSubmittingSettings(false);
     }
   };
 
@@ -1006,6 +1050,33 @@ export default function AdminPage() {
         {/* Pestaña de IPs */}
         {activeTab === 'ips' && (
           <div className="tab-pane fade-in">
+            {/* Estado del Cortafuegos de IPs */}
+            <div className="quick-action-card" style={{ marginBottom: '1.5rem', borderLeft: `4px solid ${enableIpRestriction ? 'var(--primary-color, #10b981)' : '#ef4444'}` }}>
+              <div className="quick-action-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                    🛡️ Estado del Cortafuegos de IPs
+                  </h4>
+                  <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', opacity: 0.8 }}>
+                    Si está activado, solo las direcciones de la lista blanca e IPs de Mega Admins podrán acceder al sistema.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <span style={{ fontWeight: 'bold', color: enableIpRestriction ? '#10b981' : '#ef4444', fontSize: '1.05rem' }}>
+                    {enableIpRestriction ? '🟢 ACTIVADO' : '🔴 DESACTIVADO'}
+                  </span>
+                  <button 
+                    onClick={handleToggleIpRestriction} 
+                    className={enableIpRestriction ? 'btn-danger-toggle' : 'btn-success'}
+                    disabled={submittingSettings}
+                    style={{ minWidth: '150px' }}
+                  >
+                    {submittingSettings ? 'Guardando...' : enableIpRestriction ? 'Desactivar' : 'Activar'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* Acciones Rápidas */}
             <div className="quick-action-card">
               <div className="quick-action-content">
@@ -1447,6 +1518,21 @@ export default function AdminPage() {
 
         .btn-success:hover {
           background: var(--primary-hover);
+        }
+
+        .btn-danger-toggle {
+          background: #ef4444;
+          color: white;
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: var(--transition);
+        }
+
+        .btn-danger-toggle:hover {
+          background: #dc2626;
         }
 
         .btn-danger-action {
