@@ -5,7 +5,7 @@ import { getAuthorizedUserByEmail } from '@/database/dimensions/users';
 import { getWhitelistIps, addWhitelistIp, removeWhitelistIp } from '@/database/dimensions/whitelistIps';
 import { headers } from 'next/headers';
 
-const DB_PROVIDER = process.env.NEXT_PUBLIC_DATABASE_PROVIDER || 'supabase';
+const DB_PROVIDER = 'supabase';
 const SPREADSHEET_ID = process.env.NEXT_PUBLIC_SPREADSHEET_ID || '';
 
 async function verifyAdmin() {

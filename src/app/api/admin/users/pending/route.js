@@ -4,7 +4,7 @@ import { requireAuth } from '@/modules/auth/middlewares/authGuard';
 import { getAuthorizedUserByEmail } from '@/database/dimensions/users';
 import { getPendingUsers, approvePendingUser, rejectPendingUser } from '@/modules/auth/controllers/permissionsController';
 
-const DB_PROVIDER = process.env.NEXT_PUBLIC_DATABASE_PROVIDER || 'supabase';
+const DB_PROVIDER = 'supabase';
 const SPREADSHEET_ID = process.env.NEXT_PUBLIC_SPREADSHEET_ID || '';
 
 async function verifyAdmin() {

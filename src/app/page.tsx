@@ -14,7 +14,7 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  const DB_PROVIDER = process.env.NEXT_PUBLIC_DATABASE_PROVIDER || 'supabase';
+  const DB_PROVIDER = 'supabase';
   const SPREADSHEET_ID = process.env.NEXT_PUBLIC_SPREADSHEET_ID || '';
 
   // Obtener rol y datos extendidos del usuario
