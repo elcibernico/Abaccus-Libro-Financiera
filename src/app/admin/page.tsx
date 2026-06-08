@@ -80,9 +80,16 @@ export default function AdminPage() {
   const [newIpDescription, setNewIpDescription] = useState<string>('');
   const [submittingIp, setSubmittingIp] = useState<boolean>(false);
 
+  // Estados para Edición de IPs
+  const [editingIpId, setEditingIpId] = useState<string | null>(null);
+  const [editIpAddress, setEditIpAddress] = useState<string>('');
+  const [editIpDescription, setEditIpDescription] = useState<string>('');
+  const [updatingIpId, setUpdatingIpId] = useState<string | null>(null);
+
   // Configuración del Firewall de IPs
   const [enableIpRestriction, setEnableIpRestriction] = useState<boolean>(true);
   const [submittingSettings, setSubmittingSettings] = useState<boolean>(false);
+
 
   useEffect(() => {
     // 1. Verificar si el usuario actual es admin
@@ -502,6 +509,50 @@ export default function AdminPage() {
       setSuccessMsg(`Tu IP actual (${currentIp}) ha sido autorizada correctamente.`);
     } catch (err: any) {
       setErrorMsg(err.message);
+    }
+  };
+
+  // Actualizar una IP en la lista blanca (Edición / Reemplazo rápido)
+  const handleUpdateIp = async (id: string, updatedFields: { ip_address?: string; description?: string }) => {
+    setUpdatingIpId(id);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    const ipToUpdate = ips.find((ip) => ip.id === id);
+    if (!ipToUpdate) return;
+
+    const ip_address = updatedFields.ip_address !== undefined ? updatedFields.ip_address.trim() : ipToUpdate.ip_address;
+    const description = updatedFields.description !== undefined ? updatedFields.description.trim() : ipToUpdate.description;
+
+    try {
+      const res = await fetch('/api/admin/ips', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          ip_address,
+          description,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al actualizar la IP.');
+      }
+
+      setIps((prevIps) =>
+        prevIps.map((ip) =>
+          ip.id === id
+            ? { ...ip, ip_address, description }
+            : ip
+        )
+      );
+      setEditingIpId(null);
+      setSuccessMsg(`Dirección IP "${ip_address}" actualizada correctamente.`);
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    } finally {
+      setUpdatingIpId(null);
     }
   };
 
@@ -1077,20 +1128,9 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Acciones Rápidas */}
-            <div className="quick-action-card">
-              <div className="quick-action-content">
-                <h4>🔑 Autorización Rápida</h4>
-                <p>
-                  Para simplificar la configuración, puedes autorizar de forma inmediata la dirección IP desde la que estás conectado actualmente:
-                </p>
-                <div className="ip-display-row">
-                  <code>{currentIp || 'Desconocida'}</code>
-                  <button onClick={handleAddCurrentIp} className="btn-success">
-                    ⚡ Autorizar mi IP Actual
-                  </button>
-                </div>
-              </div>
+            {/* Info de IP actual */}
+            <div style={{ marginBottom: '1rem', fontSize: '0.9rem', opacity: 0.9 }}>
+              Dirección IP del administrador conectado actualmente: <code style={{ background: 'var(--hover-color)', border: '1px solid var(--border-color)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 'bold', color: 'var(--primary-color)' }}>{currentIp || 'Buscando...'}</code>
             </div>
 
             {/* Formulario Manual de IP */}
@@ -1136,10 +1176,10 @@ export default function AdminPage() {
                 <table className="user-table">
                   <thead>
                     <tr>
-                      <th>Dirección IP</th>
-                      <th>Descripción / Nota</th>
-                      <th>Creado Por</th>
-                      <th style={{ textAlign: 'center' }}>Acciones</th>
+                      <th style={{ width: '40%' }}>Dirección IP</th>
+                      <th style={{ width: '30%' }}>Descripción / Nota</th>
+                      <th style={{ width: '15%' }}>Creado Por</th>
+                      <th style={{ textAlign: 'center', width: '15%' }}>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1150,37 +1190,121 @@ export default function AdminPage() {
                         </td>
                       </tr>
                     ) : (
-                      ips.map((ip) => (
-                        <tr key={ip.id} className={ip.ip_address === currentIp ? 'current-user-row' : ''}>
-                          <td>
-                            <div className="ip-info">
-                              <span className="ip-address">{ip.ip_address}</span>
-                              {ip.ip_address === currentIp && <span className="self-badge">Tu IP</span>}
-                            </div>
-                          </td>
-                          <td>
-                            <span className="ip-desc">{ip.description || 'Sin notas'}</span>
-                          </td>
-                          <td>
-                            <span className="ip-author">{ip.created_by || 'Sistema'}</span>
-                          </td>
-                          <td style={{ textAlign: 'center' }}>
-                            <button
-                              onClick={() => handleDeleteIp(ip.id, ip.ip_address)}
-                              className="btn-danger-action"
-                              title="Remover de la lista blanca de IPs"
-                            >
-                              🗑️
-                            </button>
-                          </td>
-                        </tr>
-                      ))
+                      ips.map((ip) => {
+                        const isEditing = editingIpId === ip.id;
+                        return (
+                          <tr key={ip.id} className={ip.ip_address === currentIp ? 'current-user-row' : ''}>
+                            <td>
+                              {isEditing ? (
+                                <input
+                                  type="text"
+                                  value={editIpAddress}
+                                  onChange={(e) => setEditIpAddress(e.target.value)}
+                                  className="inline-input"
+                                  style={{ fontFamily: 'monospace', width: '100%', padding: '0.25rem 0.5rem' }}
+                                  disabled={updatingIpId === ip.id}
+                                />
+                              ) : (
+                                <div className="ip-info">
+                                  <span className="ip-address">{ip.ip_address}</span>
+                                  {ip.ip_address === currentIp && <span className="self-badge">Tu IP</span>}
+                                </div>
+                              )}
+                            </td>
+                            <td>
+                              {isEditing ? (
+                                <input
+                                  type="text"
+                                  value={editIpDescription}
+                                  onChange={(e) => setEditIpDescription(e.target.value)}
+                                  className="inline-input"
+                                  style={{ width: '100%', padding: '0.25rem 0.5rem' }}
+                                  placeholder="Notas..."
+                                  disabled={updatingIpId === ip.id}
+                                />
+                              ) : (
+                                <span className="ip-desc">{ip.description || 'Sin notas'}</span>
+                              )}
+                            </td>
+                            <td>
+                              <span className="ip-author">{ip.created_by || 'Sistema'}</span>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}>
+                                {isEditing ? (
+                                  <>
+                                    <button
+                                      onClick={() => handleUpdateIp(ip.id, { ip_address: editIpAddress, description: editIpDescription })}
+                                      disabled={updatingIpId === ip.id}
+                                      className="btn-success-action"
+                                      title="Guardar cambios"
+                                      style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
+                                    >
+                                      💾
+                                    </button>
+                                    <button
+                                      onClick={() => setEditingIpId(null)}
+                                      disabled={updatingIpId === ip.id}
+                                      className="btn-cancel-action"
+                                      title="Cancelar"
+                                      style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
+                                    >
+                                      ✕
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button
+                                      onClick={() => {
+                                        if (currentIp) {
+                                          handleUpdateIp(ip.id, { ip_address: currentIp });
+                                        } else {
+                                          setErrorMsg('No se pudo autodetectar tu dirección IP actual.');
+                                        }
+                                      }}
+                                      disabled={updatingIpId !== null}
+                                      className="btn-quick-ip-action"
+                                      title="Reemplazar con mi IP actual"
+                                      style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
+                                    >
+                                      ⚡
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setEditingIpId(ip.id);
+                                        setEditIpAddress(ip.ip_address);
+                                        setEditIpDescription(ip.description || '');
+                                      }}
+                                      disabled={updatingIpId !== null}
+                                      className="btn-edit-action"
+                                      title="Editar registro"
+                                      style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
+                                    >
+                                      ✏️
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteIp(ip.id, ip.ip_address)}
+                                      disabled={updatingIpId !== null}
+                                      className="btn-danger-action"
+                                      title="Remover de la lista blanca de IPs"
+                                      style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
+                                    >
+                                      🗑️
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
+
         )}
 
         {/* Pestaña de Plantillas de Correo */}

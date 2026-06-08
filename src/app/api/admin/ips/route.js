@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/modules/auth/middlewares/authGuard';
 import { getAuthorizedUserByEmail } from '@/database/dimensions/users';
-import { getWhitelistIps, addWhitelistIp, removeWhitelistIp } from '@/database/dimensions/whitelistIps';
+import { getWhitelistIps, addWhitelistIp, removeWhitelistIp, updateWhitelistIp } from '@/database/dimensions/whitelistIps';
 import { headers } from 'next/headers';
 
 const DB_PROVIDER = 'supabase';
@@ -102,3 +102,28 @@ export async function DELETE(request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function PUT(request) {
+  const auth = await verifyAdmin();
+  if (!auth.authorized) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
+  try {
+    const body = await request.json();
+    const { id, ip_address, description } = body;
+    if (!id) {
+      return NextResponse.json({ error: 'Falta parámetro requerido (id)' }, { status: 400 });
+    }
+
+    const result = await updateWhitelistIp(id, { ip_address, description }, DB_PROVIDER, { spreadsheetId: SPREADSHEET_ID });
+    if (!result.success) {
+      return NextResponse.json({ error: result.error || 'Error al actualizar IP en la lista blanca' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, data: result.data });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+

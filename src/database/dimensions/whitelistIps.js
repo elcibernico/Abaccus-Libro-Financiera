@@ -186,3 +186,53 @@ export async function removeWhitelistIp(ipIdOrAddress, provider, options = {}) {
   }
 }
 
+/**
+ * Actualiza una IP existente en la base de datos.
+ */
+export async function updateWhitelistIp(id, newData, provider, options = {}) {
+  try {
+    const formattedIp = newData.ip_address ? newData.ip_address.trim() : undefined;
+    const formattedDesc = newData.description !== undefined ? newData.description.trim() : undefined;
+
+    if (provider === 'supabase') {
+      const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
+      const updateData = {};
+      if (formattedIp !== undefined) updateData.ip_address = formattedIp;
+      if (formattedDesc !== undefined) updateData.description = formattedDesc;
+      
+      const { data, error } = await supabase
+        .from('whitelist_ips')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+        
+      if (error) {
+        console.error('[DB WhitelistIP Update Error]:', error);
+        return { success: false, error: error.message };
+      }
+      
+      // Actualizar caché
+      localIpsCache = localIpsCache.map(item => String(item.id) === String(id) ? { ...item, ...updateData } : item);
+      return { success: true, data };
+    }
+    
+    // Fallback memoria local
+    localIpsCache = localIpsCache.map(item => {
+      if (String(item.id) === String(id)) {
+        const updated = { ...item };
+        if (formattedIp !== undefined) updated.ip_address = formattedIp;
+        if (formattedDesc !== undefined) updated.description = formattedDesc;
+        return updated;
+      }
+      return item;
+    });
+    
+    return { success: true, note: 'Updated in local memory or unsupported provider' };
+  } catch (error) {
+    console.error('[DB Dimensions Error]: Error al actualizar IP.', error);
+    return { success: false, error: error.message };
+  }
+}
+
+
