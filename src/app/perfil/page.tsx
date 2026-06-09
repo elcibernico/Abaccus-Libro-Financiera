@@ -285,37 +285,14 @@ export default function ProfilePage() {
             <div className={`role-badge-style ${badge.bg}`}>{badge.text}</div>
 
             {/* Borrar mi usuario */}
-            {!confirmDelete ? (
-              <button 
-                type="button" 
-                className="btn-delete-user" 
-                onClick={() => setConfirmDelete(true)}
-                title="Borrar mi usuario"
-              >
-                <Trash2 size={18} />
-              </button>
-            ) : (
-              <div className="delete-confirm-sidebar">
-                <p className="confirm-text">¿Confirmas borrar tu usuario?</p>
-                <div className="confirm-buttons">
-                  <button 
-                    type="button" 
-                    className="btn-confirm-yes" 
-                    disabled={saving} 
-                    onClick={handleUnsubscribe}
-                  >
-                    Sí
-                  </button>
-                  <button 
-                    type="button" 
-                    className="btn-confirm-no" 
-                    onClick={() => setConfirmDelete(false)}
-                  >
-                    No
-                  </button>
-                </div>
-              </div>
-            )}
+            <button 
+              type="button" 
+              className={`btn-delete-user ${confirmDelete ? 'active' : ''}`}
+              onClick={() => setConfirmDelete(!confirmDelete)}
+              title="Borrar mi usuario"
+            >
+              <Trash2 size={18} />
+            </button>
           </div>
         </div>
 
@@ -497,6 +474,35 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {/* Zona de Peligro como confirmación */}
+          {confirmDelete && (
+            <div className="glass-card danger-card">
+              <h3 className="card-title text-destructive">Zona de Peligro</h3>
+              <p className="danger-desc">
+                Si solicitas la baja del sistema, ya no podrás acceder a los módulos de aprendizaje. 
+                Tus datos quedarán guardados de forma inactiva y podrás solicitar la reincorporación al volver a loguearte.
+              </p>
+              
+              <div className="danger-actions-wrapper">
+                <button 
+                  type="button" 
+                  className="btn-danger-confirm-full"
+                  disabled={saving}
+                  onClick={handleUnsubscribe}
+                >
+                  <Trash2 size={16} />
+                  ¿Confirmas borrar tu usuario del ecosistema ABACCUS?
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-cancel" 
+                  onClick={() => setConfirmDelete(false)}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -815,66 +821,76 @@ export default function ProfilePage() {
           height: 38px;
         }
 
-        .btn-delete-user:hover {
+        .btn-delete-user:hover, .btn-delete-user.active {
           background: rgba(239, 68, 68, 0.1);
           border-color: #ef4444;
           transform: scale(1.1);
         }
 
-        .delete-confirm-sidebar {
-          margin-top: 1.25rem;
-          background: rgba(239, 68, 68, 0.05);
-          border: 1px solid rgba(239, 68, 68, 0.15);
-          padding: 0.75rem;
-          border-radius: 0.6rem;
-          animation: slideDown 0.2s ease-out;
-          width: 100%;
+        /* Danger card styling */
+        .danger-card {
+          padding: 2.2rem;
+          border-color: rgba(239, 68, 68, 0.2);
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.01), rgba(0, 0, 0, 0));
+          margin-top: 1.5rem;
+          animation: slideDown 0.3s ease-out;
         }
 
-        .confirm-text {
-          font-size: 0.8rem;
-          color: #ef4444;
-          font-weight: 600;
-          margin-bottom: 0.5rem;
-          text-align: center;
+        .danger-desc {
+          font-size: 0.9rem;
+          opacity: 0.8;
+          line-height: 1.5;
+          margin-bottom: 1.5rem;
+          color: var(--text-color);
         }
 
-        .confirm-buttons {
+        .danger-actions-wrapper {
           display: flex;
-          justify-content: center;
-          gap: 0.5rem;
+          align-items: center;
+          gap: 1rem;
+          flex-wrap: wrap;
         }
 
-        .btn-confirm-yes {
+        .btn-danger-confirm-full {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
           background: #ef4444;
           color: white;
           border: none;
-          padding: 0.3rem 0.8rem;
-          border-radius: 0.35rem;
-          font-size: 0.75rem;
+          padding: 0.8rem 1.5rem;
+          border-radius: 0.85rem;
           font-weight: 700;
+          font-size: 0.9rem;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: var(--transition);
         }
 
-        .btn-confirm-yes:hover {
+        .btn-danger-confirm-full:hover:not(:disabled) {
           background: #dc2626;
+          box-shadow: 0 6px 12px rgba(239, 68, 68, 0.25);
+          transform: translateY(-2px);
         }
 
-        .btn-confirm-no {
+        .btn-danger-confirm-full:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .btn-cancel {
           background: transparent;
           color: var(--text-color);
           opacity: 0.7;
           border: 1px solid var(--border-color);
-          padding: 0.3rem 0.8rem;
-          border-radius: 0.35rem;
-          font-size: 0.75rem;
+          padding: 0.8rem 1.5rem;
+          border-radius: 0.85rem;
           font-weight: 700;
+          font-size: 0.9rem;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: var(--transition);
         }
 
-        .btn-confirm-no:hover {
+        .btn-cancel:hover {
           opacity: 1;
           background: rgba(120, 120, 120, 0.05);
         }
