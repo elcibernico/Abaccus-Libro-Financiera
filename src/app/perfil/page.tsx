@@ -209,6 +209,7 @@ export default function ProfilePage() {
       case 'docente':
       case 'profesor':
         return { text: 'DOCENTE / CÁTEDRA', bg: 'bg-docente' };
+      case 'user':
       case 'alumno':
         return { text: 'ALUMNO', bg: 'bg-alumno' };
       default:

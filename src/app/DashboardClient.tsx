@@ -90,6 +90,7 @@ export default function DashboardClient({ user, modules, versions }: DashboardCl
         return { text: 'DOCENTE / CÁTEDRA', bg: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' };
       case 'ayudante':
         return { text: 'AUXILIAR', bg: 'bg-amber-500/10 text-amber-500 border-amber-500/20' };
+      case 'user':
       case 'alumno':
         return { text: 'ALUMNO', bg: 'bg-blue-500/10 text-blue-500 border-blue-500/20' };
       default:

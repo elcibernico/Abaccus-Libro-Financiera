@@ -805,10 +805,10 @@ export default function AdminPage() {
                     value={newUserRole}
                     onChange={(e) => setNewUserRole(e.target.value)}
                   >
-                    <option value="user">Usuario</option>
+                    <option value="user">Alumno</option>
                     <option value="docente">Docente</option>
                     <option value="admin">Administrador</option>
-                    <option value="guest">Invitado (Bloqueado)</option>
+                    <option value="guest">Invitado</option>
                   </select>
                 </div>
 
@@ -917,8 +917,8 @@ export default function AdminPage() {
                           >
                             <option value="admin">Administrador</option>
                             <option value="docente">Docente</option>
-                            <option value="user">Usuario</option>
-                            <option value="guest">Invitado (Bloqueado)</option>
+                            <option value="user">Alumno</option>
+                            <option value="guest">Invitado</option>
                           </select>
                         </td>
                         <td>
@@ -1031,7 +1031,7 @@ export default function AdminPage() {
                                     onChange={(e) => setApproveRole(e.target.value)}
                                     className="role-select-small"
                                   >
-                                    <option value="user">Usuario</option>
+                                    <option value="user">Alumno</option>
                                     <option value="docente">Docente</option>
                                     <option value="admin">Administrador</option>
                                     <option value="guest">Invitado</option>
