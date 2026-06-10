@@ -794,6 +794,35 @@ export default function AdminPage() {
         {/* Pestaña de Usuarios (Lista Blanca) */}
         {activeTab === 'users' && (
           <div className="tab-pane fade-in">
+            {/* Política de Registro Abierto */}
+            <div className="quick-action-card" style={{ marginBottom: '1.5rem', borderLeft: `4px solid ${allowPublicSignup ? 'var(--primary-color, #10b981)' : '#ef4444'}` }}>
+              <div className="quick-action-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                    🔑 Política de Registro (Sign Up)
+                  </h4>
+                  <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', opacity: 0.8 }}>
+                    {allowPublicSignup 
+                      ? 'Se permite el registro abierto. Los usuarios nuevos ingresan automáticamente como "Invitados".' 
+                      : 'Registro restringido. Todo nuevo usuario de Google requerirá aprobación manual del administrador.'}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <span style={{ fontWeight: 'bold', color: allowPublicSignup ? '#10b981' : '#ef4444', fontSize: '1.05rem' }}>
+                    {allowPublicSignup ? '🟢 REGISTRO ABIERTO' : '🔴 REQUERIR APROBACIÓN'}
+                  </span>
+                  <button 
+                    onClick={handleTogglePublicSignup} 
+                    className={allowPublicSignup ? 'btn-danger-toggle' : 'btn-success'}
+                    disabled={submittingSignupSetting}
+                    style={{ minWidth: '150px' }}
+                  >
+                    {submittingSignupSetting ? 'Guardando...' : allowPublicSignup ? 'Restringir' : 'Permitir'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* Formulario para agregar usuario */}
             <div className="crud-form-card">
               <h3>Invitar / Agregar Nuevo Usuario</h3>
@@ -1159,36 +1188,6 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
-
-            {/* Política de Registro Abierto */}
-            <div className="quick-action-card" style={{ marginBottom: '1.5rem', borderLeft: `4px solid ${allowPublicSignup ? 'var(--primary-color, #10b981)' : '#ef4444'}` }}>
-              <div className="quick-action-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                <div>
-                  <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-                    🔑 Política de Registro (Sign Up)
-                  </h4>
-                  <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', opacity: 0.8 }}>
-                    {allowPublicSignup 
-                      ? 'Se permite el registro abierto. Los usuarios nuevos ingresan automáticamente como "Invitados".' 
-                      : 'Registro restringido. Todo nuevo usuario de Google requerirá aprobación manual del administrador.'}
-                  </p>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <span style={{ fontWeight: 'bold', color: allowPublicSignup ? '#10b981' : '#ef4444', fontSize: '1.05rem' }}>
-                    {allowPublicSignup ? '🟢 REGISTRO ABIERTO' : '🔴 REQUERIR APROBACIÓN'}
-                  </span>
-                  <button 
-                    onClick={handleTogglePublicSignup} 
-                    className={allowPublicSignup ? 'btn-danger-toggle' : 'btn-success'}
-                    disabled={submittingSignupSetting}
-                    style={{ minWidth: '150px' }}
-                  >
-                    {submittingSignupSetting ? 'Guardando...' : allowPublicSignup ? 'Restringir' : 'Permitir'}
-                  </button>
-                </div>
-              </div>
-            </div>
-
             {/* Info de IP actual */}
             <div style={{ marginBottom: '1rem', fontSize: '0.9rem', opacity: 0.9 }}>
               Dirección IP del administrador conectado actualmente: <code style={{ background: 'var(--hover-color)', border: '1px solid var(--border-color)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 'bold', color: 'var(--primary-color)' }}>{currentIp || 'Buscando...'}</code>
