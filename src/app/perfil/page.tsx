@@ -5,6 +5,15 @@ import { useRouter } from 'next/navigation';
 import { User, Mail, Calendar, Hash, Phone, Shield, ArrowLeft, Check, AlertTriangle, Trash2 } from 'lucide-react';
 import { supabase } from '@/core/security/supabaseClient';
 
+const ROLE_LABELS: Record<string, string> = {
+  root: 'Mega Admin',
+  admin: 'Administrador',
+  docente: 'Docente',
+  user: 'Alumno',
+  alumno: 'Alumno',
+  guest: 'Invitado'
+};
+
 export default function ProfilePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -427,7 +436,7 @@ export default function ProfilePage() {
             <div className="glass-card impersonation-card">
               <h3 className="card-title">Simulación de Roles (Role Impersonation)</h3>
               <p className="impersonation-desc">
-                Como usuario con rol jerárquico (<strong>{realRole.toUpperCase()}</strong>), puedes simular temporalmente un rol inferior para ver el sistema tal como lo vería ese usuario.
+                Como usuario con rol jerárquico (<strong>{(ROLE_LABELS[realRole.toLowerCase()] || realRole).toUpperCase()}</strong>), puedes simular temporalmente un rol inferior para ver el sistema tal como lo vería ese usuario.
               </p>
 
               {isImpersonating ? (
@@ -435,7 +444,7 @@ export default function ProfilePage() {
                   <div className="active-warning">
                     <Shield className="warning-icon" size={20} style={{ color: '#eab308' }} />
                     <span>
-                      Estás navegando en modo de simulación como: <strong>{role.toUpperCase()}</strong>.
+                      Estás navegando en modo de simulación como: <strong>{(ROLE_LABELS[role.toLowerCase()] || role).toUpperCase()}</strong>.
                     </span>
                   </div>
                   <button 
@@ -444,7 +453,7 @@ export default function ProfilePage() {
                     disabled={saving}
                     onClick={handleRestoreRole}
                   >
-                    Restaurar Rol Real ({realRole.toUpperCase()})
+                    Restaurar Rol Real ({(ROLE_LABELS[realRole.toLowerCase()] || realRole).toUpperCase()})
                   </button>
                 </div>
               ) : (
@@ -464,7 +473,7 @@ export default function ProfilePage() {
                         <option value="" disabled>-- Selecciona un rol --</option>
                         {targets.map(t => (
                           <option key={t} value={t}>
-                            {t === 'user' ? 'Alumno/Usuario' : t.toUpperCase()}
+                            {ROLE_LABELS[t.toLowerCase()] || t.toUpperCase()}
                           </option>
                         ))}
                       </select>
