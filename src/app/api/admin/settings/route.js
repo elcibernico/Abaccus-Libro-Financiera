@@ -33,7 +33,16 @@ export async function GET() {
       isEnabled = dbValue === 'true';
     }
 
-    return NextResponse.json({ enable_ip_restriction: isEnabled });
+    const dbSignupValue = await getSetting('allow_public_signup');
+    let allowPublicSignup = process.env.NEXT_PUBLIC_ALLOW_PUBLIC_SIGNUP === 'true';
+    if (dbSignupValue !== null) {
+      allowPublicSignup = dbSignupValue === 'true';
+    }
+
+    return NextResponse.json({ 
+      enable_ip_restriction: isEnabled,
+      allow_public_signup: allowPublicSignup
+    });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -47,20 +56,33 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { enable_ip_restriction } = body;
+    const { enable_ip_restriction, allow_public_signup } = body;
     
-    if (enable_ip_restriction === undefined) {
-      return NextResponse.json({ error: 'Falta parámetro requerido (enable_ip_restriction)' }, { status: 400 });
+    let updatedValues = {};
+
+    if (enable_ip_restriction !== undefined) {
+      const valueStr = enable_ip_restriction ? 'true' : 'false';
+      const result = await updateSetting('enable_ip_restriction', valueStr);
+      if (!result.success) {
+        return NextResponse.json({ error: result.error || 'Error al guardar configuración de IP' }, { status: 500 });
+      }
+      updatedValues.enable_ip_restriction = enable_ip_restriction;
     }
 
-    const valueStr = enable_ip_restriction ? 'true' : 'false';
-    const result = await updateSetting('enable_ip_restriction', valueStr);
-    
-    if (!result.success) {
-      return NextResponse.json({ error: result.error || 'Error al guardar configuración' }, { status: 500 });
+    if (allow_public_signup !== undefined) {
+      const valueStr = allow_public_signup ? 'true' : 'false';
+      const result = await updateSetting('allow_public_signup', valueStr);
+      if (!result.success) {
+        return NextResponse.json({ error: result.error || 'Error al guardar configuración de registro' }, { status: 500 });
+      }
+      updatedValues.allow_public_signup = allow_public_signup;
     }
 
-    return NextResponse.json({ success: true, enable_ip_restriction });
+    if (Object.keys(updatedValues).length === 0) {
+      return NextResponse.json({ error: 'Faltan parámetros requeridos (enable_ip_restriction o allow_public_signup)' }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true, ...updatedValues });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

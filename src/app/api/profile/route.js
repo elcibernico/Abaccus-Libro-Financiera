@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAuth } from '@/modules/auth/middlewares/authGuard';
 import { queryDatabase } from '@/database/connection';
 import { updateUserProfile, softDeleteUser } from '@/modules/auth/controllers/permissionsController';
+import { MEGA_ADMINS } from '@/database/dimensions/users';
 
 // GET: Obtener el perfil completo del usuario autenticado
 export async function GET() {
@@ -23,6 +24,25 @@ export async function GET() {
     }
 
     if (!dbUser) {
+      const isMega = MEGA_ADMINS.includes(user.email.toLowerCase().trim());
+      if (isMega) {
+        return NextResponse.json({
+          success: true,
+          profile: {
+            email: user.email.toLowerCase().trim(),
+            nombre: 'Mega',
+            apellido: 'Admin',
+            name: 'Mega Admin',
+            dni: '',
+            fecha_nacimiento: '',
+            legajo: '',
+            celular: 'System',
+            role: 'root',
+            is_active: true,
+            created_at: new Date().toISOString()
+          }
+        });
+      }
       return NextResponse.json({ error: 'Usuario no encontrado en la whitelist.' }, { status: 404 });
     }
 

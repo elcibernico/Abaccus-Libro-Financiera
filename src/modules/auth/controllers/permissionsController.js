@@ -1,7 +1,7 @@
 // permissionsController.js - Gestión y validación de permisos de usuario (RBAC/ACL)
 import { queryDatabase } from '@/database/connection';
 import { updateSpreadsheetRow } from '@/database/connections/spreadsheet';
-import { getAuthorizedUserByEmail } from '@/database/dimensions/users';
+import { getAuthorizedUserByEmail, MEGA_ADMINS } from '@/database/dimensions/users';
 import { sendPendingUserAlertEmail } from '../services/emailService';
 import { getDefaultPermissionsForRole } from '@/config/rolesConfig';
 
@@ -462,6 +462,46 @@ export async function updateUserProfile(email, profileData) {
   try {
     const formattedEmail = email.toLowerCase().trim();
     const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
+    
+    // Verificar si el usuario ya existe en whitelist_users
+    const { data: existingUser, error: checkErr } = await supabase
+      .from('whitelist_users')
+      .select('email')
+      .eq('email', formattedEmail)
+      .maybeSingle();
+
+    if (checkErr) throw checkErr;
+
+    if (!existingUser) {
+      const isMega = MEGA_ADMINS.includes(formattedEmail);
+      if (isMega) {
+        // Es un Mega Admin que no tiene fila aún, lo insertamos
+        const { error: insertErr } = await supabase
+          .from('whitelist_users')
+          .insert([
+            {
+              email: formattedEmail,
+              name: `${profileData.nombre || ''} ${profileData.apellido || ''}`.trim() || 'Mega Admin',
+              nombre: profileData.nombre?.trim() || 'Mega',
+              apellido: profileData.apellido?.trim() || 'Admin',
+              role: 'root',
+              celular: profileData.celular?.trim() || 'System',
+              dni: profileData.dni?.trim() || '',
+              fecha_nacimiento: profileData.fecha_nacimiento || null,
+              legajo: profileData.legajo?.trim() || '',
+              is_active: true,
+              permissions: {
+                may_export_pdf: true,
+                may_edit_records: true,
+                may_view_advanced_charts: true
+              }
+            }
+          ]);
+        if (insertErr) throw insertErr;
+        return { success: true };
+      }
+      return { success: false, error: 'Usuario no encontrado en la whitelist.' };
+    }
     
     const { error } = await supabase
       .from('whitelist_users')

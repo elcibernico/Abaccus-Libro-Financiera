@@ -86,9 +86,11 @@ export default function AdminPage() {
   const [editIpDescription, setEditIpDescription] = useState<string>('');
   const [updatingIpId, setUpdatingIpId] = useState<string | null>(null);
 
-  // Configuración del Firewall de IPs
+  // Configuración del Firewall de IPs y Registro
   const [enableIpRestriction, setEnableIpRestriction] = useState<boolean>(true);
+  const [allowPublicSignup, setAllowPublicSignup] = useState<boolean>(false);
   const [submittingSettings, setSubmittingSettings] = useState<boolean>(false);
+  const [submittingSignupSetting, setSubmittingSignupSetting] = useState<boolean>(false);
 
 
   useEffect(() => {
@@ -133,9 +135,12 @@ export default function AdminPage() {
         if (data.enable_ip_restriction !== undefined) {
           setEnableIpRestriction(data.enable_ip_restriction);
         }
+        if (data.allow_public_signup !== undefined) {
+          setAllowPublicSignup(data.allow_public_signup);
+        }
       }
     } catch (err) {
-      console.error('Error al obtener la configuración del firewall:', err);
+      console.error('Error al obtener la configuración del sistema:', err);
     }
   };
 
@@ -162,6 +167,32 @@ export default function AdminPage() {
       setErrorMsg(err.message);
     } finally {
       setSubmittingSettings(false);
+    }
+  };
+
+  const handleTogglePublicSignup = async () => {
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    setSubmittingSignupSetting(true);
+    const newValue = !allowPublicSignup;
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ allow_public_signup: newValue }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al actualizar la política de registro.');
+      }
+
+      setAllowPublicSignup(newValue);
+      setSuccessMsg(`Política de registro abierto ${newValue ? 'ACTIVADA' : 'DESACTIVADA'} correctamente.`);
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    } finally {
+      setSubmittingSignupSetting(false);
     }
   };
 
@@ -912,9 +943,10 @@ export default function AdminPage() {
                           <select
                             value={user.role}
                             onChange={(e) => handleUpdateUser(user.email, { role: e.target.value })}
-                            disabled={updatingUser === user.email || user.email === currentUserEmail}
+                            disabled={updatingUser === user.email || user.email === currentUserEmail || user.role === 'root'}
                             className="role-select"
                           >
+                            {user.role === 'root' && <option value="root">Mega Admin</option>}
                             <option value="admin">Administrador</option>
                             <option value="docente">Docente</option>
                             <option value="user">Alumno</option>
@@ -1102,7 +1134,7 @@ export default function AdminPage() {
         {activeTab === 'ips' && (
           <div className="tab-pane fade-in">
             {/* Estado del Cortafuegos de IPs */}
-            <div className="quick-action-card" style={{ marginBottom: '1.5rem', borderLeft: `4px solid ${enableIpRestriction ? 'var(--primary-color, #10b981)' : '#ef4444'}` }}>
+            <div className="quick-action-card" style={{ marginBottom: '1rem', borderLeft: `4px solid ${enableIpRestriction ? 'var(--primary-color, #10b981)' : '#ef4444'}` }}>
               <div className="quick-action-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
                   <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
@@ -1123,6 +1155,35 @@ export default function AdminPage() {
                     style={{ minWidth: '150px' }}
                   >
                     {submittingSettings ? 'Guardando...' : enableIpRestriction ? 'Desactivar' : 'Activar'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Política de Registro Abierto */}
+            <div className="quick-action-card" style={{ marginBottom: '1.5rem', borderLeft: `4px solid ${allowPublicSignup ? 'var(--primary-color, #10b981)' : '#ef4444'}` }}>
+              <div className="quick-action-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                    🔑 Política de Registro (Sign Up)
+                  </h4>
+                  <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', opacity: 0.8 }}>
+                    {allowPublicSignup 
+                      ? 'Se permite el registro abierto. Los usuarios nuevos ingresan automáticamente como "Invitados".' 
+                      : 'Registro restringido. Todo nuevo usuario de Google requerirá aprobación manual del administrador.'}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <span style={{ fontWeight: 'bold', color: allowPublicSignup ? '#10b981' : '#ef4444', fontSize: '1.05rem' }}>
+                    {allowPublicSignup ? '🟢 REGISTRO ABIERTO' : '🔴 REQUERIR APROBACIÓN'}
+                  </span>
+                  <button 
+                    onClick={handleTogglePublicSignup} 
+                    className={allowPublicSignup ? 'btn-danger-toggle' : 'btn-success'}
+                    disabled={submittingSignupSetting}
+                    style={{ minWidth: '150px' }}
+                  >
+                    {submittingSignupSetting ? 'Guardando...' : allowPublicSignup ? 'Restringir' : 'Permitir'}
                   </button>
                 </div>
               </div>
