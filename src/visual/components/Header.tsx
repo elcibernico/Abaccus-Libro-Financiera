@@ -113,24 +113,42 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Lado Derecho: Acciones (Toggle de Tema y Logout) */}
+        {/* Lado Derecho: Acciones (Notificaciones, Simular Rol, Toggle Tema, Logout) */}
         <div className="header-right">
           {user && (
-            <button 
-              className="logout-btn" 
-              onClick={handleLogout}
-              title="Cerrar Sesión"
-              aria-label="Cerrar sesión"
-            >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-              <span className="logout-text">Salir</span>
-            </button>
+            <>
+              {/* 1. Botón de Notificaciones */}
+              <button 
+                className="header-btn notification-btn" 
+                title="Notificaciones" 
+                aria-label="Ver notificaciones"
+                onClick={() => alert('No tienes notificaciones pendientes.')}
+              >
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                <span className="tooltip-text">Notificaciones</span>
+              </button>
+
+              {/* 2. Acceso directo a Simular Rol (solo administradores/docentes) */}
+              {roleInfo && ['root', 'admin', 'docente'].includes(roleInfo.realRole?.toLowerCase()) && (
+                <Link 
+                  href="/perfil" 
+                  className="header-btn impersonate-btn" 
+                  title="Simular Rol" 
+                  aria-label="Ir a Simulación de Roles"
+                >
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                  <span className="tooltip-text">Simular Rol</span>
+                </Link>
+              )}
+            </>
           )}
 
+          {/* 3. Toggle de Tema (Modo Claro/Oscuro) */}
           {toggleTheme && (
             <button 
               className="theme-toggle-btn" 
@@ -157,6 +175,23 @@ export default function Header() {
                   <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                 </svg>
               )}
+            </button>
+          )}
+
+          {/* 4. Botón de Salir (Cerrar Sesión) */}
+          {user && (
+            <button 
+              className="logout-btn" 
+              onClick={handleLogout}
+              title="Salir"
+              aria-label="Cerrar sesión"
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span className="tooltip-text">Salir</span>
             </button>
           )}
         </div>
@@ -285,51 +320,60 @@ export default function Header() {
           align-items: center;
           gap: 1rem;
         }
-        .theme-toggle-btn {
+        .theme-toggle-btn, .logout-btn, .header-btn {
+          position: relative;
           background: transparent;
           color: var(--text-color);
-          opacity: 0.8;
+          opacity: 0.85;
           border: none;
-          padding: 0.5rem;
-          border-radius: var(--radius);
+          padding: 0.6rem;
+          border-radius: var(--radius, 8px);
           cursor: pointer;
-          transition: var(--transition);
+          transition: var(--transition, all 0.2s ease);
           display: flex;
           align-items: center;
           justify-content: center;
+          text-decoration: none;
         }
-        .theme-toggle-btn:hover {
-          color: var(--primary-color);
+        .theme-toggle-btn:hover, .header-btn:hover {
+          color: var(--primary-color, #10b981);
           opacity: 1;
-          transform: scale(1.1);
-        }
-        .logout-btn {
-          background: rgba(239, 68, 68, 0.08);
-          color: #ef4444;
-          border: 1px solid rgba(239, 68, 68, 0.2);
-          padding: 0.5rem 1rem;
-          border-radius: var(--radius);
-          cursor: pointer;
-          transition: var(--transition);
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-weight: 600;
-          font-size: 0.9rem;
+          transform: translateY(-2px);
+          background: rgba(16, 185, 129, 0.06);
         }
         .logout-btn:hover {
-          background: #ef4444;
-          color: white;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+          color: #ef4444;
+          opacity: 1;
+          transform: translateY(-2px);
+          background: rgba(239, 68, 68, 0.08);
         }
-        .logout-text {
-          display: inline;
+        .theme-toggle-btn .tooltip-text, .logout-btn .tooltip-text, .header-btn .tooltip-text {
+          visibility: hidden;
+          background-color: var(--card-bg, #1e1e1e);
+          color: var(--text-color, #fff);
+          text-align: center;
+          border-radius: 6px;
+          padding: 6px 10px;
+          position: absolute;
+          z-index: 1001;
+          top: 135%;
+          left: 50%;
+          transform: translateX(-50%) translateY(5px);
+          opacity: 0;
+          transition: opacity 0.2s ease, transform 0.2s ease;
+          font-size: 0.75rem;
+          font-weight: 600;
+          pointer-events: none;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+          white-space: nowrap;
+        }
+        .theme-toggle-btn:hover .tooltip-text, .logout-btn:hover .tooltip-text, .header-btn:hover .tooltip-text {
+          visibility: visible;
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
         }
         @media (max-width: 768px) {
-          .logout-text {
-            display: none;
-          }
           .logout-btn {
             padding: 0.5rem;
           }

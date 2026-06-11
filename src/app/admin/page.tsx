@@ -56,6 +56,7 @@ export default function AdminPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isAdminUser, setIsAdminUser] = useState<boolean>(false);
   const [currentUserEmail, setCurrentUserEmail] = useState<string>('');
+  const [roles, setRoles] = useState<any[]>([]);
 
   // Formulario Usuarios
   const [newUserEmail, setNewUserEmail] = useState<string>('');
@@ -119,11 +120,25 @@ export default function AdminPage() {
     setLoading(true);
     setErrorMsg(null);
     try {
-      await Promise.all([fetchUsers(), fetchPendingUsers(), fetchIps(), fetchTemplates(), fetchSettings()]);
+      await Promise.all([fetchUsers(), fetchPendingUsers(), fetchIps(), fetchTemplates(), fetchSettings(), fetchRoles()]);
     } catch (err: any) {
       setErrorMsg('Error al inicializar datos del panel de control.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const res = await fetch('/api/auth/roles');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setRoles(data.roles);
+        }
+      }
+    } catch (err) {
+      console.error('Error al obtener los roles del sistema:', err);
     }
   };
 
@@ -865,10 +880,18 @@ export default function AdminPage() {
                     value={newUserRole}
                     onChange={(e) => setNewUserRole(e.target.value)}
                   >
-                    <option value="user">Alumno</option>
-                    <option value="docente">Docente</option>
-                    <option value="admin">Administrador</option>
-                    <option value="guest">Invitado</option>
+                    {roles.length > 0 ? (
+                      roles.filter(r => r.is_active).map(r => (
+                        <option key={r.id} value={r.id === 'alumno' ? 'user' : r.id}>{r.label}</option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="user">Alumno</option>
+                        <option value="docente">Docente</option>
+                        <option value="admin">Administrador</option>
+                        <option value="guest">Invitado</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
@@ -975,11 +998,23 @@ export default function AdminPage() {
                             disabled={updatingUser === user.email || user.email === currentUserEmail || user.role === 'root'}
                             className="role-select"
                           >
-                            {user.role === 'root' && <option value="root">Mega Admin</option>}
-                            <option value="admin">Administrador</option>
-                            <option value="docente">Docente</option>
-                            <option value="user">Alumno</option>
-                            <option value="guest">Invitado</option>
+                            {user.role === 'root' && (
+                              <option value="root">
+                                {roles.find(r => r.id === 'root')?.label || 'Root'}
+                              </option>
+                            )}
+                            {roles.length > 0 ? (
+                              roles.filter(r => r.is_active && r.id !== 'root').map(r => (
+                                <option key={r.id} value={r.id === 'alumno' ? 'user' : r.id}>{r.label}</option>
+                              ))
+                            ) : (
+                              <>
+                                <option value="admin">Administrador</option>
+                                <option value="docente">Docente</option>
+                                <option value="user">Alumno</option>
+                                <option value="guest">Invitado</option>
+                              </>
+                            )}
                           </select>
                         </td>
                         <td>
@@ -1092,10 +1127,18 @@ export default function AdminPage() {
                                     onChange={(e) => setApproveRole(e.target.value)}
                                     className="role-select-small"
                                   >
-                                    <option value="user">Alumno</option>
-                                    <option value="docente">Docente</option>
-                                    <option value="admin">Administrador</option>
-                                    <option value="guest">Invitado</option>
+                                    {roles.length > 0 ? (
+                                      roles.filter(r => r.is_active && r.id !== 'root').map(r => (
+                                        <option key={r.id} value={r.id === 'alumno' ? 'user' : r.id}>{r.label}</option>
+                                      ))
+                                    ) : (
+                                      <>
+                                        <option value="user">Alumno</option>
+                                        <option value="docente">Docente</option>
+                                        <option value="admin">Administrador</option>
+                                        <option value="guest">Invitado</option>
+                                      </>
+                                    )}
                                   </select>
                                 </div>
                                 <div className="approve-setting-group">
