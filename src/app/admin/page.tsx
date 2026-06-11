@@ -92,6 +92,13 @@ export default function AdminPage() {
   const [allowPublicSignup, setAllowPublicSignup] = useState<boolean>(false);
   const [submittingSettings, setSubmittingSettings] = useState<boolean>(false);
   const [submittingSignupSetting, setSubmittingSignupSetting] = useState<boolean>(false);
+  
+  // Modal de Confirmación Personalizado
+  const [confirmConfig, setConfirmConfig] = useState<{
+    isOpen: boolean;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
 
 
   useEffect(() => {
@@ -400,17 +407,8 @@ export default function AdminPage() {
     }
   };
 
-  // Eliminar usuario de la lista blanca
-  const handleDeleteUser = async (email: string) => {
-    if (email === currentUserEmail) {
-      setErrorMsg('No puedes eliminarte a ti mismo de la lista blanca.');
-      return;
-    }
-
-    if (!window.confirm(`¿Estás seguro de que deseas eliminar al usuario "${email}" de la lista blanca? Esto revocará su acceso de inmediato.`)) {
-      return;
-    }
-
+  // Eliminar usuario de la lista blanca (Ejecución real)
+  const executeDeleteUser = async (email: string) => {
     setErrorMsg(null);
     setSuccessMsg(null);
 
@@ -429,6 +427,20 @@ export default function AdminPage() {
     } catch (err: any) {
       setErrorMsg(err.message);
     }
+  };
+
+  // Eliminar usuario de la lista blanca
+  const handleDeleteUser = async (email: string) => {
+    if (email === currentUserEmail) {
+      setErrorMsg('No puedes eliminarte a ti mismo de la lista blanca.');
+      return;
+    }
+
+    setConfirmConfig({
+      isOpen: true,
+      message: `¿Estás seguro de que deseas eliminar al usuario "${email}" de la lista blanca? Esto revocará su acceso de inmediato.`,
+      onConfirm: () => executeDeleteUser(email)
+    });
   };
 
   // Aprobar usuario en suspenso
@@ -465,12 +477,8 @@ export default function AdminPage() {
     }
   };
 
-  // Rechazar usuario en suspenso (borrar intento)
-  const handleRejectPending = async (email: string) => {
-    if (!window.confirm(`¿Estás seguro de que deseas rechazar y borrar la solicitud del usuario "${email}"?`)) {
-      return;
-    }
-
+  // Rechazar usuario en suspenso (Ejecución real)
+  const executeRejectPending = async (email: string) => {
     setErrorMsg(null);
     setSuccessMsg(null);
 
@@ -489,6 +497,15 @@ export default function AdminPage() {
     } catch (err: any) {
       setErrorMsg(err.message);
     }
+  };
+
+  // Rechazar usuario en suspenso (borrar intento)
+  const handleRejectPending = async (email: string) => {
+    setConfirmConfig({
+      isOpen: true,
+      message: `¿Estás seguro de que deseas rechazar y borrar la solicitud del usuario "${email}"?`,
+      onConfirm: () => executeRejectPending(email)
+    });
   };
 
   // Agregar nueva IP
@@ -602,12 +619,8 @@ export default function AdminPage() {
     }
   };
 
-  // Eliminar IP de la lista blanca
-  const handleDeleteIp = async (id: string, ipAddress: string) => {
-    if (!window.confirm(`¿Estás seguro de que deseas eliminar la IP "${ipAddress}" del cortafuegos de acceso?`)) {
-      return;
-    }
-
+  // Eliminar IP de la lista blanca (Ejecución real)
+  const executeDeleteIp = async (id: string, ipAddress: string) => {
     setErrorMsg(null);
     setSuccessMsg(null);
 
@@ -622,10 +635,19 @@ export default function AdminPage() {
       }
 
       setIps(ips.filter((ip) => ip.id !== id));
-      setSuccessMsg(`IP "${ipAddress}" eliminada exitosamente.`);
+      setSuccessMsg(`Dirección IP "${ipAddress}" eliminada del cortafuegos.`);
     } catch (err: any) {
       setErrorMsg(err.message);
     }
+  };
+
+  // Eliminar IP de la lista blanca
+  const handleDeleteIp = async (id: string, ipAddress: string) => {
+    setConfirmConfig({
+      isOpen: true,
+      message: `¿Estás seguro de que deseas eliminar la IP "${ipAddress}" del cortafuegos de acceso?`,
+      onConfirm: () => executeDeleteIp(id, ipAddress)
+    });
   };
 
   if (loading) {
@@ -1468,6 +1490,39 @@ export default function AdminPage() {
         )}
       </div>
 
+      {/* Modal Personalizado de Confirmación */}
+      {confirmConfig && confirmConfig.isOpen && (
+        <div className="abaccus-modal-overlay">
+          <div className="abaccus-modal-card">
+            <div className="modal-header">
+              <span className="modal-title">Ecosistema ABACCUS - Matemática Financiera</span>
+            </div>
+            <div className="modal-body">
+              <p>{confirmConfig.message}</p>
+            </div>
+            <div className="modal-footer">
+              <button 
+                type="button"
+                className="modal-btn-cancel" 
+                onClick={() => setConfirmConfig(null)}
+              >
+                Cancelar
+              </button>
+              <button 
+                type="button"
+                className="modal-btn-confirm" 
+                onClick={() => {
+                  confirmConfig.onConfirm();
+                  setConfirmConfig(null);
+                }}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx>{`
         .admin-container {
           min-height: calc(100vh - 130px);
@@ -2149,6 +2204,95 @@ export default function AdminPage() {
 
         .btn-approve-cancel:hover {
           background: rgba(107, 114, 128, 0.25);
+        }
+
+        /* Modal de Confirmación Estilizado */
+        .abaccus-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background-color: rgba(0, 0, 0, 0.65);
+          backdrop-filter: blur(5px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 20000;
+          animation: fadeIn 0.2s ease;
+        }
+        .abaccus-modal-card {
+          background-color: var(--card-bg, #111115);
+          border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+          border-radius: 16px;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+          width: 90%;
+          max-width: 420px;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .modal-header {
+          padding: 1.25rem 1.5rem 0.75rem;
+          border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+        }
+        .modal-title {
+          font-size: 0.8rem;
+          font-weight: 750;
+          color: var(--primary-color, #10b981);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .modal-body {
+          padding: 1.5rem;
+          font-size: 0.95rem;
+          color: var(--text-color);
+          line-height: 1.5;
+        }
+        .modal-footer {
+          padding: 1rem 1.5rem 1.25rem;
+          display: flex;
+          justify-content: flex-end;
+          gap: 0.75rem;
+          border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+        }
+        .modal-btn-confirm {
+          background-color: var(--primary-color, #10b981);
+          color: white;
+          border: none;
+          padding: 0.55rem 1.5rem;
+          font-size: 0.85rem;
+          font-weight: 700;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .modal-btn-confirm:hover {
+          background-color: var(--primary-hover, #059669);
+          transform: translateY(-1px);
+        }
+        .modal-btn-cancel {
+          background-color: transparent;
+          color: var(--text-color);
+          border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+          padding: 0.55rem 1.5rem;
+          font-size: 0.85rem;
+          font-weight: 700;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .modal-btn-cancel:hover {
+          background-color: rgba(107, 114, 128, 0.1);
         }
 
         @media (max-width: 768px) {

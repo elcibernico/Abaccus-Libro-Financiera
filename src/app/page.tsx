@@ -4,8 +4,9 @@ import { getAuthorizedUserByEmail } from '@/database/dimensions/users';
 import { getModulesList } from '@/database/dimensions/modules';
 import DashboardClient from './DashboardClient';
 import versions from '../versions.json';
-import { headers } from 'next/headers';
+import { headers, cookies } from 'next/headers';
 import { verifyUserAndIP, getClientIp } from '@/core/security/securityService';
+import { ROLE_HIERARCHY } from '@/config/rolesConfig';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -30,11 +31,21 @@ export default async function DashboardPage() {
 
   const authorizedUser = securityCheck.user;
 
+  // Evaluar suplantación de rol (Role Impersonation) para visualización en el Dashboard
+  const cookieStore = await cookies();
+  const activeRoleCookie = cookieStore.get('active_role')?.value;
+  const realRole = (authorizedUser as any)?.role || 'guest';
+  let activeRole = realRole;
+
+  if (activeRoleCookie && ROLE_HIERARCHY[activeRoleCookie] < ROLE_HIERARCHY[realRole]) {
+    activeRole = activeRoleCookie;
+  }
+
   // Mapear el usuario autorizado de forma segura para satisfacer los tipos de TypeScript
   const userProps = {
     email: (authorizedUser as any).email || user.email,
     name: (authorizedUser as any).name || '',
-    role: (authorizedUser as any).role || 'guest',
+    role: activeRole,
     celular: (authorizedUser as any).celular || '',
   };
 
