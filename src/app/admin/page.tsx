@@ -903,7 +903,7 @@ export default function AdminPage() {
                     onChange={(e) => setNewUserRole(e.target.value)}
                   >
                     {roles.length > 0 ? (
-                      roles.filter(r => r.is_active).map(r => (
+                      roles.filter(r => r.is_active !== false).map(r => (
                         <option key={r.id} value={r.id === 'alumno' ? 'user' : r.id}>{r.label}</option>
                       ))
                     ) : (
@@ -1026,7 +1026,7 @@ export default function AdminPage() {
                               </option>
                             )}
                             {roles.length > 0 ? (
-                              roles.filter(r => r.is_active && r.id !== 'root').map(r => (
+                              roles.filter(r => r.is_active !== false && r.id !== 'root').map(r => (
                                 <option key={r.id} value={r.id === 'alumno' ? 'user' : r.id}>{r.label}</option>
                               ))
                             ) : (
@@ -1150,7 +1150,7 @@ export default function AdminPage() {
                                     className="role-select-small"
                                   >
                                     {roles.length > 0 ? (
-                                      roles.filter(r => r.is_active && r.id !== 'root').map(r => (
+                                      roles.filter(r => r.is_active !== false && r.id !== 'root').map(r => (
                                         <option key={r.id} value={r.id === 'alumno' ? 'user' : r.id}>{r.label}</option>
                                       ))
                                     ) : (

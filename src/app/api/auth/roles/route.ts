@@ -12,7 +12,7 @@ export async function GET() {
     const supabase = await queryDatabase({ provider: 'supabase' });
     const { data: roles, error } = await supabase
       .from('system_roles')
-      .select('id, label, default_permissions')
+      .select('id, label, default_permissions, is_active')
       .order('id', { ascending: true });
 
     if (error) {
