@@ -103,7 +103,7 @@ export default function DashboardClient({ user, modules, versions }: DashboardCl
   return (
     <div className="dashboard-wrapper">
       {/* Header del Dashboard */}
-      <header className="dashboard-hero">
+      <div className="dashboard-hero">
         <div className="hero-content">
           <div className={`role-badge ${badge.bg}`}>{badge.text}</div>
           <h2 className="welcome-title">
@@ -113,7 +113,7 @@ export default function DashboardClient({ user, modules, versions }: DashboardCl
             Bienvenido al portal central del <strong>Ecosistema de Matemática Financiera</strong>.
           </p>
         </div>
-      </header>
+      </div>
 
       {/* Grid de Módulos */}
       <section className="modules-grid-section">

@@ -317,7 +317,7 @@ export default function Header() {
           top: 0;
           left: 0;
           width: 100%;
-          z-index: 1000;
+          z-index: 9999;
           background-color: var(--card-bg);
           border-bottom: 1px solid var(--border-color);
           padding: 1rem 2rem;
@@ -435,7 +435,7 @@ export default function Header() {
           border-radius: 6px;
           padding: 6px 10px;
           position: absolute;
-          z-index: 1001;
+          z-index: 10001;
           top: 135%;
           left: 50%;
           transform: translateX(-50%) translateY(5px);
@@ -467,7 +467,7 @@ export default function Header() {
           border-radius: var(--radius, 12px);
           box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
           width: 220px;
-          z-index: 1100;
+          z-index: 10000;
           display: flex;
           flex-direction: column;
           overflow: hidden;
