@@ -2,18 +2,22 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import config from '../../../data_content/locales/config.json';
 import { usePreferences } from '@/modules/libro_financiero/components/UserPreferencesProvider';
+import { useNavigation } from '@/modules/libro_financiero/components/NavigationProvider';
 import { signOutUser } from '@/modules/auth/controllers/oauthController';
 import { supabase } from '@/core/security/supabaseClient';
 
 export default function Header() {
   const { theme, toggleTheme } = usePreferences();
+  const { toggleSidebar } = useNavigation();
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [roleInfo, setRoleInfo] = useState<{ role: string; realRole: string } | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
+  const isLibroPage = pathname?.startsWith('/libro');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -144,8 +148,28 @@ export default function Header() {
       <div className="header-content">
         {/* Lado Izquierdo: Logo y Títulos */}
         <div className="header-left">
-          <Link href="/" className="logo-link" title="Ir al Dashboard del Ecosistema">
-            <div className="logo-wrapper">
+          {isLibroPage && (
+            <button 
+              className="menu-toggle-btn" 
+              onClick={toggleSidebar} 
+              aria-label="Toggle menu"
+              title="Abrir/Cerrar Menú del Programa"
+            >
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+          )}
+
+          {isLibroPage ? (
+            <div 
+              className="logo-wrapper" 
+              onClick={toggleSidebar} 
+              style={{ cursor: 'pointer' }}
+              title="Contraer / Expandir Menú Lateral"
+            >
               <Image 
                 src={logoUrl} 
                 alt="Logo Principal" 
@@ -154,7 +178,19 @@ export default function Header() {
                 priority
               />
             </div>
-          </Link>
+          ) : (
+            <Link href="/" className="logo-link" title="Ir al Dashboard del Ecosistema">
+              <div className="logo-wrapper">
+                <Image 
+                  src={logoUrl} 
+                  alt="Logo Principal" 
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  priority
+                />
+              </div>
+            </Link>
+          )}
           <div className="header-titles">
             <h1 className="title-line-1">
               <span className="desktop-title">{config.header.titleLine1}</span>
@@ -421,6 +457,24 @@ export default function Header() {
           overflow: hidden;
           margin: 0;
           transform: translateY(-5px);
+        }
+        .menu-toggle-btn {
+          background: transparent;
+          color: var(--text-color);
+          opacity: 0.8;
+          border: none;
+          padding: 0.5rem;
+          cursor: pointer;
+          transition: var(--transition, all 0.2s ease);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: 0.1rem;
+        }
+        .menu-toggle-btn:hover {
+          color: var(--primary-color);
+          opacity: 1;
+          transform: scale(1.1);
         }
         .header-right {
           display: flex;
