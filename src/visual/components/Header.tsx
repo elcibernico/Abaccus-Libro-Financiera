@@ -320,7 +320,7 @@ export default function Header() {
           align-items: center;
           gap: 1rem;
         }
-        .theme-toggle-btn, .logout-btn, .header-btn {
+        .theme-toggle-btn, .logout-btn, :global(.header-btn) {
           position: relative;
           background: transparent;
           color: var(--text-color);
@@ -335,7 +335,7 @@ export default function Header() {
           justify-content: center;
           text-decoration: none;
         }
-        .theme-toggle-btn:hover, .header-btn:hover {
+        .theme-toggle-btn:hover, :global(.header-btn):hover {
           color: var(--primary-color, #10b981);
           opacity: 1;
           transform: translateY(-2px);
@@ -347,7 +347,7 @@ export default function Header() {
           transform: translateY(-2px);
           background: rgba(239, 68, 68, 0.08);
         }
-        .theme-toggle-btn .tooltip-text, .logout-btn .tooltip-text, .header-btn .tooltip-text {
+        .theme-toggle-btn .tooltip-text, .logout-btn .tooltip-text, :global(.header-btn) :global(.tooltip-text) {
           visibility: hidden;
           background-color: var(--card-bg, #1e1e1e);
           color: var(--text-color, #fff);
@@ -368,7 +368,7 @@ export default function Header() {
           border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
           white-space: nowrap;
         }
-        .theme-toggle-btn:hover .tooltip-text, .logout-btn:hover .tooltip-text, .header-btn:hover .tooltip-text {
+        .theme-toggle-btn:hover .tooltip-text, .logout-btn:hover .tooltip-text, :global(.header-btn):hover :global(.tooltip-text) {
           visibility: visible;
           opacity: 1;
           transform: translateX(-50%) translateY(0);

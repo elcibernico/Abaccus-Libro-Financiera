@@ -4,9 +4,9 @@
 /**
  * Orquestador Global para consultar registros según el motor de base de datos asignado.
  * @param {object} params Parámetros de consulta
- * @param {'firestore'|'prisma'|'spreadsheet'} params.provider Proveedor de persistencia
- * @param {string} params.target Identificador (Colección, Tabla Prisma, o Rango Sheets)
- * @param {object} params.options Opciones de filtrado, ID de Sheets, etc.
+ * @param {'firestore'|'prisma'|'spreadsheet'|'supabase'} params.provider Proveedor de persistencia
+ * @param {string} [params.target] Identificador (Colección, Tabla Prisma, o Rango Sheets)
+ * @param {object} [params.options] Opciones de filtrado, ID de Sheets, etc.
  */
 export async function queryDatabase({ provider, target, options = {} }) {
   switch (provider) {
