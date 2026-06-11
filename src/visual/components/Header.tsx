@@ -59,6 +59,11 @@ export default function Header() {
 
   const [showRolesDropdown, setShowRolesDropdown] = useState(false);
   const [availableRoles, setAvailableRoles] = useState<any[]>([]);
+  const [modalConfig, setModalConfig] = useState<{ isOpen: boolean; title: string; message: string } | null>(null);
+
+  const showAlert = (message: string, title: string = "Ecosistema ABACCUS - Matemática Financiera") => {
+    setModalConfig({ isOpen: true, title, message });
+  };
 
   useEffect(() => {
     if (roleInfo && ['root', 'admin', 'docente'].includes(roleInfo.realRole?.toLowerCase())) {
@@ -97,7 +102,7 @@ export default function Header() {
       if (response.ok) {
         window.location.reload();
       } else {
-        alert('Error al simular rol.');
+        showAlert('Error al simular rol.');
       }
     } catch (err) {
       console.error('Error invoking impersonation:', err);
@@ -109,7 +114,7 @@ export default function Header() {
     if (res.success) {
       router.push('/login');
     } else {
-      alert('Error al cerrar sesión: ' + res.error);
+      showAlert('Error al cerrar sesión: ' + res.error);
     }
   };
 
@@ -169,7 +174,7 @@ export default function Header() {
                 className="header-btn notification-btn" 
                 title="Notificaciones" 
                 aria-label="Ver notificaciones"
-                onClick={() => alert('No tienes notificaciones pendientes.')}
+                onClick={() => showAlert('No tienes notificaciones pendientes.')}
               >
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -276,6 +281,28 @@ export default function Header() {
           )}
         </div>
       </div>
+
+      {/* Modal Personalizado ABACCUS */}
+      {modalConfig && modalConfig.isOpen && (
+        <div className="abaccus-modal-overlay">
+          <div className="abaccus-modal-card">
+            <div className="modal-header">
+              <span className="modal-title">{modalConfig.title}</span>
+            </div>
+            <div className="modal-body">
+              <p>{modalConfig.message}</p>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="modal-btn-confirm" 
+                onClick={() => setModalConfig(null)}
+              >
+                Aceptar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .impersonation-banner {
@@ -546,6 +573,78 @@ export default function Header() {
         .dropdown-restore-btn:hover {
           background-color: #ef4444;
           color: white;
+        }
+        .abaccus-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background-color: rgba(0, 0, 0, 0.65);
+          backdrop-filter: blur(5px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 20000;
+          animation: fadeIn 0.2s ease;
+        }
+        .abaccus-modal-card {
+          background-color: var(--card-bg, #111115);
+          border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+          border-radius: 16px;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+          width: 90%;
+          max-width: 420px;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .modal-header {
+          padding: 1.25rem 1.5rem 0.75rem;
+          border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+        }
+        .modal-title {
+          font-size: 0.8rem;
+          font-weight: 750;
+          color: var(--primary-color, #10b981);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .modal-body {
+          padding: 1.5rem;
+          font-size: 0.95rem;
+          color: var(--text-color);
+          line-height: 1.5;
+        }
+        .modal-footer {
+          padding: 1rem 1.5rem 1.25rem;
+          display: flex;
+          justify-content: flex-end;
+          border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+        }
+        .modal-btn-confirm {
+          background-color: var(--primary-color, #10b981);
+          color: white;
+          border: none;
+          padding: 0.55rem 1.5rem;
+          font-size: 0.85rem;
+          font-weight: 700;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .modal-btn-confirm:hover {
+          background-color: var(--primary-hover, #059669);
+          transform: translateY(-1px);
         }
         @media (max-width: 768px) {
           .logout-btn {
