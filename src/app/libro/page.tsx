@@ -386,9 +386,8 @@ export default function LibroPage() {
       <style jsx global>{`
         .libro-layout-wrapper {
           display: flex;
-          min-height: calc(100vh - 80px);
+          min-height: calc(100vh - 100px);
           width: 100%;
-          padding-top: 80px;
         }
 
         .main-content-layout {
@@ -405,7 +404,7 @@ export default function LibroPage() {
 
         .tabs-header-wrapper {
           position: sticky;
-          top: 80px;
+          top: 100px;
           z-index: 10;
           background: var(--bg-color);
           border-bottom: 1px solid var(--border-color);

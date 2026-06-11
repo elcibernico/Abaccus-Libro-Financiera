@@ -103,9 +103,9 @@ export default function ResizableSidebar({
       <style jsx>{`
         .resizable-sidebar-container {
           position: fixed;
-          top: 80px;
+          top: 100px;
           left: 0;
-          height: calc(100vh - 80px);
+          height: calc(100vh - 100px);
           z-index: 900;
           background: var(--sidebar-bg-glass, rgba(255, 255, 255, 0.75));
           backdrop-filter: blur(16px);
@@ -121,8 +121,8 @@ export default function ResizableSidebar({
         @media (min-width: 769px) {
           .resizable-sidebar-container {
             position: sticky;
-            top: 80px;
-            height: calc(100vh - 80px);
+            top: 100px;
+            height: calc(100vh - 100px);
           }
         }
 
@@ -221,8 +221,8 @@ export default function ResizableSidebar({
         .sidebar-toggle-trigger {
           position: fixed;
           left: 12px;
-          top: 92px; /* Centrado verticalmente con el título del menú */
-          z-index: 1002; /* Por encima del menú lateral */
+          top: 112px; /* Centrado verticalmente con el título del menú */
+          z-index: 10002; /* Por encima del menú lateral y del header global */
           width: 32px;
           height: 32px;
           background: var(--primary-color, #10b981);
