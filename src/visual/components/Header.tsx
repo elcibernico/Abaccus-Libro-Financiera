@@ -57,6 +57,53 @@ export default function Header() {
     }
   }, [user]);
 
+  const [showRolesDropdown, setShowRolesDropdown] = useState(false);
+  const [availableRoles, setAvailableRoles] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (roleInfo && ['root', 'admin', 'docente'].includes(roleInfo.realRole?.toLowerCase())) {
+      fetch('/api/auth/roles')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.roles) {
+            // Filtrar solo roles con label no nulo (los activos en este ecosistema)
+            const activeRoles = data.roles.filter((r: any) => r.label);
+            setAvailableRoles(activeRoles);
+          }
+        })
+        .catch(err => console.error('Error fetching roles in header:', err));
+    }
+  }, [roleInfo]);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as Element;
+      if (showRolesDropdown && target && !target.closest('.impersonate-wrapper')) {
+        setShowRolesDropdown(false);
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, [showRolesDropdown]);
+
+  const handleImpersonate = async (targetRole: string) => {
+    try {
+      const isRealRole = targetRole.toLowerCase() === roleInfo?.realRole?.toLowerCase();
+      const response = await fetch('/api/auth/impersonate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: isRealRole ? null : targetRole })
+      });
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        alert('Error al simular rol.');
+      }
+    } catch (err) {
+      console.error('Error invoking impersonation:', err);
+    }
+  };
+
   const handleLogout = async () => {
     const res = await signOutUser();
     if (res.success) {
@@ -133,17 +180,50 @@ export default function Header() {
 
               {/* 2. Acceso directo a Simular Rol (solo administradores/docentes) */}
               {roleInfo && ['root', 'admin', 'docente'].includes(roleInfo.realRole?.toLowerCase()) && (
-                <Link 
-                  href="/perfil" 
-                  className="header-btn impersonate-btn" 
-                  title="Simular Rol" 
-                  aria-label="Ir a Simulación de Roles"
-                >
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
-                  <span className="tooltip-text">Simular Rol</span>
-                </Link>
+                <div className="impersonate-wrapper">
+                  <button 
+                    className={`header-btn impersonate-btn ${showRolesDropdown ? 'active' : ''}`}
+                    title="Simular Rol" 
+                    aria-label="Seleccionar rol para simular"
+                    onClick={() => setShowRolesDropdown(!showRolesDropdown)}
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    <span className="tooltip-text">Simular Rol</span>
+                  </button>
+
+                  {showRolesDropdown && (
+                    <div className="roles-dropdown-menu">
+                      <div className="dropdown-header">
+                        <span>Simular Rol</span>
+                      </div>
+                      <div className="dropdown-options">
+                        {availableRoles.map((r) => {
+                          const isCurrent = roleInfo.role.toLowerCase() === r.id.toLowerCase();
+                          return (
+                            <button
+                              key={r.id}
+                              className={`dropdown-item ${isCurrent ? 'current' : ''}`}
+                              onClick={() => handleImpersonate(r.id)}
+                            >
+                              <span>{r.label}</span>
+                              {isCurrent && <span className="current-badge">Activo</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {roleInfo.role !== roleInfo.realRole && (
+                        <button 
+                          className="dropdown-restore-btn"
+                          onClick={() => handleImpersonate(roleInfo.realRole)}
+                        >
+                          Restaurar Rol Real
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
             </>
           )}
@@ -372,6 +452,100 @@ export default function Header() {
           visibility: visible;
           opacity: 1;
           transform: translateX(-50%) translateY(0);
+        }
+        .impersonate-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        .roles-dropdown-menu {
+          position: absolute;
+          top: 135%;
+          right: 0;
+          background-color: var(--card-bg, #1e1e1e);
+          border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+          border-radius: var(--radius, 12px);
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+          width: 220px;
+          z-index: 1100;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          animation: slideDown 0.2s ease;
+        }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .dropdown-header {
+          padding: 0.75rem 1rem;
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--text-color);
+          opacity: 0.6;
+          border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+        }
+        .dropdown-options {
+          display: flex;
+          flex-direction: column;
+          padding: 0.35rem 0;
+        }
+        .dropdown-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0.65rem 1rem;
+          font-size: 0.85rem;
+          font-weight: 500;
+          color: var(--text-color);
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          text-align: left;
+          width: 100%;
+          transition: all 0.15s ease;
+        }
+        .dropdown-item:hover {
+          background-color: rgba(16, 185, 129, 0.08);
+          color: var(--primary-color, #10b981);
+        }
+        .dropdown-item.current {
+          color: var(--primary-color, #10b981);
+          font-weight: 700;
+          background-color: rgba(16, 185, 129, 0.04);
+        }
+        .current-badge {
+          font-size: 0.65rem;
+          background-color: var(--primary-color, #10b981);
+          color: white;
+          padding: 0.1rem 0.4rem;
+          border-radius: 4px;
+          font-weight: 600;
+        }
+        .dropdown-restore-btn {
+          margin: 0.35rem;
+          padding: 0.5rem;
+          font-size: 0.75rem;
+          font-weight: 700;
+          border-radius: 6px;
+          border: 1px solid #ef4444;
+          background-color: transparent;
+          color: #ef4444;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          text-align: center;
+        }
+        .dropdown-restore-btn:hover {
+          background-color: #ef4444;
+          color: white;
         }
         @media (max-width: 768px) {
           .logout-btn {
