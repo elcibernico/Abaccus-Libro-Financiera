@@ -1,8 +1,8 @@
 {
-  "Core": "1.1.0",
-  "Modulo_Libro": "2.3.0",
-  "Modulo_Admin": "1.1.1",
-  "Modulo_Perfil": "1.0.0",
+  "Core": "1.2.0",
+  "Modulo_Libro": "2.3.1",
+  "Modulo_Admin": "1.2.0",
+  "Modulo_Perfil": "1.1.0",
   "Modulo_Bibliografía": "0.1.0-beta",
   "Modulo_Clases": "0.1.0-beta",
   "Modulo_Examenes": "0.1.0-beta",
