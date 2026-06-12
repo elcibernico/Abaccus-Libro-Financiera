@@ -1145,8 +1145,6 @@ export default function AdminPage() {
                             disabled={updatingUser === user.email || user.role === 'root'}
                             className="permission-checkbox"
                           />
-                        </td>"permission-checkbox"
-                          />
                         </td>
                         <td style={{ textAlign: 'center' }}>
                           <button
