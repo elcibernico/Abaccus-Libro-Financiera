@@ -407,6 +407,11 @@ export default function AdminPage() {
         may_export_pdf: false,
         may_edit_records: false,
         may_view_advanced_charts: false,
+        access_libro: false,
+        edit_content: false,
+        manage_users: false,
+        manage_roles: false,
+        view_metrics: false,
       });
 
       setSuccessMsg('Usuario agregado exitosamente a la lista blanca.');
