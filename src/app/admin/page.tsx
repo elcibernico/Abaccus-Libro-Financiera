@@ -8,6 +8,11 @@ interface UserPermission {
   may_export_pdf: boolean;
   may_edit_records: boolean;
   may_view_advanced_charts: boolean;
+  access_libro: boolean;
+  edit_content: boolean;
+  manage_users: boolean;
+  manage_roles: boolean;
+  view_metrics: boolean;
   [key: string]: boolean;
 }
 
@@ -67,6 +72,11 @@ export default function AdminPage() {
     may_export_pdf: false,
     may_edit_records: false,
     may_view_advanced_charts: false,
+    access_libro: false,
+    edit_content: false,
+    manage_users: false,
+    manage_roles: false,
+    view_metrics: false,
   });
   const [submittingUser, setSubmittingUser] = useState<boolean>(false);
 
@@ -903,8 +913,10 @@ export default function AdminPage() {
                     onChange={(e) => setNewUserRole(e.target.value)}
                   >
                     {roles.length > 0 ? (
-                      roles.filter(r => r.is_active !== false).map(r => (
-                        <option key={r.id} value={r.id === 'alumno' ? 'user' : r.id}>{r.label}</option>
+                      roles.map(r => (
+                        <option key={r.id} value={r.id === 'alumno' ? 'user' : r.id}>
+                          {r.is_active ? r.label : r.id}
+                        </option>
                       ))
                     ) : (
                       <>
@@ -917,48 +929,74 @@ export default function AdminPage() {
                   </select>
                 </div>
 
-                {newUserRole !== 'admin' && (
+                {newUserRole !== 'admin' && newUserRole !== 'root' && (
                   <div className="form-group full-width">
-                    <label>Permisos Especiales</label>
+                    <label>Permisos Especiales (Excepciones)</label>
                     <div className="permissions-checkbox-group">
                       <label className="checkbox-label">
                         <input
                           type="checkbox"
-                          checked={newUserPermissions.may_export_pdf}
+                          checked={newUserPermissions.access_libro}
                           onChange={(e) =>
                             setNewUserPermissions({
                               ...newUserPermissions,
-                              may_export_pdf: e.target.checked,
+                              access_libro: e.target.checked,
                             })
                           }
                         />
-                        Exportar Reportes PDF
+                        Acceso al Libro
                       </label>
                       <label className="checkbox-label">
                         <input
                           type="checkbox"
-                          checked={newUserPermissions.may_edit_records}
+                          checked={newUserPermissions.edit_content}
                           onChange={(e) =>
                             setNewUserPermissions({
                               ...newUserPermissions,
-                              may_edit_records: e.target.checked,
+                              edit_content: e.target.checked,
                             })
                           }
                         />
-                        Editar / Crear Registros
+                        Editar Contenidos
                       </label>
                       <label className="checkbox-label">
                         <input
                           type="checkbox"
-                          checked={newUserPermissions.may_view_advanced_charts}
+                          checked={newUserPermissions.manage_users}
                           onChange={(e) =>
                             setNewUserPermissions({
                               ...newUserPermissions,
-                              may_view_advanced_charts: e.target.checked,
+                              manage_users: e.target.checked,
                             })
                           }
                         />
-                        Visualizar Gráficos Avanzados
+                        Gestionar Usuarios
+                      </label>
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={newUserPermissions.manage_roles}
+                          onChange={(e) =>
+                            setNewUserPermissions({
+                              ...newUserPermissions,
+                              manage_roles: e.target.checked,
+                            })
+                          }
+                        />
+                        Gestionar Roles
+                      </label>
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={newUserPermissions.view_metrics}
+                          onChange={(e) =>
+                            setNewUserPermissions({
+                              ...newUserPermissions,
+                              view_metrics: e.target.checked,
+                            })
+                          }
+                        />
+                        Ver Métricas
                       </label>
                     </div>
                   </div>
@@ -985,9 +1023,11 @@ export default function AdminPage() {
                       <th>Usuario</th>
                       <th>Celular</th>
                       <th>Rol</th>
-                      <th>Exportar PDF</th>
-                      <th>Editar Registros</th>
-                      <th>Gráficos Avanzados</th>
+                      <th>Acceso Libro</th>
+                      <th>Editar Contenido</th>
+                      <th>Gestión Usuarios</th>
+                      <th>Gestión Roles</th>
+                      <th>Métricas</th>
                       <th style={{ textAlign: 'center' }}>Acciones</th>
                     </tr>
                   </thead>
@@ -1026,8 +1066,10 @@ export default function AdminPage() {
                               </option>
                             )}
                             {roles.length > 0 ? (
-                              roles.filter(r => r.is_active !== false && r.id !== 'root').map(r => (
-                                <option key={r.id} value={r.id === 'alumno' ? 'user' : r.id}>{r.label}</option>
+                              roles.map(r => (
+                                <option key={r.id} value={r.id === 'alumno' ? 'user' : r.id}>
+                                  {r.is_active ? r.label : r.id}
+                                </option>
                               ))
                             ) : (
                               <>
@@ -1042,40 +1084,68 @@ export default function AdminPage() {
                         <td>
                           <input
                             type="checkbox"
-                            checked={user.permissions?.may_export_pdf || false}
+                            checked={user.permissions?.access_libro || false}
                             onChange={(e) =>
                               handleUpdateUser(user.email, {
-                                permissions: { may_export_pdf: e.target.checked },
+                                permissions: { access_libro: e.target.checked },
                               })
                             }
-                            disabled={updatingUser === user.email || user.role === 'admin' || user.role === 'root'}
+                            disabled={updatingUser === user.email || user.role === 'root'}
                             className="permission-checkbox"
                           />
                         </td>
                         <td>
                           <input
                             type="checkbox"
-                            checked={user.permissions?.may_edit_records || false}
+                            checked={user.permissions?.edit_content || false}
                             onChange={(e) =>
                               handleUpdateUser(user.email, {
-                                permissions: { may_edit_records: e.target.checked },
+                                permissions: { edit_content: e.target.checked },
                               })
                             }
-                            disabled={updatingUser === user.email || user.role === 'admin' || user.role === 'root'}
+                            disabled={updatingUser === user.email || user.role === 'root'}
                             className="permission-checkbox"
                           />
                         </td>
                         <td>
                           <input
                             type="checkbox"
-                            checked={user.permissions?.may_view_advanced_charts || false}
+                            checked={user.permissions?.manage_users || false}
                             onChange={(e) =>
                               handleUpdateUser(user.email, {
-                                permissions: { may_view_advanced_charts: e.target.checked },
+                                permissions: { manage_users: e.target.checked },
                               })
                             }
-                            disabled={updatingUser === user.email || user.role === 'admin' || user.role === 'root'}
+                            disabled={updatingUser === user.email || user.role === 'root'}
                             className="permission-checkbox"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={user.permissions?.manage_roles || false}
+                            onChange={(e) =>
+                              handleUpdateUser(user.email, {
+                                permissions: { manage_roles: e.target.checked },
+                              })
+                            }
+                            disabled={updatingUser === user.email || user.role === 'root'}
+                            className="permission-checkbox"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={user.permissions?.view_metrics || false}
+                            onChange={(e) =>
+                              handleUpdateUser(user.email, {
+                                permissions: { view_metrics: e.target.checked },
+                              })
+                            }
+                            disabled={updatingUser === user.email || user.role === 'root'}
+                            className="permission-checkbox"
+                          />
+                        </td>"permission-checkbox"
                           />
                         </td>
                         <td style={{ textAlign: 'center' }}>

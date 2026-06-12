@@ -52,9 +52,60 @@ export async function getAllUsers() {
       if (error) {
         throw error;
       }
+
+      // Obtener todos los permisos por rol de la base de datos
+      const { data: rolePerms } = await supabase
+        .from('roles_permissions')
+        .select('role_id, permission_name');
+
+      // Obtener todas las excepciones de los usuarios
+      const { data: customPerms } = await supabase
+        .from('user_custom_permissions')
+        .select('user_email, permission_name, is_granted');
+
+      // Agrupar permisos por rol
+      const rolePermsMap = {};
+      if (rolePerms) {
+        rolePerms.forEach(rp => {
+          if (!rolePermsMap[rp.role_id]) {
+            rolePermsMap[rp.role_id] = [];
+          }
+          rolePermsMap[rp.role_id].push(rp.permission_name);
+        });
+      }
+
+      // Agrupar excepciones por email de usuario
+      const customPermsMap = {};
+      if (customPerms) {
+        customPerms.forEach(cp => {
+          const emailKey = cp.user_email.toLowerCase().trim();
+          if (!customPermsMap[emailKey]) {
+            customPermsMap[emailKey] = [];
+          }
+          customPermsMap[emailKey].push({
+            name: cp.permission_name,
+            is_granted: cp.is_granted
+          });
+        });
+      }
+
       return (users || []).map(u => {
-        // Combinar columna jsonb con individuales para máxima compatibilidad
+        const emailKey = u.email.toLowerCase().trim();
         const jsonbPermissions = typeof u.permissions === 'object' ? u.permissions : {};
+        
+        // Inicializar permisos compilados con los del rol
+        const rbacPermissions = {};
+        const rolePermissions = rolePermsMap[u.role] || [];
+        rolePermissions.forEach(p => {
+          rbacPermissions[p] = true;
+        });
+
+        // Aplicar excepciones individuales
+        const userExceptions = customPermsMap[emailKey] || [];
+        userExceptions.forEach(exp => {
+          rbacPermissions[exp.name] = exp.is_granted;
+        });
+
         return {
           id: u.id,
           email: u.email,
@@ -65,7 +116,8 @@ export async function getAllUsers() {
             may_export_pdf: u.may_export_pdf === true || jsonbPermissions.may_export_pdf === true,
             may_edit_records: u.may_edit_records === true || jsonbPermissions.may_edit_records === true,
             may_view_advanced_charts: u.may_view_advanced_charts === true || jsonbPermissions.may_view_advanced_charts === true,
-            ...jsonbPermissions
+            ...jsonbPermissions,
+            ...rbacPermissions
           }
         };
       });
@@ -140,13 +192,14 @@ export async function updateUserPermissions(email, permissions, role, celular = 
       const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
       const updatePayload = {
         role,
-        permissions: permissions, // Guardar objeto JSONB
+        permissions: permissions, // Guardar objeto JSONB por compatibilidad anterior
       };
 
       if (celular !== undefined) {
         updatePayload.celular = celular;
       }
 
+      // 1. Actualizar usuario en whitelist_users
       const { error } = await supabase
         .from('whitelist_users')
         .update(updatePayload)
@@ -154,6 +207,60 @@ export async function updateUserPermissions(email, permissions, role, celular = 
       if (error) {
         throw error;
       }
+
+      // 2. Obtener permisos por defecto del nuevo rol para calcular excepciones
+      const { data: rolePerms } = await supabase
+        .from('roles_permissions')
+        .select('permission_name')
+        .eq('role_id', role);
+
+      const defaultRolePerms = {};
+      if (rolePerms) {
+        rolePerms.forEach(rp => {
+          defaultRolePerms[rp.permission_name] = true;
+        });
+      }
+
+      // 3. Limpiar excepciones existentes para este usuario
+      const { error: delErr } = await supabase
+        .from('user_custom_permissions')
+        .delete()
+        .eq('user_email', formattedEmail);
+      if (delErr) {
+        throw delErr;
+      }
+
+      // 4. Calcular diferencias y guardarlas como excepciones (overrides)
+      const exceptionInserts = [];
+      for (const [permName, value] of Object.entries(permissions)) {
+        // Evitamos guardar los campos de compatibilidad antigua como excepciones
+        if (['may_export_pdf', 'may_edit_records', 'may_view_advanced_charts'].includes(permName)) {
+          continue;
+        }
+
+        const roleHasIt = !!defaultRolePerms[permName];
+        const userHasIt = !!value;
+
+        // Si el valor asignado difiere del predefinido en el rol, guardamos una excepción
+        if (roleHasIt !== userHasIt) {
+          exceptionInserts.push({
+            user_email: formattedEmail,
+            permission_name: permName,
+            is_granted: userHasIt,
+            granted_by: 'root_admin'
+          });
+        }
+      }
+
+      if (exceptionInserts.length > 0) {
+        const { error: insErr } = await supabase
+          .from('user_custom_permissions')
+          .insert(exceptionInserts);
+        if (insErr) {
+          throw insErr;
+        }
+      }
+
       return { success: true };
     }
 

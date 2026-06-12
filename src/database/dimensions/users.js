@@ -98,6 +98,33 @@ export async function getAuthorizedUserByEmail(email, provider, options = {}) {
       }
 
       if (user) {
+        // 1. Obtener permisos por defecto del rol
+        const { data: rolePerms } = await supabase
+          .from('roles_permissions')
+          .select('permission_name')
+          .eq('role_id', user.role || 'guest');
+
+        // 2. Obtener excepciones del usuario (overrides)
+        const { data: customPerms } = await supabase
+          .from('user_custom_permissions')
+          .select('permission_name, is_granted')
+          .eq('user_email', formattedEmail);
+
+        // 3. Compilar los permisos finales
+        const rbacPermissions = {};
+        
+        if (rolePerms) {
+          rolePerms.forEach(rp => {
+            rbacPermissions[rp.permission_name] = true;
+          });
+        }
+        
+        if (customPerms) {
+          customPerms.forEach(cp => {
+            rbacPermissions[cp.permission_name] = cp.is_granted;
+          });
+        }
+
         const jsonbPermissions = typeof user.permissions === 'object' ? user.permissions : {};
         
         // Construir name de forma robusta a partir de nombre y apellido si existen
@@ -123,7 +150,8 @@ export async function getAuthorizedUserByEmail(email, provider, options = {}) {
             may_export_pdf: user.may_export_pdf === true || jsonbPermissions.may_export_pdf === true,
             may_edit_records: user.may_edit_records === true || jsonbPermissions.may_edit_records === true,
             may_view_advanced_charts: user.may_view_advanced_charts === true || jsonbPermissions.may_view_advanced_charts === true,
-            ...jsonbPermissions
+            ...jsonbPermissions,
+            ...rbacPermissions
           }
         };
       }

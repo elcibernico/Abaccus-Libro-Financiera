@@ -19,6 +19,15 @@ async function verifyAdmin() {
   return { authorized: true, user: authorizedUser };
 }
 
+async function verifyRoot() {
+  const auth = await verifyAdmin();
+  if (!auth.authorized) return auth;
+  if (auth.user.role !== 'root') {
+    return { authorized: false, status: 403, error: 'Acceso restringido. Se requiere rol Root.' };
+  }
+  return auth;
+}
+
 export async function GET() {
   const auth = await verifyAdmin();
   if (!auth.authorized) {
@@ -31,7 +40,7 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const auth = await verifyAdmin();
+  const auth = await verifyRoot();
   if (!auth.authorized) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
@@ -55,7 +64,7 @@ export async function POST(request) {
 }
 
 export async function PUT(request) {
-  const auth = await verifyAdmin();
+  const auth = await verifyRoot();
   if (!auth.authorized) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
@@ -79,7 +88,7 @@ export async function PUT(request) {
 }
 
 export async function DELETE(request) {
-  const auth = await verifyAdmin();
+  const auth = await verifyRoot();
   if (!auth.authorized) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
