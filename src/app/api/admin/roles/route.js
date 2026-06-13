@@ -27,6 +27,14 @@ export async function GET() {
   try {
     const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
     
+    // Obtener todos los roles de la base de datos
+    const { data: rolesList, error: rolesErr } = await supabase
+      .from('system_roles')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (rolesErr) throw rolesErr;
+
     // Obtener todos los roles y sus permisos
     const { data: rolePerms, error } = await supabase
       .from('roles_permissions')
@@ -45,7 +53,7 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({ rolesMap });
+    return NextResponse.json({ rolesMap, roles: rolesList || [] });
   } catch (error) {
     console.error('[API admin/roles] GET Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -60,39 +68,51 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { role_id, permissions } = body;
+    const { role_id, permissions, is_active } = body;
     
-    if (!role_id || typeof permissions !== 'object') {
-      return NextResponse.json({ error: 'Faltan parámetros requeridos (role_id, permissions)' }, { status: 400 });
+    if (!role_id) {
+      return NextResponse.json({ error: 'Faltan parámetros requeridos (role_id)' }, { status: 400 });
     }
 
     const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
 
-    // 1. Borrar permisos actuales para ese rol
-    const { error: delErr } = await supabase
-      .from('roles_permissions')
-      .delete()
-      .eq('role_id', role_id);
-
-    if (delErr) throw delErr;
-
-    // 2. Insertar los nuevos permisos otorgados
-    const inserts = [];
-    for (const [permName, isGranted] of Object.entries(permissions)) {
-      if (isGranted) {
-        inserts.push({
-          role_id,
-          permission_name: permName
-        });
-      }
+    // 1. Si se proporciona is_active, actualizar en system_roles
+    if (typeof is_active === 'boolean') {
+      const { error: activeErr } = await supabase
+        .from('system_roles')
+        .update({ is_active })
+        .eq('id', role_id);
+      if (activeErr) throw activeErr;
     }
 
-    if (inserts.length > 0) {
-      const { error: insErr } = await supabase
+    // 2. Si se proporcionan los permisos, borrar y re-insertar
+    if (permissions && typeof permissions === 'object') {
+      // Borrar permisos actuales para ese rol
+      const { error: delErr } = await supabase
         .from('roles_permissions')
-        .insert(inserts);
+        .delete()
+        .eq('role_id', role_id);
 
-      if (insErr) throw insErr;
+      if (delErr) throw delErr;
+
+      // Insertar los nuevos permisos otorgados
+      const inserts = [];
+      for (const [permName, isGranted] of Object.entries(permissions)) {
+        if (isGranted) {
+          inserts.push({
+            role_id,
+            permission_name: permName
+          });
+        }
+      }
+
+      if (inserts.length > 0) {
+        const { error: insErr } = await supabase
+          .from('roles_permissions')
+          .insert(inserts);
+
+        if (insErr) throw insErr;
+      }
     }
 
     return NextResponse.json({ success: true });

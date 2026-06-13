@@ -13,6 +13,7 @@ export async function GET() {
     const { data: roles, error } = await supabase
       .from('system_roles')
       .select('id, label, default_permissions, is_active')
+      .eq('is_active', true)
       .order('id', { ascending: true });
 
     if (error) {

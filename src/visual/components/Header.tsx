@@ -149,13 +149,8 @@ export default function Header() {
         {/* Lado Izquierdo: Logo y Títulos */}
         <div className="header-left">
 
-          {isLibroPage ? (
-            <div 
-              className="logo-wrapper" 
-              onClick={toggleSidebar} 
-              style={{ cursor: 'pointer' }}
-              title="Contraer / Expandir Menú Lateral"
-            >
+          <Link href="/" className="logo-link" title="Ir al Dashboard del Ecosistema">
+            <div className="logo-wrapper">
               <Image 
                 src={logoUrl} 
                 alt="Logo Principal" 
@@ -164,19 +159,7 @@ export default function Header() {
                 priority
               />
             </div>
-          ) : (
-            <Link href="/" className="logo-link" title="Ir al Dashboard del Ecosistema">
-              <div className="logo-wrapper">
-                <Image 
-                  src={logoUrl} 
-                  alt="Logo Principal" 
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  priority
-                />
-              </div>
-            </Link>
-          )}
+          </Link>
           <div className="header-titles">
             <h1 className="title-line-1">
               <span className="desktop-title">{config.header.titleLine1}</span>

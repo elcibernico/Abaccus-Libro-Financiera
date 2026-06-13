@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { ROLES_DICTIONARY } from '@/config/rolesConfig';
 
 export default function RolesManagement() {
+  const [roles, setRoles] = useState<any[]>([]);
   const [rolesMap, setRolesMap] = useState<Record<string, Record<string, boolean>>>({});
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -25,6 +26,7 @@ export default function RolesManagement() {
       }
       const data = await res.json();
       setRolesMap(data.rolesMap || {});
+      setRoles(data.roles || []);
     } catch (err: any) {
       setErrorMsg(err.message);
     } finally {
@@ -63,6 +65,30 @@ export default function RolesManagement() {
     }
   };
 
+  const handleToggleActive = async (roleKey: string, isActive: boolean) => {
+    try {
+      setErrorMsg(null);
+      setSuccessMsg(null);
+      const res = await fetch('/api/admin/roles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role_id: roleKey,
+          is_active: isActive
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error('Error al actualizar estado del rol');
+      }
+
+      setRoles(prev => prev.map(r => r.id === roleKey ? { ...r, is_active: isActive } : r));
+      setSuccessMsg(`Estado de activación del rol "${ROLES_DICTIONARY[roleKey]?.label || roleKey}" actualizado.`);
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    }
+  };
+
   if (loading) {
     return <div style={{ padding: '2rem', textAlign: 'center' }}>Cargando roles...</div>;
   }
@@ -70,8 +96,8 @@ export default function RolesManagement() {
   return (
     <div className="card glass-card">
       <div className="card-header">
-        <h3>Matriz de Permisos por Rol</h3>
-        <p>Define los permisos predeterminados que heredarán todos los usuarios asignados a cada rol.</p>
+        <h3>Matriz de Permisos y Control de Roles</h3>
+        <p>Define cuáles roles están activos en el ecosistema y cuáles son sus permisos predeterminados.</p>
       </div>
 
       {errorMsg && (
@@ -91,24 +117,39 @@ export default function RolesManagement() {
             <tr>
               <th>Rol (Key)</th>
               <th>Etiqueta Visual</th>
+              <th style={{ textAlign: 'center' }}>Activo (Ecosistema)</th>
               {availablePermissions.map(p => (
                 <th key={p.key} style={{ textAlign: 'center' }}>{p.label}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {Object.entries(ROLES_DICTIONARY).map(([roleKey, config]) => {
-              if (roleKey === 'root') return null; // Root siempre tiene todo por defecto en código, no editable en UI simple
+            {roles.map((role) => {
+              const roleKey = role.id;
+              if (roleKey === 'root') return null; // Root siempre tiene todo por defecto en código
+              
+              const config = ROLES_DICTIONARY[roleKey] || {
+                label: role.label || roleKey.toUpperCase(),
+                theme: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
+              };
               
               const rolePerms = rolesMap[roleKey] || {};
               
               return (
-                <tr key={roleKey}>
+                <tr key={roleKey} style={{ opacity: role.is_active ? 1 : 0.6 }}>
                   <td><code>{roleKey}</code></td>
                   <td>
                     <span className={`role-badge ${config.theme}`} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '1rem' }}>
                       {config.label}
                     </span>
+                  </td>
+                  <td style={{ textAlign: 'center' }}>
+                    <input 
+                      type="checkbox"
+                      className="permission-checkbox"
+                      checked={role.is_active || false}
+                      onChange={(e) => handleToggleActive(roleKey, e.target.checked)}
+                    />
                   </td>
                   {availablePermissions.map(p => (
                     <td key={p.key} style={{ textAlign: 'center' }}>
@@ -116,6 +157,7 @@ export default function RolesManagement() {
                         type="checkbox"
                         className="permission-checkbox"
                         checked={rolePerms[p.key] || false}
+                        disabled={!role.is_active}
                         onChange={(e) => {
                           const newPerms = { ...rolePerms, [p.key]: e.target.checked };
                           handleUpdateRole(roleKey, newPerms);
