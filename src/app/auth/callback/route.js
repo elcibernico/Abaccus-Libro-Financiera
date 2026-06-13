@@ -22,11 +22,22 @@ export async function GET(request) {
       // Consultar la dimensión de usuarios autorizados (whitelist)
       const authorizedUser = await getAuthorizedUserByEmail(email, dbProvider, { spreadsheetId });
       
-      // Si no existe el usuario en la lista blanca, lo redirigimos a completar celular
+      // Si no existe el usuario en la lista blanca
       if (!authorizedUser || !authorizedUser.id) {
-        console.warn(`[Auth Security Whitelist]: Usuario no registrado en la lista blanca: ${email}. Redirigiendo a registro de celular.`);
-        
+        // Verificar si el registro abierto está habilitado
+        const { getSetting } = await import('@/database/dimensions/settings');
+        const allowPublicSignup = await getSetting('allow_public_signup');
         const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || '';
+
+        if (allowPublicSignup === 'true') {
+          console.log(`[Auth Security Whitelist]: Registro abierto habilitado. Registrando usuario automáticamente: ${email}`);
+          const { addAuthorizedUser } = await import('@/modules/auth/controllers/permissionsController');
+          // Se agrega como Invitado (guest) a la whitelist directamente
+          await addAuthorizedUser(email, name, 'guest', '', {}, name, '', null, '', '');
+          return NextResponse.redirect(new URL(next, request.url));
+        }
+
+        console.warn(`[Auth Security Whitelist]: Usuario no registrado en la lista blanca: ${email}. Redirigiendo a registro de celular.`);
         
         // Cerramos la sesión activa de Supabase inmediatamente por seguridad
         await supabase.auth.signOut();
@@ -38,12 +49,6 @@ export async function GET(request) {
         return NextResponse.redirect(redirectUrl);
       }
 
-      // Si existe pero su rol es restrictivo 'guest' (invitado / suspendido voluntariamente)
-      if (authorizedUser.role === 'guest') {
-        console.warn(`[Auth Security Whitelist]: Acceso denegado por rol restrictivo 'guest' para el correo: ${email}`);
-        await supabase.auth.signOut();
-        return NextResponse.redirect(new URL('/login?error=unauthorized', request.url));
-      }
       
       return NextResponse.redirect(new URL(next, request.url));
     }
