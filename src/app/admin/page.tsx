@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePreferences } from '@/modules/libro_financiero/components/UserPreferencesProvider';
+import RolesManagement from './RolesManagement';
 
 interface UserPermission {
   may_export_pdf: boolean;
@@ -43,7 +44,7 @@ interface IpData {
 
 export default function AdminPage() {
   const { theme } = usePreferences();
-  const [activeTab, setActiveTab] = useState<'users' | 'pending' | 'ips' | 'templates'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'pending' | 'ips' | 'templates'>('users');
   const [users, setUsers] = useState<UserData[]>([]);
   const [pendingUsers, setPendingUsers] = useState<PendingUserData[]>([]);
   const [ips, setIps] = useState<IpData[]>([]);
@@ -812,6 +813,16 @@ export default function AdminPage() {
             📂 Lista Blanca de Usuarios
           </button>
           <button
+            className={`tab-btn ${activeTab === 'roles' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('roles');
+              setErrorMsg(null);
+              setSuccessMsg(null);
+            }}
+          >
+            📊 Gestión de Roles
+          </button>
+          <button
             className={`tab-btn ${activeTab === 'pending' ? 'active' : ''}`}
             onClick={() => {
               setActiveTab('pending');
@@ -842,6 +853,13 @@ export default function AdminPage() {
             ✉️ Plantillas de Correo
           </button>
         </div>
+
+        {/* Pestaña de Gestión de Roles */}
+        {activeTab === 'roles' && (
+          <div className="tab-pane fade-in">
+            <RolesManagement />
+          </div>
+        )}
 
         {/* Pestaña de Usuarios (Lista Blanca) */}
         {activeTab === 'users' && (

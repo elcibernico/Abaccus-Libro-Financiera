@@ -47,6 +47,7 @@ export default async function DashboardPage() {
     name: (authorizedUser as any).name || '',
     role: activeRole,
     celular: (authorizedUser as any).celular || '',
+    permissions: (authorizedUser as any).permissions || {},
   };
 
   // Cargar módulos gobernados por RBAC

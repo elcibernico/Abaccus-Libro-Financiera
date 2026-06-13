@@ -12,6 +12,7 @@ import {
   Lock 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ROLES_DICTIONARY } from '@/config/rolesConfig';
 
 interface DashboardClientProps {
   user: {
@@ -79,23 +80,12 @@ export default function DashboardClient({ user, modules, versions }: DashboardCl
   };
 
   const getRoleBadge = (role: string) => {
-    switch (role.toLowerCase()) {
-      case 'root':
-        return { text: 'MEGA ADMIN / OWNER', bg: 'bg-red-500/10 text-red-500 border-red-500/20' };
-      case 'admin':
-        return { text: 'ADMINISTRADOR', bg: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' };
-      case 'profesor':
-      case 'jefe_catedra':
-      case 'adjunto':
-        return { text: 'DOCENTE / CÁTEDRA', bg: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' };
-      case 'ayudante':
-        return { text: 'AUXILIAR', bg: 'bg-amber-500/10 text-amber-500 border-amber-500/20' };
-      case 'user':
-      case 'alumno':
-        return { text: 'ALUMNO', bg: 'bg-blue-500/10 text-blue-500 border-blue-500/20' };
-      default:
-        return { text: 'INVITADO (GUEST)', bg: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20' };
-    }
+    const roleKey = (role || '').toLowerCase();
+    const config = ROLES_DICTIONARY[roleKey] || ROLES_DICTIONARY.guest;
+    return {
+      text: config.label,
+      bg: config.theme
+    };
   };
 
   const badge = getRoleBadge(user.role);
@@ -130,9 +120,19 @@ export default function DashboardClient({ user, modules, versions }: DashboardCl
               };
               
               const IconComponent = ui.icon;
-              // Verificar si el rol actual del usuario está incluido en los permitidos
-              const hasAccess = module.allowedRoles.includes('all') || 
+              
+              // 1. Verificar si el rol base tiene acceso
+              const isRoleAllowed = module.allowedRoles.includes('all') || 
                                 module.allowedRoles.includes(user.role.toLowerCase());
+                                
+              // 2. Verificar excepciones en los permisos individuales del usuario
+              // (Utilizamos un cast "as any" rápido para typescript ya que user.permissions no está fuertemente tipado en los props actuales)
+              const userPerms = (user as any).permissions || {};
+              const isUserExcepted = userPerms[`access_${module.id}`] === true;
+              const isUserExplicitlyDenied = userPerms[`access_${module.id}`] === false;
+
+              // 3. Resultado final: Tiene acceso si su rol lo permite (y no está denegado) o si tiene excepción directa
+              const hasAccess = (isRoleAllowed && !isUserExplicitlyDenied) || isUserExcepted;
 
               // El libro digital es el único habilitado en el código actual
               const isAvailable = module.id === 'libro';

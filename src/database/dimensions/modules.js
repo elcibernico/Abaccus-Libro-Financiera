@@ -13,43 +13,43 @@ export const MODULES_REGISTRY = [
     id: 'bibliografia',
     name: 'Bibliografía Cátedra',
     path: '/bibliografia',
-    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno']
+    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno', 'docente']
   },
   {
     id: 'libro',
     name: 'Libro Digital Interactivo',
     path: '/libro',
-    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno']
+    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno', 'docente']
   },
   {
     id: 'clases',
     name: 'Clases Virtuales Grabadas',
     path: '/clases',
-    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno']
+    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno', 'docente']
   },
   {
     id: 'examenes',
     name: 'Exámenes y Evaluaciones',
     path: '/examenes',
-    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno']
+    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno', 'docente']
   },
   {
     id: 'alumnado',
     name: 'Alumnado y Estado Académico',
     path: '/alumnado',
-    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante']
+    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'docente']
   },
   {
     id: 'investigacion',
     name: 'Trabajos de Investigación',
     path: '/investigacion',
-    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno']
+    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno', 'docente']
   },
   {
     id: 'reporteria',
     name: 'Reportería y Analítica',
     path: '/reporteria',
-    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'auditor']
+    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'auditor', 'docente']
   }
 ];
 
