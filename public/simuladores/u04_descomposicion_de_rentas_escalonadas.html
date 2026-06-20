@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descomposición de Rentas Escalonadas</title>
+    <!-- Tailwind CSS para diseño moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts para tipografía elegante -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons para iconos limpios -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+        /* Transiciones suaves */
+        .transition-all-300 {
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* Estilo especial para el salto de continuidad */
+        .break-column {
+            background-image: linear-gradient(45deg, #f1f5f9 25%, transparent 25%, transparent 50%, #f1f5f9 50%, #f1f5f9 75%, transparent 75%, transparent);
+            background-size: 15px 15px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Navbar/Header principal -->
+    <header class="bg-white border-b border-slate-200 py-5 px-6 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-100">
+                    <i data-lucide="layers" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-950 tracking-tight">Descomposición Estructural de Cuotas</h1>
+                    <p class="text-xs text-slate-500 font-medium">Visualizador interactivo de matriz escalonada de rentas</p>
+                </div>
+            </div>
+            
+            <!-- Controles rápidos globales -->
+            <div class="flex items-center gap-3 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                <span class="text-xs font-semibold text-slate-500 px-2">MODO DE VISTA:</span>
+                <button id="btn-algebraic" onclick="setViewMode('algebraic')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all-300 bg-white text-indigo-600 shadow-sm">
+                    Algebraico (c, r)
+                </button>
+                <button id="btn-numeric" onclick="setViewMode('numeric')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all-300 text-slate-600 hover:text-slate-900">
+                    Numérico ($)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor principal -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Columna Izquierda: Panel de Control e Introducción Conceptual (4 cols) -->
+        <section class="lg:col-span-4 flex flex-col gap-6">
+            
+            <!-- Tarjeta de Controles Interactivos -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col gap-5">
+                <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
+                    <i data-lucide="sliders" class="w-5 h-5 text-indigo-600"></i>
+                    <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Configuración de Variables</h2>
+                </div>
+
+                <!-- Parámetro c (Cuota Base) -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            Cuota Base Constante (<span class="code-font text-emerald-600 font-bold text-sm">c</span>)
+                        </label>
+                        <span id="val-c-display" class="text-sm font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-md">$100</span>
+                    </div>
+                    <input type="range" id="input-c" min="50" max="500" step="10" value="100" oninput="updateValues()" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                    <p class="text-[10px] text-slate-400">Renta que inicia en t=1 y se mantiene fija hasta el final del plazo.</p>
+                </div>
+
+                <!-- Parámetro r (Cuota Escalonada de Incremento) -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                            Renta de Incremento (<span class="code-font text-blue-600 font-bold text-sm">r</span>)
+                        </label>
+                        <span id="val-r-display" class="text-sm font-extrabold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md">$25</span>
+                    </div>
+                    <input type="range" id="input-r" min="5" max="100" step="5" value="25" oninput="updateValues()" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    <p class="text-[10px] text-slate-400">Cuotas periódicas adicionales que se superponen de forma escalonada.</p>
+                </div>
+
+                <!-- Parámetro n (Períodos de la renta) -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                            Número de periodos (<span class="code-font text-indigo-600 font-bold text-sm">n</span>)
+                        </label>
+                        <span id="val-n-display" class="text-sm font-extrabold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-md">8</span>
+                    </div>
+                    <input type="range" id="input-n" min="5" max="15" step="1" value="8" oninput="updateValues()" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                    <p class="text-[10px] text-slate-400">Define simbólicamente el límite temporal del horizonte n.</p>
+                </div>
+            </div>
+
+            <!-- Panel de Concepto Pedagógico -->
+            <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-slate-100 p-6 rounded-2xl shadow-md flex flex-col gap-4">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="info" class="w-5 h-5 text-indigo-300"></i>
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-indigo-200">¿Cómo funciona la descomposición?</h3>
+                </div>
+                <p class="text-xs leading-relaxed text-slate-300">
+                    Una cuota variable en progresión aritmética (como una renta linealmente creciente) se puede descomponer de forma aditiva en un conjunto de **rentas constantes y consecutivas diferidas en el tiempo**.
+                </p>
+                <div class="p-3 bg-white/5 border border-white/10 rounded-xl">
+                    <p class="text-[11px] font-semibold text-slate-200 flex items-center gap-1">
+                        <span class="text-emerald-400 font-bold">Fila 1 (Renta Base):</span> Corre desde $t=1$ hasta $n$.
+                    </p>
+                    <p class="text-[11px] font-semibold text-slate-200 mt-2 flex items-center gap-1">
+                        <span class="text-blue-400 font-bold">Filas Escalón (r):</span> Empiezan de forma diferida en $t=2, 3 \dots$ acumulando incrementos.
+                    </p>
+                </div>
+                <p class="text-xs leading-relaxed text-slate-300">
+                    Pasa el cursor sobre las columnas de la matriz en la derecha para ver cómo la suma de estas corrientes individuales produce la cuota de cada período.
+                </p>
+            </div>
+        </section>
+
+        <!-- Columna Derecha: Matriz Interactiva y Eje de Tiempo (8 cols) -->
+        <section class="lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- Contenedor Principal de la Matriz Visual -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col gap-6 overflow-x-auto">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="grid" class="w-5 h-5 text-indigo-600"></i>
+                        <h2 class="text-base font-bold text-slate-900">Estructura Temporal y Matriz Triangular</h2>
+                    </div>
+                    <span class="text-[11px] text-slate-400 font-medium italic flex items-center gap-1">
+                        <i data-lucide="pointer" class="w-3.5 h-3.5"></i> Pasa el mouse sobre las columnas para interactuar
+                    </span>
+                </div>
+
+                <!-- Matriz y Eje de Tiempos -->
+                <div class="min-w-[640px] flex flex-col">
+                    
+                    <!-- 1. Eje de Tiempo -->
+                    <div class="relative flex items-center h-16 bg-slate-50/50 rounded-xl border border-slate-100 px-4 mb-4">
+                        <div class="absolute left-10 right-10 h-0.5 bg-slate-300 z-0"></div>
+                        
+                        <div class="w-full flex justify-between items-center z-10">
+                            <!-- t=0 -->
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-bold text-slate-400 bg-white border-2 border-slate-300 w-7 h-7 flex items-center justify-center rounded-full shadow-sm">t<sub>0</sub></span>
+                                <span class="text-[10px] text-slate-400 mt-1 font-semibold">Inicio</span>
+                            </div>
+                            
+                            <!-- t=1 -->
+                            <div class="flex flex-col items-center col-trigger" data-col="1">
+                                <span class="text-xs font-bold text-emerald-600 bg-white border-2 border-emerald-500 w-7 h-7 flex items-center justify-center rounded-full shadow-md transition-all-300 cursor-pointer">t<sub>1</sub></span>
+                                <span class="text-[10px] text-slate-600 mt-1 font-bold">Mes 1</span>
+                            </div>
+
+                            <!-- t=2 -->
+                            <div class="flex flex-col items-center col-trigger" data-col="2">
+                                <span class="text-xs font-bold text-indigo-600 bg-white border-2 border-slate-300 hover:border-indigo-500 w-7 h-7 flex items-center justify-center rounded-full shadow-sm transition-all-300 cursor-pointer">t<sub>2</sub></span>
+                                <span class="text-[10px] text-slate-600 mt-1 font-bold">Mes 2</span>
+                            </div>
+
+                            <!-- t=3 -->
+                            <div class="flex flex-col items-center col-trigger" data-col="3">
+                                <span class="text-xs font-bold text-indigo-600 bg-white border-2 border-slate-300 hover:border-indigo-500 w-7 h-7 flex items-center justify-center rounded-full shadow-sm transition-all-300 cursor-pointer">t<sub>3</sub></span>
+                                <span class="text-[10px] text-slate-600 mt-1 font-bold">Mes 3</span>
+                            </div>
+
+                            <!-- CONTINUIDAD // -->
+                            <div class="flex flex-col items-center select-none">
+                                <span class="text-sm font-extrabold text-slate-400 bg-slate-100 border border-slate-200 w-8 h-8 flex items-center justify-center rounded-lg select-none">//</span>
+                                <span class="text-[10px] text-slate-400 mt-1 font-semibold">Continuidad</span>
+                            </div>
+
+                            <!-- t=n-1 -->
+                            <div class="flex flex-col items-center col-trigger" data-col="n-1">
+                                <span class="text-xs font-bold text-indigo-600 bg-white border-2 border-slate-300 hover:border-indigo-500 w-7 h-7 flex items-center justify-center rounded-full shadow-sm transition-all-300 cursor-pointer">t<sub>n-1</sub></span>
+                                <span id="label-n-1" class="text-[10px] text-slate-600 mt-1 font-bold">Mes 7</span>
+                            </div>
+
+                            <!-- t=n -->
+                            <div class="flex flex-col items-center col-trigger" data-col="n">
+                                <span class="text-xs font-bold text-indigo-600 bg-white border-2 border-slate-300 hover:border-indigo-500 w-7 h-7 flex items-center justify-center rounded-full shadow-sm transition-all-300 cursor-pointer">t<sub>n</sub></span>
+                                <span id="label-n" class="text-[10px] text-slate-600 mt-1 font-bold">Mes 8</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Rejilla de la Matriz Triangular -->
+                    <div id="matrix-container" class="grid grid-cols-7 gap-y-2.5 text-center mt-2">
+                        <!-- Cabeceras de Columna para la tabla -->
+                        <div class="text-left font-bold text-xs text-slate-400 flex items-center">Estructura</div>
+                        <div class="text-xs font-bold text-slate-500 py-1">t = 1</div>
+                        <div class="text-xs font-bold text-slate-500 py-1">t = 2</div>
+                        <div class="text-xs font-bold text-slate-500 py-1">t = 3</div>
+                        <div class="text-xs font-bold text-slate-400 py-1 italic break-column rounded">//</div>
+                        <div id="header-n-1" class="text-xs font-bold text-slate-500 py-1">t = n-1 (7)</div>
+                        <div id="header-n" class="text-xs font-bold text-slate-500 py-1">t = n (8)</div>
+
+                        <!-- Fila 1: Cuota Base "c" -->
+                        <div class="text-left font-bold text-xs text-slate-600 flex items-center gap-1.5">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            Renta Base (<span class="code-font font-bold text-emerald-600">c</span>)
+                        </div>
+                        <div class="matrix-cell col-1 text-emerald-700 bg-emerald-50 border border-emerald-100 p-3 rounded-xl font-bold transition-all-300" data-base="c" data-multiplier="0">c</div>
+                        <div class="matrix-cell col-2 text-emerald-700 bg-emerald-50 border border-emerald-100 p-3 rounded-xl font-bold transition-all-300" data-base="c" data-multiplier="0">c</div>
+                        <div class="matrix-cell col-3 text-emerald-700 bg-emerald-50 border border-emerald-100 p-3 rounded-xl font-bold transition-all-300" data-base="c" data-multiplier="0">c</div>
+                        <div class="matrix-cell break-column text-slate-400 border border-slate-100 p-3 rounded-xl font-bold select-none italic">...</div>
+                        <div class="matrix-cell col-n-1 text-emerald-700 bg-emerald-50 border border-emerald-100 p-3 rounded-xl font-bold transition-all-300" data-base="c" data-multiplier="0">c</div>
+                        <div class="matrix-cell col-n text-emerald-700 bg-emerald-50 border border-emerald-100 p-3 rounded-xl font-bold transition-all-300" data-base="c" data-multiplier="0">c</div>
+
+                        <!-- Fila 2: Incremento "r" (inicia en t=2) -->
+                        <div class="text-left font-bold text-xs text-slate-600 flex items-center gap-1.5">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                            Flujo R-1 (<span class="code-font font-bold text-blue-600">r</span>)
+                        </div>
+                        <div class="matrix-cell col-1 text-slate-300 bg-slate-50/50 border border-slate-100 border-dashed p-3 rounded-xl transition-all-300 italic text-xs">-</div>
+                        <div class="matrix-cell col-2 text-blue-700 bg-blue-50 border border-blue-100 p-3 rounded-xl font-bold transition-all-300" data-base="r" data-multiplier="1">r</div>
+                        <div class="matrix-cell col-3 text-blue-700 bg-blue-50 border border-blue-100 p-3 rounded-xl font-bold transition-all-300" data-base="r" data-multiplier="1">r</div>
+                        <div class="matrix-cell break-column text-slate-400 border border-slate-100 p-3 rounded-xl font-bold select-none italic">...</div>
+                        <div class="matrix-cell col-n-1 text-blue-700 bg-blue-50 border border-blue-100 p-3 rounded-xl font-bold transition-all-300" data-base="r" data-multiplier="1">r</div>
+                        <div class="matrix-cell col-n text-blue-700 bg-blue-50 border border-blue-100 p-3 rounded-xl font-bold transition-all-300" data-base="r" data-multiplier="1">r</div>
+
+                        <!-- Fila 3: Incremento "r" (inicia en t=3) -->
+                        <div class="text-left font-bold text-xs text-slate-600 flex items-center gap-1.5">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                            Flujo R-2 (<span class="code-font font-bold text-blue-400">r</span>)
+                        </div>
+                        <div class="matrix-cell col-1 text-slate-300 bg-slate-50/50 border border-slate-100 border-dashed p-3 rounded-xl transition-all-300 italic text-xs">-</div>
+                        <div class="matrix-cell col-2 text-slate-300 bg-slate-50/50 border border-slate-100 border-dashed p-3 rounded-xl transition-all-300 italic text-xs">-</div>
+                        <div class="matrix-cell col-3 text-blue-700 bg-blue-50 border border-blue-100 p-3 rounded-xl font-bold transition-all-300" data-base="r" data-multiplier="1">r</div>
+                        <div class="matrix-cell break-column text-slate-400 border border-slate-100 p-3 rounded-xl font-bold select-none italic">...</div>
+                        <div class="matrix-cell col-n-1 text-blue-700 bg-blue-50 border border-blue-100 p-3 rounded-xl font-bold transition-all-300" data-base="r" data-multiplier="1">r</div>
+                        <div class="matrix-cell col-n text-blue-700 bg-blue-50 border border-blue-100 p-3 rounded-xl font-bold transition-all-300" data-base="r" data-multiplier="1">r</div>
+
+                        <!-- Fila Continua (Salto conceptual representado verticalmente) -->
+                        <div class="text-left text-xs font-semibold text-slate-400 flex items-center gap-1.5 italic py-1">
+                            <span class="inline-block w-2.5 h-0.5 bg-slate-400"></span>
+                            ... continuidades ...
+                        </div>
+                        <div class="py-1 text-slate-400 italic text-xs">⋮</div>
+                        <div class="py-1 text-slate-400 italic text-xs">⋮</div>
+                        <div class="py-1 text-slate-400 italic text-xs">⋮</div>
+                        <div class="matrix-cell break-column text-slate-400 p-1 select-none italic text-xs">⋱</div>
+                        <div class="py-1 text-slate-400 italic text-xs">⋮</div>
+                        <div class="py-1 text-slate-400 italic text-xs">⋮</div>
+
+                        <!-- Fila n-1: Incremento "r" (inicia en t=n-1) -->
+                        <div class="text-left font-bold text-xs text-slate-600 flex items-center gap-1.5">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                            Flujo R-(n-2) (<span class="code-font font-bold text-blue-400">r</span>)
+                        </div>
+                        <div class="matrix-cell col-1 text-slate-300 bg-slate-50/50 border border-slate-100 border-dashed p-3 rounded-xl transition-all-300 italic text-xs">-</div>
+                        <div class="matrix-cell col-2 text-slate-300 bg-slate-50/50 border border-slate-100 border-dashed p-3 rounded-xl transition-all-300 italic text-xs">-</div>
+                        <div class="matrix-cell col-3 text-slate-300 bg-slate-50/50 border border-slate-100 border-dashed p-3 rounded-xl transition-all-300 italic text-xs">-</div>
+                        <div class="matrix-cell break-column text-slate-400 border border-slate-100 p-3 rounded-xl font-bold select-none italic">...</div>
+                        <div class="matrix-cell col-n-1 text-blue-700 bg-blue-50 border border-blue-100 p-3 rounded-xl font-bold transition-all-300" data-base="r" data-multiplier="1">r</div>
+                        <div class="matrix-cell col-n text-blue-700 bg-blue-50 border border-blue-100 p-3 rounded-xl font-bold transition-all-300" data-base="r" data-multiplier="1">r</div>
+
+                        <!-- Fila n: Incremento "r" (inicia únicamente en t=n) -->
+                        <div class="text-left font-bold text-xs text-slate-600 flex items-center gap-1.5">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-300"></span>
+                            Flujo R-(n-1) (<span class="code-font font-bold text-blue-300">r</span>)
+                        </div>
+                        <div class="matrix-cell col-1 text-slate-300 bg-slate-50/50 border border-slate-100 border-dashed p-3 rounded-xl transition-all-300 italic text-xs">-</div>
+                        <div class="matrix-cell col-2 text-slate-300 bg-slate-50/50 border border-slate-100 border-dashed p-3 rounded-xl transition-all-300 italic text-xs">-</div>
+                        <div class="matrix-cell col-3 text-slate-300 bg-slate-50/50 border border-slate-100 border-dashed p-3 rounded-xl transition-all-300 italic text-xs">-</div>
+                        <div class="matrix-cell break-column text-slate-400 border border-slate-100 p-3 rounded-xl font-bold select-none italic">...</div>
+                        <div class="matrix-cell col-n-1 text-slate-300 bg-slate-50/50 border border-slate-100 border-dashed p-3 rounded-xl transition-all-300 italic text-xs">-</div>
+                        <div class="matrix-cell col-n text-blue-700 bg-blue-50 border border-blue-100 p-3 rounded-xl font-bold transition-all-300" data-base="r" data-multiplier="1">r</div>
+
+                        <!-- Separador visual -->
+                        <div class="col-span-7 my-2 border-t-2 border-dashed border-slate-200"></div>
+
+                        <!-- Fila de Suma de Columnas: Cuota Resultante de cada periodo -->
+                        <div class="text-left font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+                            CUOTA TOTAL (α<sub>t</sub>)
+                        </div>
+                        <div class="matrix-cell col-total col-1 bg-indigo-600 text-white p-3.5 rounded-xl font-extrabold text-sm shadow-sm transition-all-300 cursor-pointer" data-id="1">c</div>
+                        <div class="matrix-cell col-total col-2 bg-indigo-600 text-white p-3.5 rounded-xl font-extrabold text-sm shadow-sm transition-all-300 cursor-pointer" data-id="2">c + r</div>
+                        <div class="matrix-cell col-total col-3 bg-indigo-600 text-white p-3.5 rounded-xl font-extrabold text-sm shadow-sm transition-all-300 cursor-pointer" data-id="3">c + 2r</div>
+                        <div class="matrix-cell break-column text-slate-400 border border-slate-100 p-3 rounded-xl font-bold select-none italic">...</div>
+                        <div id="total-n-1" class="matrix-cell col-total col-n-1 bg-indigo-600 text-white p-3.5 rounded-xl font-extrabold text-sm shadow-sm transition-all-300 cursor-pointer" data-id="n-1">c + (n-2)r</div>
+                        <div id="total-n" class="matrix-cell col-total col-n bg-indigo-600 text-white p-3.5 rounded-xl font-extrabold text-sm shadow-sm transition-all-300 cursor-pointer" data-id="n">c + (n-1)r</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Dinámico de Resultados & Explicación Pedagógica (Tooltip Expandido) -->
+            <div id="tooltip-panel" class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-6 transition-all-300 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div class="flex flex-col gap-2 max-w-xl">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase rounded-lg tracking-wider" id="active-period-badge">Selección por Defecto</span>
+                        <h3 class="text-base font-extrabold text-slate-900" id="active-title">Pasa el cursor sobre un período</h3>
+                    </div>
+                    <p class="text-xs text-slate-500 leading-relaxed" id="active-description">
+                        Haz clic o pasa el mouse sobre las columnas para descomponer detalladamente los flujos de la cuota en ese instante del tiempo.
+                    </p>
+                </div>
+                
+                <div class="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col gap-1.5 min-w-[240px]">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Composición Matemática</span>
+                    <div class="text-lg font-bold text-indigo-700 code-font" id="formula-display">
+                        α<sub>t</sub> = c + (t-1)r
+                    </div>
+                    <div class="text-xs font-semibold text-slate-500" id="calculation-display">
+                        -
+                    </div>
+                </div>
+            </div>
+            
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <p>© 2026 Simulación Interactiva Financiera. Diseñado para fines pedagógicos.</p>
+            <div class="flex gap-4">
+                <a href="#" class="hover:text-indigo-600 transition-colors">Guía Didáctica</a>
+                <a href="#" class="hover:text-indigo-600 transition-colors">Fórmulas de Renta</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Lógica de control JavaScript -->
+    <script>
+        // Variables globales / Estado inicial
+        const state = {
+            c: 100,
+            r: 25,
+            n: 8,
+            viewMode: 'algebraic', // 'algebraic' o 'numeric'
+            activeCol: null
+        };
+
+        // Al iniciar
+        window.onload = function() {
+            lucide.createIcons();
+            updateValues();
+            setupInteractivity();
+        };
+
+        // Actualizar valores desde los sliders
+        function updateValues() {
+            state.c = parseInt(document.getElementById('input-c').value);
+            state.r = parseInt(document.getElementById('input-r').value);
+            state.n = parseInt(document.getElementById('input-n').value);
+
+            // Actualizar etiquetas numéricas
+            document.getElementById('val-c-display').innerText = `$${state.c}`;
+            document.getElementById('val-r-display').innerText = `$${state.r}`;
+            document.getElementById('val-n-display').innerText = state.n;
+
+            // Actualizar nomenclatura del eje de tiempos y encabezados
+            document.getElementById('label-n-1').innerHTML = `Mes ${state.n - 1}`;
+            document.getElementById('label-n').innerHTML = `Mes ${state.n}`;
+            document.getElementById('header-n-1').innerText = `t = n-1 (${state.n - 1})`;
+            document.getElementById('header-n').innerText = `t = n (${state.n})`;
+
+            // Actualizar texto estático de c y r en la matriz en caso de vista numérica
+            renderMatrixElements();
+            if (state.activeCol) {
+                highlightColumn(state.activeCol);
+            }
+        }
+
+        // Definir modo de vista (Algebraico / Numérico)
+        function setViewMode(mode) {
+            state.viewMode = mode;
+            
+            // Actualizar botones de estado visual
+            const btnAlg = document.getElementById('btn-algebraic');
+            const btnNum = document.getElementById('btn-numeric');
+
+            if (mode === 'algebraic') {
+                btnAlg.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all-300 bg-white text-indigo-600 shadow-sm";
+                btnNum.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all-300 text-slate-600 hover:text-slate-900";
+            } else {
+                btnNum.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all-300 bg-white text-indigo-600 shadow-sm";
+                btnAlg.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all-300 text-slate-600 hover:text-slate-900";
+            }
+
+            renderMatrixElements();
+            if (state.activeCol) {
+                highlightColumn(state.activeCol);
+            }
+        }
+
+        // Renderizar dinámicamente el texto dentro de los divs de la matriz
+        function renderMatrixElements() {
+            const isAlg = state.viewMode === 'algebraic';
+
+            // Elementos correspondientes a la fila 1 (c)
+            document.querySelectorAll('.matrix-cell.col-1[data-base="c"]').forEach(el => el.innerText = isAlg ? 'c' : `$${state.c}`);
+            document.querySelectorAll('.matrix-cell.col-2[data-base="c"]').forEach(el => el.innerText = isAlg ? 'c' : `$${state.c}`);
+            document.querySelectorAll('.matrix-cell.col-3[data-base="c"]').forEach(el => el.innerText = isAlg ? 'c' : `$${state.c}`);
+            document.querySelectorAll('.matrix-cell.col-n-1[data-base="c"]').forEach(el => el.innerText = isAlg ? 'c' : `$${state.c}`);
+            document.querySelectorAll('.matrix-cell.col-n[data-base="c"]').forEach(el => el.innerText = isAlg ? 'c' : `$${state.c}`);
+
+            // Elementos correspondientes a las filas r
+            document.querySelectorAll('.matrix-cell[data-base="r"]').forEach(el => {
+                el.innerText = isAlg ? 'r' : `$${state.r}`;
+            });
+
+            // Actualizar totales de fila
+            const nVal = state.n;
+            document.querySelector('.col-total.col-1').innerText = isAlg ? 'c' : `$${state.c}`;
+            document.querySelector('.col-total.col-2').innerText = isAlg ? 'c + r' : `$${state.c + state.r}`;
+            document.querySelector('.col-total.col-3').innerText = isAlg ? 'c + 2r' : `$${state.c + 2 * state.r}`;
+            
+            document.getElementById('total-n-1').innerText = isAlg ? 'c + (n-2)r' : `$${state.c + (nVal - 2) * state.r}`;
+            document.getElementById('total-n').innerText = isAlg ? 'c + (n-1)r' : `$${state.c + (nVal - 1) * state.r}`;
+        }
+
+        // Configurar los listeners para interacción de hover y clics
+        function setupInteractivity() {
+            const columns = ['1', '2', '3', 'n-1', 'n'];
+
+            // Añadir triggers de hover a las columnas
+            columns.forEach(col => {
+                const triggers = document.querySelectorAll(`.col-trigger[data-col="${col}"], .matrix-cell.col-${col}`);
+                
+                triggers.forEach(trigger => {
+                    trigger.addEventListener('mouseenter', () => highlightColumn(col));
+                    trigger.addEventListener('mouseleave', () => resetHighlights());
+                });
+
+                // Especial para las celdas totales
+                const totalCell = document.querySelector(`.col-total.col-${col}`);
+                if (totalCell) {
+                    totalCell.addEventListener('mouseenter', () => highlightColumn(col));
+                    totalCell.addEventListener('mouseleave', () => resetHighlights());
+                }
+            });
+        }
+
+        // Resaltar una columna y atenuar las demás
+        function highlightColumn(col) {
+            state.activeCol = col;
+            
+            // Atenuar todas las celdas que no pertenezcan a la columna activa
+            const allCells = document.querySelectorAll('.matrix-cell');
+            allCells.forEach(cell => {
+                if (cell.classList.contains(`col-${col}`) || cell.classList.contains('break-column')) {
+                    cell.style.opacity = '1';
+                    if (cell.classList.contains(`col-${col}`) && !cell.classList.contains('col-total')) {
+                        cell.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'scale-[1.03]');
+                    }
+                } else {
+                    cell.style.opacity = '0.35';
+                }
+            });
+
+            // Resaltar el botón del eje de tiempos correspondiente
+            document.querySelectorAll('.col-trigger span').forEach(span => {
+                span.classList.remove('border-indigo-500', 'scale-110', 'bg-indigo-50');
+            });
+            const activeTrigger = document.querySelector(`.col-trigger[data-col="${col}"] span`);
+            if (activeTrigger) {
+                activeTrigger.classList.add('border-indigo-500', 'scale-110', 'bg-indigo-50');
+            }
+
+            // Actualizar la caja de texto dinámica explicativa (Panel Inferior)
+            updateTooltipPanel(col);
+        }
+
+        // Restaurar estado de opacidad normal en toda la matriz
+        function resetHighlights() {
+            state.activeCol = null;
+            const allCells = document.querySelectorAll('.matrix-cell');
+            allCells.forEach(cell => {
+                cell.style.opacity = '1';
+                cell.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2', 'scale-[1.03]');
+            });
+
+            document.querySelectorAll('.col-trigger span').forEach(span => {
+                span.classList.remove('border-indigo-500', 'scale-110', 'bg-indigo-50');
+            });
+
+            // Volver al panel genérico inicial
+            document.getElementById('active-period-badge').innerText = "Selección por Defecto";
+            document.getElementById('active-title').innerText = "Pasa el cursor sobre un período";
+            document.getElementById('active-description').innerText = "Haz clic o pasa el mouse sobre las columnas para descomponer detalladamente los flujos de la cuota en ese instante del tiempo.";
+            document.getElementById('formula-display').innerHTML = "α<sub>t</sub> = c + (t-1)r";
+            document.getElementById('calculation-display').innerText = "-";
+        }
+
+        // Actualizar el contenido de información dinámica con base en el período
+        function updateTooltipPanel(col) {
+            const badge = document.getElementById('active-period-badge');
+            const title = document.getElementById('active-title');
+            const desc = document.getElementById('active-description');
+            const formula = document.getElementById('formula-display');
+            const calculation = document.getElementById('calculation-display');
+
+            const isAlg = state.viewMode === 'algebraic';
+            const cVal = state.c;
+            const rVal = state.r;
+            const nVal = state.n;
+
+            badge.innerText = `PERÍODO t = ${col}`;
+            
+            if (col === '1') {
+                title.innerText = "Cuota 1: Estado Inicial Base";
+                desc.innerText = "En el primer período, el pago se compone únicamente por la renta base constante (c). Ningún flujo de incremento escalonado ha comenzado aún, pues todos se difieren al menos un mes.";
+                formula.innerHTML = isAlg ? "α<sub>1</sub> = c" : `α<sub>1</sub> = $${cVal}`;
+                calculation.innerText = `Valor total de la cuota = $${cVal}`;
+            } 
+            else if (col === '2') {
+                title.innerText = "Cuota 2: Primer Incremento Activo";
+                desc.innerText = "En t=2 se superpone el primer flujo acumulativo (r) a la renta base. A partir de este mes, la cuota empieza su crecimiento escalonado.";
+                formula.innerHTML = isAlg ? "α<sub>2</sub> = c + r" : `α<sub>2</sub> = $${cVal} + $${rVal}`;
+                calculation.innerText = `Valor total: ${cVal} + ${rVal} = $${cVal + rVal}`;
+            } 
+            else if (col === '3') {
+                title.innerText = "Cuota 3: Superposición Multi-corriente";
+                desc.innerText = "Para el tercer período, se suma la cuota base junto al primer flujo r (que continúa activo) y un nuevo flujo r que inicia en t=3. Esto genera visualmente dos capas de incremento.";
+                formula.innerHTML = isAlg ? "α<sub>3</sub> = c + 2r" : `α<sub>3</sub> = $${cVal} + 2($${rVal})`;
+                calculation.innerText = `Valor total: ${cVal} + 2(${rVal}) = $${cVal + 2 * rVal}`;
+            } 
+            else if (col === 'n-1') {
+                const numCol = nVal - 1;
+                title.innerText = `Cuota n-1 (Mes ${numCol}): Penúltimo Escalonamiento`;
+                desc.innerText = `Se acumulan un total de n-2 corrientes de incremento simultáneas. El patrón muestra la composición exacta justo antes de alcanzar el vencimiento total.`;
+                formula.innerHTML = isAlg ? `α<sub>n-1</sub> = c + (n-2)r` : `α<sub>${numCol}</sub> = $${cVal} + ${numCol - 1}($${rVal})`;
+                calculation.innerText = `Valor total: ${cVal} + ${numCol - 1}(${rVal}) = $${cVal + (numCol - 1) * rVal}`;
+            } 
+            else if (col === 'n') {
+                title.innerText = `Cuota n (Mes ${nVal}): Vencimiento e Incremento Máximo`;
+                desc.innerText = `En el último mes del plazo de la renta, todas las corrientes del triángulo invertido están activas simultáneamente, sumando un total de n-1 incrementos escalonados sobre la base c.`;
+                formula.innerHTML = isAlg ? `α<sub>n</sub> = c + (n-1)r` : `α<sub>${nVal}</sub> = $${cVal} + ${nVal - 1}($${rVal})`;
+                calculation.innerText = `Valor total: ${cVal} + ${nVal - 1}(${rVal}) = $${cVal + (nVal - 1) * rVal}`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resta de Perpetuidades</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos personalizados para las líneas de tiempo y animaciones */
+        .timeline-row { 
+            position: relative; 
+            height: 90px; 
+            display: flex; 
+            align-items: flex-end; 
+            padding-bottom: 10px; 
+            margin-bottom: 40px; 
+            border-bottom: 2px solid #cbd5e1; 
+        }
+        .tick { 
+            position: absolute; 
+            bottom: -8px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            transform: translateX(-50%); 
+        }
+        .tick::before { 
+            content: ''; 
+            width: 2px; 
+            height: 8px; 
+            background-color: #94a3b8; 
+            display: block; 
+        }
+        .tick-label { 
+            font-size: 0.875rem; 
+            color: #475569; 
+            margin-top: 6px; 
+            font-weight: 600; 
+            font-family: monospace;
+        }
+        
+        /* Estilos de los bloques de pago 'r' */
+        .block-r { 
+            width: 36px; 
+            height: 36px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            position: absolute; 
+            bottom: 16px; 
+            transform: translateX(-50%); 
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease, background-color 0.8s ease, border-color 0.8s ease; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
+            z-index: 10;
+        }
+        .block-t1 { background-color: #3b82f6; color: white; border: 2px solid #2563eb; }
+        .block-t2 { background-color: #ef4444; color: white; border: 2px solid #dc2626; z-index: 20; }
+        
+        /* Gradiente para simular el infinito */
+        .fade-out-right { 
+            mask-image: linear-gradient(to right, black 75%, transparent 100%); 
+            -webkit-mask-image: linear-gradient(to right, black 75%, transparent 100%); 
+        }
+        
+        /* Animación de colisión (explosión/anulación) */
+        .collide-effect {
+            transform: translateX(-50%) scale(0) !important;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Tooltip */
+        .tooltip-custom { 
+            opacity: 0; 
+            transform: translateY(20px); 
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            pointer-events: none;
+        }
+        .tooltip-custom.show { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4 font-sans">
+    
+    <div class="max-w-5xl w-full bg-white rounded-2xl shadow-xl p-8 overflow-hidden relative">
+        <div class="mb-8 border-b pb-4">
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">Resta de Perpetuidades</h1>
+            <p class="text-slate-500">Visualización de cómo la sustracción de una renta perpetua diferida de otra renta perpetua genera una renta temporal finita.</p>
+        </div>
+
+        <div class="overflow-x-auto overflow-y-hidden pb-10">
+            <div class="relative min-w-[700px] w-full fade-out-right pr-8" id="animation-container">
+                
+                <!-- Línea 1 -->
+                <div class="text-sm font-bold text-blue-600 mb-2">Línea 1: Primera Renta Perpetua (Inicia en t=2)</div>
+                <div class="timeline-row" id="row-1"></div>
+
+                <!-- Línea 2 -->
+                <div class="text-sm font-bold text-red-600 mb-2 mt-4">Línea 2: Segunda Renta Perpetua (Inicia en t=n+1) <span class="text-slate-500 font-normal text-xs ml-2">- Se restará de la Línea 1</span></div>
+                <div class="timeline-row" id="row-2"></div>
+
+                <!-- Línea 3 (Resultado) -->
+                <div class="text-sm font-bold text-emerald-600 mb-2 mt-4">Línea 3: Resultado (Renta Temporal t=2 a t=n)</div>
+                <div class="timeline-row mb-0" id="row-3"></div>
+
+                <!-- Tooltip de Fórmula -->
+                <div id="formula-tooltip" class="absolute bottom-[80px] left-[35%] transform -translate-x-1/2 tooltip-custom bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl flex flex-col items-center z-30">
+                    <span class="text-xs text-slate-400 mb-1 font-semibold uppercase tracking-wider">Valor Presente (Resultado)</span>
+                    <span class="text-xl font-mono font-bold tracking-widest text-emerald-400">
+                        (r/i * v) - (r/i * v<sup>n</sup>)
+                    </span>
+                    <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-slate-800 rotate-45"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="mt-8 flex justify-center gap-4">
+            <button id="btn-run" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 px-8 rounded-xl transition-all flex items-center gap-2 shadow-lg hover:shadow-xl active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Ejecutar Resta Matemática
+            </button>
+            <button id="btn-reset" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-8 rounded-xl transition-all shadow active:scale-95 hidden">
+                Reiniciar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de la línea de tiempo (Posiciones en %)
+        const timeTicks = [
+            { label: '0', pos: 5 },
+            { label: '1', pos: 15 },
+            { label: '2', pos: 25, hasT1: true },
+            { label: '...', pos: 35, hasT1: true },
+            { label: 'n', pos: 45, hasT1: true },
+            { label: 'n+1', pos: 55, hasT1: true, hasT2: true },
+            { label: 'n+2', pos: 65, hasT1: true, hasT2: true },
+            { label: '...', pos: 75, hasT1: true, hasT2: true },
+            { label: '∞', pos: 85, hasT1: true, hasT2: true },
+        ];
+
+        const row1 = document.getElementById('row-1');
+        const row2 = document.getElementById('row-2');
+        const row3 = document.getElementById('row-3');
+        
+        let t1Blocks = [];
+        let t2Blocks = [];
+
+        // Función para inicializar/dibujar el estado base
+        function initTimeline() {
+            row1.innerHTML = ''; row2.innerHTML = ''; row3.innerHTML = '';
+            t1Blocks = []; t2Blocks = [];
+            
+            timeTicks.forEach(tick => {
+                // Dibujar marcas (ticks) en las 3 líneas
+                [row1, row2, row3].forEach(row => {
+                    const tickEl = document.createElement('div');
+                    tickEl.className = 'tick';
+                    tickEl.style.left = `${tick.pos}%`;
+                    tickEl.innerHTML = `<span class="tick-label">${tick.label}</span>`;
+                    row.appendChild(tickEl);
+                });
+
+                // Añadir bloques 'r' a la Línea 1
+                if (tick.hasT1) {
+                    const block = document.createElement('div');
+                    block.className = 'block-r block-t1';
+                    block.style.left = `${tick.pos}%`;
+                    block.innerText = 'r';
+                    // Guardamos la posición lógica (porcentaje) para usarla en la lógica
+                    block.dataset.pos = tick.pos; 
+                    row1.appendChild(block);
+                    t1Blocks.push(block);
+                }
+
+                // Añadir bloques 'r' a la Línea 2
+                if (tick.hasT2) {
+                    const block = document.createElement('div');
+                    block.className = 'block-r block-t2';
+                    block.style.left = `${tick.pos}%`;
+                    block.innerText = 'r';
+                    block.dataset.pos = tick.pos;
+                    row2.appendChild(block);
+                    t2Blocks.push(block);
+                }
+            });
+
+            document.getElementById('formula-tooltip').classList.remove('show');
+            document.getElementById('btn-run').style.display = 'flex';
+            document.getElementById('btn-reset').style.display = 'none';
+            document.getElementById('btn-run').disabled = false;
+        }
+
+        // Lógica de Animación
+        document.getElementById('btn-run').addEventListener('click', async function() {
+            this.disabled = true;
+            this.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Calcular las distancias de vuelo entre filas dinámicamente
+            const y1 = row1.getBoundingClientRect().top;
+            const y2 = row2.getBoundingClientRect().top;
+            const y3 = row3.getBoundingClientRect().top;
+            
+            const moveUpDist = y1 - y2; // Negativo (hacia arriba)
+            const moveDownDist = y3 - y1; // Positivo (hacia abajo)
+
+            // FASE 1: Los bloques rojos (Línea 2) suben a chocar con la Línea 1
+            t2Blocks.forEach(block => {
+                block.style.transform = `translateX(-50%) translateY(${moveUpDist}px)`;
+            });
+
+            await new Promise(r => setTimeout(r, 900));
+
+            // FASE 2: Anulación (Los bloques de t=n+1 en adelante desaparecen)
+            t2Blocks.forEach(block => block.classList.add('collide-effect'));
+            
+            t1Blocks.forEach(block => {
+                if (parseFloat(block.dataset.pos) >= 55) { // 55% es la posición de n+1
+                    block.classList.add('collide-effect');
+                }
+            });
+
+            await new Promise(r => setTimeout(r, 800));
+
+            // FASE 3: El resultado limpio (bloques de t=2 a t=n) cae a la Línea 3
+            t1Blocks.forEach(block => {
+                if (parseFloat(block.dataset.pos) < 55) {
+                    // Mover hacia abajo
+                    block.style.transform = `translateX(-50%) translateY(${moveDownDist}px)`;
+                    // Cambiar color a verde esmeralda para el resultado
+                    block.style.backgroundColor = '#10b981';
+                    block.style.borderColor = '#059669';
+                }
+            });
+
+            await new Promise(r => setTimeout(r, 800));
+
+            // FASE FINAL: Mostrar el tooltip con la fórmula y botón de reinicio
+            document.getElementById('formula-tooltip').classList.add('show');
+            document.getElementById('btn-run').style.display = 'none';
+            document.getElementById('btn-reset').style.display = 'block';
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            initTimeline();
+            const btnRun = document.getElementById('btn-run');
+            btnRun.classList.remove('opacity-50', 'cursor-not-allowed');
+        });
+
+        // Inicializar al cargar
+        initTimeline();
+    </script>
+</body>
+</html>

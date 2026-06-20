@@ -427,6 +427,7 @@ export default function LibroPage() {
         .development-block {
           line-height: 1.8;
           font-size: 1.05rem;
+          white-space: pre-wrap;
         }
 
         .empty-state {
