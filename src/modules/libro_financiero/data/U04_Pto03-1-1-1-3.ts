@@ -1,6 +1,6 @@
 const data = {
   "id": "4.3.1.1.1.3",
-  "title": "Punto 4.3.1.1.1.3",
+  "title": "Valores que puede tomar la razón",
   "Desarrollo": [
     {
       "type": "text",

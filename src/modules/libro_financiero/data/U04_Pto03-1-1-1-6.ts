@@ -1,6 +1,6 @@
 const data = {
   "id": "4.3.1.1.1.6",
-  "title": "Punto 4.3.1.1.1.6",
+  "title": "Imposiciones con cuotas variables",
   "Desarrollo": [
     {
       "type": "text",

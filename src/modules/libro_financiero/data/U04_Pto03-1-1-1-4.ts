@@ -1,6 +1,6 @@
 const data = {
   "id": "4.3.1.1.1.4",
-  "title": "Punto 4.3.1.1.1.4",
+  "title": "Rentas temporarias diferidas con cuotas variables en progresión aritmética",
   "Desarrollo": [
     {
       "type": "text",
