@@ -89,136 +89,51 @@ $$V_{n_{a}}=(c\\cdot a_{n:i}+\\frac{r}{i}\\cdot a_{n:i})-\\frac{r}{i}\\cdot \\fr
     }
   ],
   "Glosario": [],
-  "Casos Prácticos": [
-    {
-      "type": "text",
-      "content": `[Caso]
-Determinación del valor actual de un plan de pagos creciente`
-    },
-    {
-      "type": "text",
-      "content": `[Enunciado]
-Una empresa adquiere maquinaria vial y acuerda cancelarla en $12$ cuotas mensuales vencidas que aumentan en progresión aritmética. La primera cuota es de $\$50.000$ y la razón de crecimiento es de $\$2.000$ por mes. Si la tasa de financiación es del $3\%$ efectivo mensual, determine el valor de contado de la maquinaria.
-[Solución]
-Aplicamos el modelo de renta temporaria inmediata vencida en progresión aritmética: $$V_{n\rceil a} = (c + \frac{r}{i}) \cdot \frac{1 - (1+i)^{-n}}{i} - \frac{r}{i} \cdot (1+i)^{-n} \cdot n$$ Sustituyendo los datos ($c = 50000$, $r = 2000$, $n = 12$, $i = 0.03$): $$V_{12\rceil a} = (50000 + \frac{2000}{0.03}) \cdot \frac{1 - (1.03)^{-12}}{0.03} - \frac{2000}{0.03} \cdot (1.03)^{-12} \cdot 12$$
-$$V_{12\rceil a} = (50000 + 66666.67) \cdot 9.9540 - 66666.67 \cdot 0.70138 \cdot 12$$
-$$V_{12\rceil a} = 116666.67 \cdot 9.9540 - 561103.88 = 1161300 - 561103.88 = \$600.196,12$$
-[Highlights]
-En este tipo de rentas, la fracción $\frac{r}{i}$ representa la perpetuidad de la variación. Al restar el último término, descontamos el efecto de perpetuidad limitándolo a las $n$ cuotas.
-`
-    },
-    {
-      "type": "text",
-      "content": `[Caso]
-Valuación de pasivo con cuotas decrecientes y pago a inicio de mes
-[Enunciado]
-Un deudor propone cancelar una obligación mediante $24$ cuotas mensuales adelantadas. La cuota inicial es de $\$30.000$ y decrece $\$500$ cada mes. La tasa de interés acordada es del $2.5\%$ mensual. Calcule el valor actual de la deuda.
-[Solución]
-Utilizamos el modelo de renta inmediata en progresión aritmética con cuota adelantada, multiplicando el modelo vencido por $(1+i)$: $$V'<i>{n\</i><i>rceil</i><i> a} = \</i><i>left</i><i>(c + \frac{r}{i}) \</i><i>cdot</i><i> \frac{1 - (1+i)^{-n}}{i} - \frac{r}{i} \</i><i>cdot</i><i> (1+i)^{-n} \</i><i>cdot</i><i> n \</i><i>right</i><i> \</i><i>cdot</i><i> (1+i)$$ Con $c = 30000$, $r = -500$, $n = 24$, $i = 0.025$: $$V'</i>{24\rceil a} = \left(30000 + \frac{-500}{0.025}) \cdot \frac{1 - 1.025^{-24}}{0.025} - \frac{-500}{0.025} \cdot 1.025^{-24} \cdot 24 \right \cdot 1.025$$
-$$V'<i>{24\</i><i>rceil</i><i> a} = \</i><i>left</i><i>(30000 - 20000) \</i><i>cdot</i><i> 17.88499 + 20000 \</i><i>cdot</i><i> 0.55287 \</i><i>cdot</i><i> 24 \</i><i>right</i><i> \</i><i>cdot</i><i> 1.025$$
-$$V'</i>{24\rceil a} = \left178849.90 + 265377.60 \right \cdot 1.025 = \$455.333,19$$
-[Highlights]
-Cuando $r < 0$, las cuotas decrecen. Es fundamental advertir que la última cuota ($c + (n-1)r$) debe ser siempre mayor que cero, de lo contrario financieramente el planteo sería un absurdo .
-`
-    },
-    {
-      "type": "text",
-      "content": `[Caso]
-Determinación de la cuota base en un arreglo extrajudicial
-[Enunciado]
-Se desea cancelar un pasivo exigible de $\$1.500.000$ en $36$ meses con pagos vencidos en progresión aritmética. Si se estableció que los pagos aumentarán a razón de $\$1.500$ mensuales y la tasa de interés es del $4\%$ mensual, halle el valor de la primera cuota $c$.
-[Solución]
-Partimos del valor actual conocido y despejamos $c$: $$V_{n\rceil a} = (c + \frac{r}{i}) \cdot a_{n\rceil i} - \frac{r}{i} \cdot (1+i)^{-n} \cdot n$$
-$$1500000 = (c + \frac{1500}{0.04}) \cdot 18.9082 - \frac{1500}{0.04} \cdot 1.04^{-36} \cdot 36$$
-$$1500000 = (c + 37500) \cdot 18.9082 - 37500 \cdot 0.24366 \cdot 36$$
-$$1500000 = 18.9082 \cdot c + 709057.50 - 328941$$
-$$1119883.50 = 18.9082 \cdot c$$
-$$c = \$59.227,40$$
-[Highlights]
-El despeje del primer término $c$ requiere agrupar previamente las constantes de capitalización y actualización. Es un problema clásico de reestructuración de pasivos complejos.
-`
-    },
-    {
-      "type": "text",
-      "content": `[Caso]
-Cálculo del límite de la razón de variabilidad para rentas prepagables
-[Enunciado]
-Un prestamista otorga $\$800.000$ a amortizar en $20$ cuotas mensuales adelantadas que decrecen aritméticamente. La primera cuota se fijó en $\$60.000$ y la tasa de interés es del $2\%$ mensual. Encuentre la razón de decrecimiento $r$ e indique si la renta es financieramente válida.
-[Solución]
-Despejamos $r$ de la fórmula adelantada: $$V'_{n\rceil a} = \leftc \cdot a_{n\rceil i} + \frac{r}{i} \cdot (a_{n\rceil i} - n \cdot (1+i)^{-n}) \right \cdot (1+i)$$
-$$800000 = \left60000 \cdot 16.3514 + \frac{r}{0.02} \cdot (16.3514 - 20 \cdot 0.67297) \right \cdot 1.02$$
-$$784313.73 = 981084 + 50 \cdot r \cdot (16.3514 - 13.4594)$$
-$$-196770.27 = 50 \cdot r \cdot 2.8920$$
-$$r = \frac{-196770.27}{144.60} = -\$1.360,79$$ Verificamos validez (última cuota positiva): $c + (n-1)r = 60000 + 19 \cdot (-1360.79) = 34144.99 > 0$. Es válida.
-[Highlights]
-Este planteo desafía la estructuración algebraica y requiere aislar analíticamente el componente $r$ de dos términos diferentes. Comprobar la validez del último pago es vital.
-`
-    }
-  ],
+  "Casos Prácticos": [],
   "Autoevaluación": [
     {
-      "type": "text",
-      "content": `[Pregunta] ¿Cuál de los siguientes términos representa algebraicamente el descuento del efecto perpetuo en la fórmula del valor actual de una renta inmediata vencida en progresión aritmética?`
+      "type": "quiz",
+      "question": `¿Cuál de los siguientes términos representa algebraicamente el descuento del efecto perpetuo en la fórmula del valor actual de una renta inmediata vencida en progresión aritmética?`,
+      "options": [
+      "A) $\frac{r}{i} \cdot a_{n\rceil i}$.",
+      "B) $-\frac{r}{i} \cdot v^n \cdot n$.",
+      "C) $(c + \frac{r}{i})$."
+      ],
+      "feedback": `Correcto. Al aislar la perpetuidad $\\frac{r}{i}$, se le debe restar su valor residual a partir del período $n$, expresado en el término $-\\frac{r}{i} \\cdot v^n \\cdot n$, para limitarlo estrictamente al plazo temporal del contrato.`,
+      "correctIndex": 1
     },
     {
-      "type": "text",
-      "content": `[Opciones] a) $\frac{r}{i} \cdot a_{n\rceil i}$. b) $-\frac{r}{i} \cdot v^n \cdot n$. c) $(c + \frac{r}{i})$.`
+      "type": "quiz",
+      "question": `Si evaluamos una renta en progresión aritmética inmediata, ¿por qué factor debe multiplicarse el modelo vencido para adaptarlo a cuotas adelantadas?`,
+      "options": [
+      "A) $(1+i)^{-1}$.",
+      "B) $v^n$.",
+      "C) $(1+i)$."
+      ],
+      "feedback": `Correcto. Como todos los pagos se adelantan un período en el eje temporal respecto a la época de valuación, todos sus valores actuales resultan capitalizados por un período, es decir multiplicados por $(1+i)$.`,
+      "correctIndex": 2
     },
     {
-      "type": "text",
-      "content": `[Respuesta Correcta] b`
+      "type": "quiz",
+      "question": `En una progresión aritmética donde $r < 0$ (cuotas decrecientes), ¿cuál es la restricción financiera insoslayable para la validez del modelo?`,
+      "options": [
+      "A) La cuota inicial debe ser igual a cero.",
+      "B) El plazo $n$ debe tender a infinito.",
+      "C) La última cuota $c_{n}$ debe ser estrictamente positiva."
+      ],
+      "feedback": `Correcto. Si la última cuota arrojara un valor negativo o cero, el comportamiento de la renta carecería de sentido financiero o constituiría un absurdo, por lo que $c + (n-1)r > 0$.`,
+      "correctIndex": 2
     },
     {
-      "type": "text",
-      "content": `[Feedback] Correcto. Al aislar la perpetuidad $\frac{r}{i}$, se le debe restar su valor residual a partir del período $n$, expresado en el término $-\frac{r}{i} \cdot v^n \cdot n$, para limitarlo estrictamente al plazo temporal del contrato.`
-    },
-    {
-      "type": "text",
-      "content": `[Pregunta] Si evaluamos una renta en progresión aritmética inmediata, ¿por qué factor debe multiplicarse el modelo vencido para adaptarlo a cuotas adelantadas?`
-    },
-    {
-      "type": "text",
-      "content": `[Opciones] a) $(1+i)^{-1}$. b) $v^n$. c) $(1+i)$.`
-    },
-    {
-      "type": "text",
-      "content": `[Respuesta Correcta] c`
-    },
-    {
-      "type": "text",
-      "content": `[Feedback] Correcto. Como todos los pagos se adelantan un período en el eje temporal respecto a la época de valuación, todos sus valores actuales resultan capitalizados por un período, es decir multiplicados por $(1+i)$.`
-    },
-    {
-      "type": "text",
-      "content": `[Pregunta] En una progresión aritmética donde $r < 0$ (cuotas decrecientes), ¿cuál es la restricción financiera insoslayable para la validez del modelo?`
-    },
-    {
-      "type": "text",
-      "content": `[Opciones] a) La cuota inicial debe ser igual a cero. b) El plazo $n$ debe tender a infinito. c) La última cuota $c_{n}$ debe ser estrictamente positiva.`
-    },
-    {
-      "type": "text",
-      "content": `[Respuesta Correcta] c`
-    },
-    {
-      "type": "text",
-      "content": `[Feedback] Correcto. Si la última cuota arrojara un valor negativo o cero, el comportamiento de la renta carecería de sentido financiero o constituiría un absurdo, por lo que $c + (n-1)r > 0$.`
-    },
-    {
-      "type": "text",
-      "content": `[Pregunta] ¿Qué componente permite diferenciar el valor actual de una amortización con cuotas aritméticamente variables del modelo de una imposición?`
-    },
-    {
-      "type": "text",
-      "content": `[Opciones] a) La inclusión de la suma de cuotas unitarias $s_{n\rceil i}$. b) La época de valuación seleccionada en el eje temporal. c) Que la progresión aritmética solo opera con tasas efectivas.`
-    },
-    {
-      "type": "text",
-      "content": `[Respuesta Correcta] b`
-    },
-    {
-      "type": "text",
-      "content": `[Feedback] Correcto. El valor de la amortización sitúa la época de valuación en el momento inicial ($t=0$), mientras que la imposición lo hace coincidir con la época final ($t=n$).`
+      "type": "quiz",
+      "question": `¿Qué componente permite diferenciar el valor actual de una amortización con cuotas aritméticamente variables del modelo de una imposición?`,
+      "options": [
+      "A) La inclusión de la suma de cuotas unitarias $s_{n\rceil i}$.",
+      "B) La época de valuación seleccionada en el eje temporal.",
+      "C) Que la progresión aritmética solo opera con tasas efectivas."
+      ],
+      "feedback": `Correcto. El valor de la amortización sitúa la época de valuación en el momento inicial ($t=0$), mientras que la imposición lo hace coincidir con la época final ($t=n$).`,
+      "correctIndex": 1
     }
   ],
   "Gráficos": []
