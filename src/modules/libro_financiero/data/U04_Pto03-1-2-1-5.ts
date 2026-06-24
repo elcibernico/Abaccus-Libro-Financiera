@@ -43,9 +43,9 @@ Si se quiere se puede aplicar producto de potencias de igual base, lo que permit
       "type": "quiz",
       "question": `En una situación de indiferencia donde $i=g$, para una obligación diferida adelantada, la ecuación de valuación final sería:`,
       "options": [
-      "A) $n \cdot c \cdot (1+i)^{-d}$.",
-      "B) $n \cdot c \cdot (1+i)^{-(d-1)}$.",
-      "C) $\frac{c}{n} \cdot (1+i)^{-d}$."
+      "A) $n \\cdot c \\cdot (1+i)^{-d}$.",
+      "B) $n \\cdot c \\cdot (1+i)^{-(d-1)}$.",
+      "C) $\\frac{c}{n} \\cdot (1+i)^{-d}$."
       ],
       "feedback": `Correcto. El núcleo es $n \\cdot c$ (por la combinación del $i=g$ en adelantadas que simplifica el denominador $1+i$ con el factor $(1+i)$ de prepago), y a eso se le adosa el descuento diferido $-(d-1)$.`,
       "correctIndex": 1

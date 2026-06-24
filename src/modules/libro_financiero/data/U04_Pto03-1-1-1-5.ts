@@ -79,7 +79,7 @@ Se demuestra que una renta temporaria anticipada por “$\\text{a}$” períodos
       "type": "quiz",
       "question": `En una estructura anticipada decreciente ($r < 0$), ¿qué precaución se debe tener en la evaluación de la rentabilidad implícita?`,
       "options": [
-      "A) Que el término $-n \cdot v^n$ anule al gradiente.",
+      "A) Que el término $-n \\cdot v^n$ anule al gradiente.",
       "B) Comprobar que el último pago descontado no genere rentabilidad negativa.",
       "C) Verificar que el capital base garantice $c_{n} > 0$."
       ],

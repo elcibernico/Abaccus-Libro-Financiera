@@ -24,7 +24,7 @@ Planteando la actualización cuota por cuota obtenemos:
       "question": `En la fórmula del valor actual de una renta inmediata geométrica vencida $V_{n\\rceil g} = c \\frac{1 - (\\frac{1+g}{1+i})^n}{i - g}$, ¿qué sucede cuando la tasa de crecimiento es idéntica a la tasa de interés ($g=i$)?`,
       "options": [
       "A) Genera un valor infinito.",
-      "B) Provoca una indeterminación que se salva y resulta en $n \cdot \frac{c}{1+i}$.",
+      "B) Provoca una indeterminación que se salva y resulta en $n \\cdot \\frac{c}{1+i}$.",
       "C) Provoca que el numerador sea siempre negativo."
       ],
       "feedback": `Correcto. La división original tendería a $\\frac{0}{0}$. Al salvarse matemáticamente operando las series desde su sumatoria, se verifica que cada pago actualizado aporta exactamente el mismo valor constante $\\frac{c}{1+i}$, totalizando $n \\cdot \\frac{c}{1+i}$.`,

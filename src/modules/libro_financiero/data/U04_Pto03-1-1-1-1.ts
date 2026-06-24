@@ -4,6 +4,10 @@ const data = {
   "Desarrollo": [
     {
       "type": "text",
+      "content": `A fin de determinar su valor financiero, resulta conveniente descomponer la renta con cuotas variables en distintas corrientes que serán valuadas en el momento inicial, y luego sumarlas.`
+    },
+    {
+      "type": "text",
       "content": `<u><b>Desarrollo del Profesor </b></u><u><b>Ernesto Fransolini</b></u><br/><b>Planteo de la Ecuación Inicial (Actualización individual de cuotas):</b><br/>Partimos de la expresión donde cada cuota variable, en su totalidad, es actualizada al momento cero:<br/> $$V_{n_{a}}=\\frac{c}{(1+i)^{1}}+\\frac{c+r}{(1+i)^{2}}+\\frac{c+2\\cdot r}{(1+i)^{3}}+…+\\frac{c+(n-2)\\cdot r}{(1+i)^{n-1}}+\\frac{c+(n-1)\\cdot r}{(1+i)^{n}}$$`
     },
     {
@@ -95,9 +99,9 @@ $$V_{n_{a}}=(c\\cdot a_{n:i}+\\frac{r}{i}\\cdot a_{n:i})-\\frac{r}{i}\\cdot \\fr
       "type": "quiz",
       "question": `¿Cuál de los siguientes términos representa algebraicamente el descuento del efecto perpetuo en la fórmula del valor actual de una renta inmediata vencida en progresión aritmética?`,
       "options": [
-      "A) $\frac{r}{i} \cdot a_{n\rceil i}$.",
-      "B) $-\frac{r}{i} \cdot v^n \cdot n$.",
-      "C) $(c + \frac{r}{i})$."
+      "A) $\\frac{r}{i} \\cdot a_{n\\rceil i}$.",
+      "B) $-\\frac{r}{i} \\cdot v^n \\cdot n$.",
+      "C) $(c + \\frac{r}{i})$."
       ],
       "feedback": `Correcto. Al aislar la perpetuidad $\\frac{r}{i}$, se le debe restar su valor residual a partir del período $n$, expresado en el término $-\\frac{r}{i} \\cdot v^n \\cdot n$, para limitarlo estrictamente al plazo temporal del contrato.`,
       "correctIndex": 1
@@ -128,7 +132,7 @@ $$V_{n_{a}}=(c\\cdot a_{n:i}+\\frac{r}{i}\\cdot a_{n:i})-\\frac{r}{i}\\cdot \\fr
       "type": "quiz",
       "question": `¿Qué componente permite diferenciar el valor actual de una amortización con cuotas aritméticamente variables del modelo de una imposición?`,
       "options": [
-      "A) La inclusión de la suma de cuotas unitarias $s_{n\rceil i}$.",
+      "A) La inclusión de la suma de cuotas unitarias $s_{n\\rceil i}$.",
       "B) La época de valuación seleccionada en el eje temporal.",
       "C) Que la progresión aritmética solo opera con tasas efectivas."
       ],

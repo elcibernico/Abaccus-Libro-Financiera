@@ -56,7 +56,7 @@ Si se quiere se puede aplicar producto de potencias de igual base, lo que permit
       "question": `En una imposición geométrica (caso especial de renta anticipada con $a=n$), ¿qué sucede matemáticamente con el valor final si $i = g$?`,
       "options": [
       "A) El valor final es nulo.",
-      "B) El valor se simplifica y crece aritméticamente dependiendo sólo del núcleo de $c \cdot n$.",
+      "B) El valor se simplifica y crece aritméticamente dependiendo sólo del núcleo de $c \\cdot n$.",
       "C) El valor es incalculable."
       ],
       "feedback": `Correcto. Si salvamos la indeterminación para el valor final cuando $i=g$, la estructura completa colapsa a la sumatoria directa ponderada de los nominales capitalizados que se simplifican iterativamente en sus tasas.`,

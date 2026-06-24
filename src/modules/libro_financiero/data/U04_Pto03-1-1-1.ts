@@ -25,10 +25,6 @@ $$V_{n_{a}}=\\frac{c}{(1+i)^{1}}+\\frac{c+r}{(1+i)^{2}}+\\frac{c+2\\cdot r}{(1+i
       "src": "/simuladores/u04_esquema_temporal_actualizacion_de_cuotas.html",
       "displayMode": "inline",
       "height": "550px"
-    },
-    {
-      "type": "text",
-      "content": `A fin de determinar su valor financiero, resulta conveniente descomponer la renta con cuotas variables en distintas corrientes que serán valuadas en el momento inicial, y luego sumarlas.`
     }
   ],
   "Glosario": [],
