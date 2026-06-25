@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esquema Temporal: Actualización Geométrica</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- KaTeX para renderizado matemático -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+        }
+
+        /* Estilos de animación para las fórmulas y líneas */
+        .math-expr {
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-out;
+            opacity: 0;
+            transform: translateX(15px);
+        }
+        .math-expr.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .arrow-path {
+            fill: none;
+            stroke: #2563eb;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: opacity 0.4s ease-in-out;
+            opacity: 0;
+        }
+        .arrow-path.visible {
+            opacity: 1;
+        }
+
+        .custom-slider { accent-color: #2563eb; cursor: pointer; }
+    </style>
+</head>
+<body class="p-6 min-h-screen flex flex-col gap-6">
+
+    <header>
+        <h1 class="text-2xl font-bold text-slate-800">Actualización de Cuotas (Renta Geométrica)</h1>
+        <p class="text-sm text-slate-500 mt-1">
+            Visualización paso a paso del Valor Actual ($V_{n_g}$) descontando cuotas que varían multiplicativamente en el tiempo ($C_k = C_1 \times q^{k-1}$).
+        </p>
+    </header>
+
+    <!-- BLOQUE DE CONTROLES (SLIDERS) -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-2">
+                <label class="text-sm font-semibold text-slate-700">Cuota Base ($C_1$)</label>
+                <span id="val-C" class="font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded text-sm"></span>
+            </div>
+            <input type="range" id="slider-C" min="100" max="1000" value="300" step="50" class="w-full custom-slider">
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-2">
+                <label class="text-sm font-semibold text-slate-700">Razón ($q$)</label>
+                <span id="val-q" class="font-bold text-purple-600 bg-purple-100 px-2 py-0.5 rounded text-sm"></span>
+            </div>
+            <input type="range" id="slider-q" min="0.5" max="1.5" value="1.15" step="0.05" class="w-full custom-slider">
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-2">
+                <label class="text-sm font-semibold text-slate-700">Períodos ($n$)</label>
+                <span id="val-n" class="font-bold text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded text-sm"></span>
+            </div>
+            <input type="range" id="slider-n" min="2" max="10" value="5" step="1" class="w-full custom-slider">
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-2">
+                <label class="text-sm font-semibold text-slate-700">Tasa Interés ($i$)</label>
+                <span id="val-i" class="font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded text-sm"></span>
+            </div>
+            <input type="range" id="slider-i" min="1" max="20" value="10" step="1" class="w-full custom-slider">
+        </div>
+
+    </section>
+
+    <!-- GRÁFICO PRINCIPAL ANIMADO -->
+    <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8 overflow-hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <h2 class="text-md font-bold text-slate-700">Marcha Analítica de Actualización ($V_{n_g}$)</h2>
+            
+            <!-- Controles de Animación -->
+            <div class="flex items-center gap-4 bg-slate-50 border border-slate-200 p-3 rounded-lg shadow-inner">
+                <button id="btnPlay" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors focus:outline-none font-medium text-sm shadow-sm" title="Reproducir Animación">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/>
+                    </svg>
+                    <span>Reproducir animación</span>
+                </button>
+                <input type="range" id="progSliderPrac" min="0" max="10" value="0" step="1" class="w-48 custom-slider">
+            </div>
+        </div>
+
+        <!-- Contenedor SVG con scroll horizontal nativo si es necesario -->
+        <div class="w-full overflow-x-auto overflow-y-hidden">
+            <svg id="svgMain" width="950" height="600" class="mx-auto" style="min-width: 920px;"></svg>
+        </div>
+    </section>
+
+    <script>
+        // Utilidades de formato
+        const kNum = (val) => {
+            // Reemplazamos coma por {,} para que KaTeX no añada espaciado extra interpretándola como puntuación
+            return val.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2}).replace(/,/g, '{,}');
+        };
+        const formatMoney = (val) => '$' + val.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        // Objeto de Animación
+        const animPrac = {
+            numItems: 0,
+            timer: null,
+            initDOM: function() {
+                const val = parseInt(document.getElementById('progSliderPrac').value);
+                
+                // Mostrar/ocultar cada paso
+                for (let k = 1; k <= this.numItems; k++) {
+                    const el = document.getElementById(`math-step-${k}`);
+                    const arrow = document.getElementById(`arrow-${k}`);
+                    if (el) {
+                        if (val >= k) el.classList.add('visible');
+                        else el.classList.remove('visible');
+                    }
+                    if (arrow) {
+                        if (val >= k) arrow.classList.add('visible');
+                        else arrow.classList.remove('visible');
+                    }
+                }
+                
+                // Mostrar/ocultar el Total
+                const totLabel = document.getElementById('math-total-Prac');
+                const totLine = document.getElementById('total-line-Prac');
+                
+                if (val >= this.numItems + 1) {
+                    if (totLabel) totLabel.classList.add('visible');
+                    if (totLine) totLine.classList.add('visible');
+                } else {
+                    if (totLabel) totLabel.classList.remove('visible');
+                    if (totLine) totLine.classList.remove('visible');
+                }
+            },
+            play: function() {
+                const btnIcon = document.querySelector('#btnPlay svg');
+                if (this.timer) {
+                    // Detener
+                    clearInterval(this.timer);
+                    this.timer = null;
+                    btnIcon.innerHTML = `<path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/>`;
+                } else {
+                    // Reproducir
+                    btnIcon.innerHTML = `<path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 002 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 002 0V8a1 1 0 00-1-1z"/>`;
+                    
+                    const slider = document.getElementById('progSliderPrac');
+                    if (parseInt(slider.value) >= this.numItems + 1) slider.value = 0;
+                    this.initDOM();
+                    
+                    this.timer = setInterval(() => {
+                        let v = parseInt(slider.value);
+                        if (v >= this.numItems + 1) {
+                            clearInterval(this.timer);
+                            this.timer = null;
+                            btnIcon.innerHTML = `<path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/>`;
+                        } else {
+                            slider.value = v + 1;
+                            this.initDOM();
+                        }
+                    }, 800); // Velocidad (ms)
+                }
+            },
+            stopAutoPlay: function() {
+                if (this.timer) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                    document.querySelector('#btnPlay svg').innerHTML = `<path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/>`;
+                }
+            }
+        };
+
+        // Renderizado del SVG principal
+        function renderSVG(C, q, n, iRate) {
+            const svg = document.getElementById('svgMain');
+            
+            // Base: Definir flecha
+            let htmlStr = `
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb" />
+                    </marker>
+                </defs>
+            `;
+            
+            // Coordenadas fijas
+            const x0 = 420;  // t=0
+            const xN = 880;  // t=n
+            const yAxis = 80;
+            
+            // Eje Temporal
+            htmlStr += `<line x1="${x0-20}" y1="${yAxis}" x2="${xN+20}" y2="${yAxis}" stroke="#64748b" stroke-width="2" />`;
+            
+            // Ticks (Líneas divisorias y momentos)
+            for (let k = 0; k <= n; k++) {
+                const px = x0 + k * ((xN - x0) / n);
+                htmlStr += `<line x1="${px}" y1="${yAxis - 5}" x2="${px}" y2="${yAxis + 5}" stroke="#64748b" stroke-width="2" />`;
+                htmlStr += `<text x="${px}" y="${yAxis - 15}" text-anchor="middle" fill="#475569" font-size="14" font-weight="600">${k}</text>`;
+                
+                // Mostrar la cuota real en cada período
+                if (k > 0) {
+                    const C_k = C * Math.pow(q, k - 1);
+                    htmlStr += `<text x="${px}" y="${yAxis - 35}" text-anchor="middle" fill="#2563eb" font-size="13" font-weight="700">$${C_k.toLocaleString('es-AR', {maximumFractionDigits: 0})}</text>`;
+                }
+            }
+            
+            let totalVA = 0;
+            let lastY = yAxis;
+            
+            // Generación de Fórmulas y Flechas de actualización
+            for (let k = 1; k <= n; k++) {
+                const px = x0 + k * ((xN - x0) / n);
+                const C_k = C * Math.pow(q, k - 1);
+                const v_k = Math.pow(1 + iRate, -k);
+                const VA_k = C_k * v_k;
+                
+                totalVA += VA_k;
+                
+                const pyStart = yAxis + 10;
+                const pyEnd = yAxis + 25 + k * 45; // Escalonamiento vertical
+                lastY = pyEnd;
+                
+                // Camino de la flecha
+                const pathData = `M ${px} ${pyStart} L ${px} ${pyEnd} L ${x0 + 15} ${pyEnd}`;
+                htmlStr += `<path id="arrow-${k}" d="${pathData}" class="arrow-path" marker-end="url(#arrowhead)" />`;
+                
+                // Fórmula de actualización para el momento K
+                htmlStr += `
+                    <foreignObject x="0" y="${pyEnd - 22}" width="${x0 - 5}" height="50">
+                        <div id="math-step-${k}" class="math-expr w-full h-full flex justify-end items-center pr-4 text-[15px] text-slate-700 font-medium">
+                            $$ C_{${k}} \\cdot (1+i)^{-${k}} = ${kNum(C_k)} \\cdot (1+${kNum(iRate)})^{-${k}} = ${kNum(VA_k)} $$
+                        </div>
+                    </foreignObject>
+                `;
+            }
+            
+            // Línea de Total
+            const lineY = lastY + 35;
+            htmlStr += `<line id="total-line-Prac" class="math-expr" x1="${x0-150}" y1="${lineY}" x2="${x0}" y2="${lineY}" stroke="#cbd5e1" stroke-width="2" />`;
+            
+            // Fórmula Sumatoria Total
+            htmlStr += `
+                <foreignObject x="0" y="${lineY + 5}" width="${x0}" height="60">
+                    <div id="math-total-Prac" class="math-expr w-full h-full flex justify-end items-start pr-4 text-blue-800 font-bold">
+                        <span class="text-lg">$$V_{n_g} = \\mathbf{${kNum(totalVA)}}$$</span>
+                    </div>
+                </foreignObject>
+            `;
+            
+            svg.innerHTML = htmlStr;
+            
+            // Ajustar altura del SVG dinámicamente según la cantidad de 'n'
+            svg.setAttribute('height', lineY + 70);
+        }
+
+        // Función Principal de Actualización
+        function updateRender() {
+            animPrac.stopAutoPlay();
+            
+            const C = parseFloat(document.getElementById('slider-C').value);
+            const q = parseFloat(document.getElementById('slider-q').value);
+            const n = parseInt(document.getElementById('slider-n').value);
+            const iRate = parseFloat(document.getElementById('slider-i').value) / 100;
+            
+            // Textos UI
+            document.getElementById('val-C').textContent = formatMoney(C);
+            document.getElementById('val-q').textContent = `× ${q.toFixed(2)}`;
+            document.getElementById('val-n').textContent = n;
+            document.getElementById('val-i').textContent = `${(iRate*100).toFixed(0)}%`;
+            
+            // Actualizar Límites de Animación
+            const sliderPrac = document.getElementById('progSliderPrac');
+            sliderPrac.max = n + 1;
+            sliderPrac.value = 0; // Reiniciar
+            animPrac.numItems = n;
+            
+            // 1. Dibujar SVG
+            renderSVG(C, q, n, iRate);
+            
+            // 2. Renderizar KaTeX
+            renderMathInElement(document.getElementById('svgMain'), {
+                delimiters: [{left: '$$', right: '$$', display: true}],
+                throwOnError: false
+            });
+            
+            // 3. Ocultar todos (preparar para animar)
+            animPrac.initDOM();
+        }
+
+        // Eventos en los Sliders
+        document.addEventListener("DOMContentLoaded", () => {
+            // Renderizar header
+            renderMathInElement(document.body, {
+                delimiters: [{left: '$', right: '$', display: false}],
+                throwOnError: false
+            });
+
+            // Registrar Listeners
+            document.getElementById('slider-C').addEventListener('input', updateRender);
+            document.getElementById('slider-q').addEventListener('input', updateRender);
+            document.getElementById('slider-n').addEventListener('input', updateRender);
+            document.getElementById('slider-i').addEventListener('input', updateRender);
+            
+            document.getElementById('progSliderPrac').addEventListener('input', () => {
+                animPrac.stopAutoPlay();
+                animPrac.initDOM();
+            });
+            document.getElementById('btnPlay').addEventListener('click', () => animPrac.play());
+
+            // Iniciar por primera vez
+            updateRender();
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esquema Temporal de Rentas Geométricas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+        }
+
+        /* Contenedores de gráficos */
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 380px; 
+        }
+
+        /* Estilos para el eje temporal */
+        .timeline-axis {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background-color: #64748b;
+            z-index: 10;
+        }
+
+        .timeline-tick {
+            position: absolute;
+            width: 2px;
+            height: 12px;
+            background-color: #64748b;
+            top: -5px;
+            transform: translateX(-50%);
+        }
+
+        /* Contenedor de las barras apiladas (posicionado absolutamente en el eje X) */
+        .bar-container {
+            position: absolute;
+            transform: translateX(-50%);
+            width: 32px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Bloques individuales de las barras */
+        .base-bar { background-color: #2563eb; width: 100%; position: absolute; transition: all 0.3s ease; }
+        .base-bar.negative { background-color: #ef4444; } 
+        
+        .increment-bar {
+            background-color: #93c5fd; 
+            width: 100%; 
+            position: absolute; 
+            border-top: 1px solid rgba(255,255,255,0.4);
+            transition: all 0.3s ease;
+        }
+        .decrement-bar {
+            background-color: rgba(239, 68, 68, 0.15); 
+            border: 1px dashed #ef4444;
+            width: 100%; 
+            position: absolute; 
+            transition: all 0.3s ease;
+        }
+
+        .solid-bar {
+            width: 100%;
+            position: absolute;
+            cursor: pointer;
+            transition: filter 0.2s, height 0.3s ease, bottom 0.3s ease;
+        }
+        .solid-bar.positive { background-color: #3b82f6; }
+        .solid-bar.negative { background-color: #ef4444; }
+        .solid-bar:hover { filter: brightness(1.2); }
+
+        /* Animación retrospectiva (Ghost Bar) */
+        #ghost-bar {
+            position: absolute;
+            width: 32px;
+            z-index: 50;
+            pointer-events: none;
+            opacity: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        #ghost-bar.positive {
+            background: linear-gradient(to top, rgba(37, 99, 235, 0.8), rgba(147, 197, 253, 0.8));
+            border: 2px dashed #1e40af;
+            border-radius: 4px 4px 0 0;
+        }
+        #ghost-bar.negative {
+            background: linear-gradient(to bottom, rgba(239, 68, 68, 0.8), rgba(252, 165, 165, 0.8));
+            border: 2px dashed #991b1b;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .ghost-label {
+            background: #1e293b;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            position: absolute;
+        }
+
+        .custom-slider { accent-color: #2563eb; }
+        
+        /* Capa de animación para el Gráfico 1 */
+        #relation-layer { transition: opacity 0.2s; }
+    </style>
+</head>
+<body class="p-6 min-h-screen flex flex-col gap-6">
+
+    <header>
+        <h1 class="text-2xl font-bold text-slate-800">Descomposición Temporal y Actualización (Progresión Geométrica)</h1>
+        <p class="text-sm text-slate-500 mt-1">Modelo interactivo de rentas variables geométricas (<span class="font-serif italic">C<sub>k</sub> = C<sub>k-1</sub> &times; q</span>).</p>
+    </header>
+
+    <!-- BLOQUE ÚNICO DE SLIDERS -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-2">
+                <label class="text-sm font-semibold text-slate-700">Cuota Base (C)</label>
+                <span id="val-C" class="font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded text-sm"></span>
+            </div>
+            <input type="range" id="slider-C" min="100" max="1000" value="300" step="50" class="w-full custom-slider">
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-2">
+                <label class="text-sm font-semibold text-slate-700">Razón (q)</label>
+                <span id="val-q" class="font-bold text-purple-600 bg-purple-100 px-2 py-0.5 rounded text-sm"></span>
+            </div>
+            <!-- Modificado para multiplicador geométrico -->
+            <input type="range" id="slider-q" min="0.5" max="1.8" value="1.15" step="0.05" class="w-full custom-slider">
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-2">
+                <label class="text-sm font-semibold text-slate-700">Períodos (n)</label>
+                <span id="val-n" class="font-bold text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded text-sm"></span>
+            </div>
+            <input type="range" id="slider-n" min="2" max="12" value="6" step="1" class="w-full custom-slider">
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-2">
+                <label class="text-sm font-semibold text-slate-700">Tasa Interés (i)</label>
+                <span id="val-i" class="font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded text-sm"></span>
+            </div>
+            <input type="range" id="slider-i" min="1" max="20" value="10" step="1" class="w-full custom-slider">
+        </div>
+
+    </section>
+
+    <!-- ALERTA DE ADVERTENCIA (Límite matemático o económico) -->
+    <div id="absurdity-warning" class="hidden bg-amber-50 border-l-4 border-amber-500 p-4 rounded shadow-sm">
+        <div class="flex items-center">
+            <svg class="h-6 w-6 text-amber-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <div>
+                <h3 class="text-amber-800 font-bold text-sm">Cuota Residual Detectada</h3>
+                <p id="absurdity-text" class="text-amber-700 text-xs mt-1">La cuota tiende a cero.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRÁFICO 1: Apilamiento (Stack) de Cuotas -->
+    <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <div class="flex justify-between items-end mb-4">
+            <h2 class="text-md font-bold text-slate-700">1. Formación Geométrica de las Cuotas</h2>
+            <p class="text-xs text-amber-600 font-semibold bg-amber-50 px-3 py-1 rounded-full animate-pulse">
+                Pasa el mouse sobre una cuota para ver cómo se forma (<span class="font-serif italic">C<sub>k</sub> = C<sub>k-1</sub> &times; q</span>)
+            </p>
+        </div>
+        
+        <div class="chart-wrapper" id="chart-stack-container">
+            <!-- Capa de animación de relaciones -->
+            <div id="relation-layer" class="absolute inset-0 pointer-events-none opacity-0 z-20">
+                <div id="rel-line-h" class="absolute border-t-2 border-dashed border-amber-500"></div>
+                <div id="rel-line-v" class="absolute border-l-2 border-dashed border-amber-500"></div>
+                <div id="rel-label" class="absolute bg-amber-100 text-amber-900 text-[11px] font-bold px-1.5 py-0.5 rounded shadow-sm"></div>
+            </div>
+            <!-- Eje X y barras se inyectan acá -->
+        </div>
+    </section>
+
+    <!-- GRÁFICO 2: Actualización Dinámica al Hover -->
+    <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+        <div class="flex justify-between items-end mb-4">
+            <h2 class="text-md font-bold text-slate-700">2. Marcha Retrospectiva (Valor Actual)</h2>
+            <p class="text-xs text-blue-600 font-semibold bg-blue-50 px-3 py-1 rounded-full animate-pulse">
+                Pasa el mouse sobre una cuota para actualizarla al momento 0
+            </p>
+        </div>
+        
+        <div class="chart-wrapper" id="chart-discount-container">
+            <!-- Barra Fantasma para la animación -->
+            <div id="ghost-bar">
+                <div class="ghost-label" id="ghost-label-text"></div>
+            </div>
+            <!-- Eje X y barras se inyectan acá -->
+        </div>
+    </section>
+
+    <script>
+        const sliderC = document.getElementById('slider-C');
+        const sliderQ = document.getElementById('slider-q');
+        const sliderN = document.getElementById('slider-n');
+        const sliderI = document.getElementById('slider-i');
+
+        const valC = document.getElementById('val-C');
+        const valQ = document.getElementById('val-q');
+        const valN = document.getElementById('val-n');
+        const valI = document.getElementById('val-i');
+        
+        const absurdityWarning = document.getElementById('absurdity-warning');
+        const absurdityText = document.getElementById('absurdity-text');
+
+        const chartStackContainer = document.getElementById('chart-stack-container');
+        const chartDiscountContainer = document.getElementById('chart-discount-container');
+        
+        const relationLayer = document.getElementById('relation-layer');
+        const relLineH = document.getElementById('rel-line-h');
+        const relLineV = document.getElementById('rel-line-v');
+        const relLabel = document.getElementById('rel-label');
+
+        const ghostBar = document.getElementById('ghost-bar');
+        const ghostLabelText = document.getElementById('ghost-label-text');
+
+        const formatMoney = (val) => {
+            const isNeg = val < 0;
+            // Para geométricas es mejor mostrar decimales si los montos varían mucho
+            return (isNeg ? '-' : '') + '$' + Math.abs(val).toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        };
+
+        function renderCharts() {
+            const C = parseFloat(sliderC.value);
+            const q = parseFloat(sliderQ.value); // Razón geométrica multiplicativa
+            const n = parseInt(sliderN.value);
+            const iRate = parseFloat(sliderI.value) / 100;
+
+            valC.textContent = formatMoney(C);
+            valQ.textContent = `x ${q.toFixed(2)}`;
+            
+            if (q < 1) valQ.className = "font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded text-sm";
+            else if (q === 1) valQ.className = "font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded text-sm";
+            else valQ.className = "font-bold text-purple-600 bg-purple-100 px-2 py-0.5 rounded text-sm";
+            
+            valN.textContent = n;
+            valI.textContent = sliderI.value + '%';
+
+            // 1. Detección de Cuota Insignificante (Límite Económico)
+            let firstAbsurdPeriod = -1;
+            for(let k=1; k<=n; k++) {
+                let cuota = C * Math.pow(q, k - 1);
+                if(cuota < 0.01) {
+                    firstAbsurdPeriod = k;
+                    break;
+                }
+            }
+
+            if (firstAbsurdPeriod !== -1) {
+                absurdityWarning.classList.remove('hidden');
+                let absurdVal = C * Math.pow(q, firstAbsurdPeriod - 1);
+                absurdityText.innerHTML = `Debido a la alta tasa de decrecimiento, la cuota se vuelve prácticamente nula (< $0.01) a partir del <strong>período ${firstAbsurdPeriod}</strong> (${formatMoney(absurdVal)}).`;
+            } else {
+                absurdityWarning.classList.add('hidden');
+            }
+
+            // 2. Limpiar Gráficos
+            Array.from(chartStackContainer.children).forEach(child => {
+                if(child.id !== 'relation-layer') child.remove();
+            });
+            Array.from(chartDiscountContainer.children).forEach(child => {
+                if(child.id !== 'ghost-bar') child.remove();
+            });
+
+            // 3. Cálculo de Escalas
+            let maxQuota = 0;
+            let minQuota = 0; // En progresión geométrica estándar con C>0 y q>0, minQuota será 0 para la escala.
+            
+            for(let k=1; k<=n; k++) {
+                let cuota = C * Math.pow(q, k - 1);
+                if (cuota > maxQuota) maxQuota = cuota;
+            }
+
+            const totalRange = maxQuota - minQuota;
+            
+            // Altura de dibujo disponible
+            const MAX_PX = 280; 
+            const scaleFactor = totalRange === 0 ? 1 : (MAX_PX / totalRange);
+            
+            // Ubicación del Eje X (siempre abajo ya que no hay valores negativos reales)
+            const axisBottomPx = 40; 
+
+            // Función para dibujar Ejes
+            const drawAxis = (container) => {
+                const axis = document.createElement('div');
+                axis.className = 'timeline-axis';
+                axis.style.bottom = `${axisBottomPx}px`;
+                container.appendChild(axis);
+                return axis;
+            };
+
+            const axis1 = drawAxis(chartStackContainer);
+            const axis2 = drawAxis(chartDiscountContainer);
+
+            const getXPositionPercent = (k) => (k / (n + 0.5)) * 100;
+
+            // Dibujar origen t=0
+            [axis1, axis2].forEach(axis => {
+                const tick = document.createElement('div');
+                tick.className = 'timeline-tick';
+                tick.style.left = `${getXPositionPercent(0)}%`;
+                
+                const label = document.createElement('div');
+                label.className = 'absolute text-xs font-bold text-slate-800 -bottom-6';
+                label.style.left = `${getXPositionPercent(0)}%`;
+                label.style.transform = 'translateX(-50%)';
+                label.textContent = '0';
+                
+                axis.appendChild(tick);
+                axis.appendChild(label);
+            });
+
+            // 4. Bucle principal para dibujar cuotas
+            for (let k = 1; k <= n; k++) {
+                const currentQuota = C * Math.pow(q, k - 1);
+                const prevQuota = k > 1 ? C * Math.pow(q, k - 2) : null;
+                const posPercent = getXPositionPercent(k);
+                const prevPosPercent = k > 1 ? getXPositionPercent(k - 1) : null;
+
+                // ==========================================
+                // GRÁFICO 1: Formación / Stack Geométrico
+                // ==========================================
+                const tick1 = document.createElement('div');
+                tick1.className = 'timeline-tick';
+                tick1.style.left = `${posPercent}%`;
+                
+                const label1 = document.createElement('div');
+                label1.className = 'absolute text-xs font-medium text-slate-600 -bottom-6';
+                label1.style.left = `${posPercent}%`;
+                label1.style.transform = 'translateX(-50%)';
+                label1.textContent = k;
+
+                // Contenedor principal de la columna k
+                const stackContainer = document.createElement('div');
+                stackContainer.className = 'bar-container group';
+                stackContainer.style.left = `${posPercent}%`;
+                stackContainer.style.bottom = `${axisBottomPx}px`;
+
+                if (q >= 1) {
+                    // Creciente o Constante: Base + Incrementos multiplicativos apilados
+                    const baseBar = document.createElement('div');
+                    baseBar.className = 'base-bar';
+                    baseBar.style.bottom = `0px`;
+                    baseBar.style.height = `${C * scaleFactor}px`;
+                    stackContainer.appendChild(baseBar);
+
+                    for (let j = 1; j < k; j++) {
+                        const valAnterior = C * Math.pow(q, j - 1);
+                        const valActual = C * Math.pow(q, j);
+                        const incremento = valActual - valAnterior;
+                        
+                        const incBar = document.createElement('div');
+                        incBar.className = 'increment-bar';
+                        incBar.style.backgroundColor = '#d8b4fe'; // Morado para diferenciarlo de la aritmética
+                        incBar.style.bottom = `${valAnterior * scaleFactor}px`;
+                        incBar.style.height = `${incremento * scaleFactor}px`;
+                        stackContainer.appendChild(incBar);
+                    }
+                } else {
+                    // Decreciente: Se dibuja el neto, y por encima las "pérdidas" punteadas
+                    const netBar = document.createElement('div');
+                    netBar.className = `base-bar`;
+                    netBar.style.bottom = `0px`;
+                    netBar.style.height = `${currentQuota * scaleFactor}px`;
+                    stackContainer.appendChild(netBar);
+
+                    for (let j = 1; j < k; j++) {
+                        const valAnterior = C * Math.pow(q, j - 1);
+                        const valActual = C * Math.pow(q, j);
+                        const decremento = valAnterior - valActual;
+                        
+                        const decBar = document.createElement('div');
+                        decBar.className = 'decrement-bar';
+                        // El bloque se apoya sobre el valor actual hasta llegar al anterior
+                        decBar.style.bottom = `${valActual * scaleFactor}px`;
+                        decBar.style.height = `${decremento * scaleFactor}px`;
+                        stackContainer.appendChild(decBar);
+                    }
+                }
+
+                // Lógica de Animación (Relación multiplicativa con la cuota anterior)
+                stackContainer.addEventListener('mouseenter', () => {
+                    if (k > 1) {
+                        const yPrev = prevQuota * scaleFactor;
+                        const yCurr = currentQuota * scaleFactor;
+                        
+                        // Linea Horizontal (desde centro de k-1 hasta centro de k)
+                        relLineH.style.left = `${prevPosPercent}%`;
+                        relLineH.style.width = `${posPercent - prevPosPercent}%`;
+                        relLineH.style.bottom = `${axisBottomPx + yPrev}px`;
+                        
+                        // Linea Vertical (en k, sube o baja)
+                        relLineV.style.left = `${posPercent}%`;
+                        
+                        if (q >= 1) {
+                            relLineV.style.bottom = `${axisBottomPx + yPrev}px`;
+                            relLineV.style.height = `${(yCurr - yPrev)}px`;
+                            
+                            relLabel.textContent = `× ${q.toFixed(2)}`;
+                            relLabel.className = 'absolute bg-purple-100 text-purple-800 text-[11px] font-bold px-1.5 py-0.5 rounded shadow-sm';
+                            relLabel.style.bottom = `${axisBottomPx + yPrev + (yCurr - yPrev)/2}px`;
+                        } else {
+                            relLineV.style.bottom = `${axisBottomPx + yCurr}px`;
+                            relLineV.style.height = `${(yPrev - yCurr)}px`;
+                            
+                            relLabel.textContent = `× ${q.toFixed(2)}`;
+                            relLabel.className = 'absolute bg-red-100 text-red-800 text-[11px] font-bold px-1.5 py-0.5 rounded shadow-sm';
+                            relLabel.style.bottom = `${axisBottomPx + yCurr + (yPrev - yCurr)/2}px`;
+                        }
+                        relLabel.style.left = `calc(${posPercent}% + 15px)`;
+                        
+                        relationLayer.style.opacity = '1';
+                    }
+                });
+
+                stackContainer.addEventListener('mouseleave', () => {
+                    relationLayer.style.opacity = '0';
+                });
+
+                axis1.appendChild(tick1);
+                axis1.appendChild(label1);
+                chartStackContainer.appendChild(stackContainer);
+
+
+                // ==========================================
+                // GRÁFICO 2: Actualización Financiera
+                // ==========================================
+                const tick2 = document.createElement('div');
+                tick2.className = 'timeline-tick';
+                tick2.style.left = `${posPercent}%`;
+
+                const label2 = document.createElement('div');
+                label2.className = 'absolute text-xs font-medium text-slate-600 -bottom-6';
+                label2.style.left = `${posPercent}%`;
+                label2.style.transform = 'translateX(-50%)';
+                label2.textContent = k;
+
+                const solidContainer = document.createElement('div');
+                solidContainer.className = 'bar-container';
+                solidContainer.style.left = `${posPercent}%`;
+                solidContainer.style.bottom = `${axisBottomPx}px`;
+
+                const solidBar = document.createElement('div');
+                solidBar.className = `solid-bar positive`;
+                
+                solidBar.style.bottom = `0px`;
+                solidBar.style.height = `${currentQuota * scaleFactor}px`;
+                
+                // Etiqueta nominal superior
+                const topLabel2 = document.createElement('div');
+                topLabel2.className = `absolute text-[10px] font-semibold transition-opacity pointer-events-none text-blue-600`;
+                topLabel2.style.left = `${posPercent}%`;
+                topLabel2.style.transform = 'translateX(-50%)';
+                topLabel2.textContent = formatMoney(currentQuota);
+                topLabel2.style.bottom = `${axisBottomPx + currentQuota * scaleFactor + 6}px`;
+
+                solidContainer.appendChild(solidBar);
+                axis2.appendChild(tick2);
+                axis2.appendChild(label2);
+                chartDiscountContainer.appendChild(solidContainer);
+                chartDiscountContainer.appendChild(topLabel2);
+
+                // ---- LÓGICA INTERACTIVA DE RETROSPECCIÓN ----
+                solidBar.addEventListener('mouseenter', () => {
+                    const presentValue = currentQuota / Math.pow((1 + iRate), k);
+                    
+                    topLabel2.style.opacity = '0';
+                    
+                    // 1. Configuración Inicial del Fantasma (Reset)
+                    ghostBar.style.transition = 'none';
+                    ghostBar.style.left = `${posPercent}%`;
+                    ghostBar.style.height = `${currentQuota * scaleFactor}px`;
+                    ghostBar.style.bottom = `${axisBottomPx}px`;
+                    ghostBar.className = 'positive';
+                    ghostBar.style.opacity = '1';
+                    
+                    ghostLabelText.style.top = '-25px';
+                    ghostLabelText.style.bottom = 'auto';
+
+                    ghostLabelText.textContent = formatMoney(currentQuota);
+                    ghostLabelText.className = `ghost-label bg-blue-900`;
+
+                    // Forzar Reflow
+                    void ghostBar.offsetWidth;
+
+                    // 2. Animación hacia t=0
+                    ghostBar.style.transition = 'left 0.8s cubic-bezier(0.25, 1, 0.5, 1), height 0.8s cubic-bezier(0.25, 1, 0.5, 1), bottom 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+                    ghostBar.style.left = `${getXPositionPercent(0)}%`;
+                    ghostBar.style.height = `${presentValue * scaleFactor}px`;
+                    
+                    setTimeout(() => {
+                        ghostLabelText.innerHTML = `PV = ${formatMoney(presentValue)}`;
+                    }, 200);
+                });
+
+                solidBar.addEventListener('mouseleave', () => {
+                    ghostBar.style.opacity = '0';
+                    topLabel2.style.opacity = '1';
+                });
+            }
+        }
+
+        // Listeners
+        sliderC.addEventListener('input', renderCharts);
+        sliderQ.addEventListener('input', renderCharts);
+        sliderN.addEventListener('input', renderCharts);
+        sliderI.addEventListener('input', renderCharts);
+
+        window.addEventListener('resize', renderCharts);
+
+        // Start
+        renderCharts();
+
+    </script>
+</body>
+</html>
