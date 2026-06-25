@@ -8,17 +8,6 @@ const data = {
 
 Las rentas temporarias variables en ley geométrica también admiten la clasificación en inmediatas, diferidas y anticipadas, conforme a la relación existente entre la época inicial y la época de valuación. Se comenzará primeramente con el análisis de la que se denomina renta madre, es decir, la inmediata, y a partir de ella fácilmente se obtendrán las fórmulas para las diferidas y anticipadas.
 `
-    },
-    {
-      "type": "text",
-      "content": `<b>Rentas temporarias inmediatas con cuotas variables en progresión geométrica.</b>`
-    },
-    {
-      "type": "interactive_graphic",
-      "title": "Simulación Interactiva",
-      "src": "/simuladores/u04_renta_progresion_geometrica.html",
-      "displayMode": "inline",
-      "height": "550px"
     }
   ],
   "Glosario": [],

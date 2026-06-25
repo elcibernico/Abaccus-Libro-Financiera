@@ -14,7 +14,15 @@ Por ejemplo, si las cuotas crecen en un 30%, la tasa unitaria de crecimiento ser
 
 Asimismo, si las cuotas decrecen en un 10%, la tasa unitaria de decrecimiento será $\\left( -0,10 \\right)$ y la razón de la progresión será igual a 0,90 (o sea, $1-0,10$).
 `
+    },
+    {
+      "type": "interactive_graphic",
+      "title": "Descomposición Temporal y Actualización de Cuotas Variables en Descomposición Temporal y Actualización",
+      "src": "/simuladores/u04_pto03_1_2_descomposicion_temporal_actualizacion_progresión_geometrica.html",
+      "displayMode": "inline",
+      "height": "550px"
     }
+
   ],
   "Glosario": [],
   "Casos Prácticos": [],
