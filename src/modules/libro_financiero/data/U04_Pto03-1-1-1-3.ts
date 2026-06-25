@@ -7,7 +7,7 @@ const data = {
       "content": `<u><b>Valores que puede tomar la razón </b></u>$r$
 - Si $r>0⇒$ cuotas crecientes.
 - Si $r=0⇒$ cuotas constantes y se obtiene la fórmula particular de las rentas temporarias inmediatas con cuotas constantes.
-- La razón $r$ puede ser negativa, en cuyo caso las cuotas son decrecientes`
+- Si $r<0⇒$ cuotas decrecientes. La razón $r$ puede ser negativa, en cuyo caso las cuotas son decrecientes`
     },
     {
       "type": "text",
