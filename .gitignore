@@ -23,6 +23,10 @@ next-env.d.ts
 .env*.local
 .env.local
 
+# Claves de Google Cloud (Service Account)
+/src/config/keys/*.json
+/src/config/keys/google-service-account.json
+
 # Carpeta de recursos privados del usuario (Exclusiva local, nunca en GitHub)
 /Paperwork/
 /Unidades/

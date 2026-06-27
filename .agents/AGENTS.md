@@ -22,3 +22,11 @@ Cada vez que el usuario solicite parsear un archivo `.docx` (ej: "parseá el arc
 
 5. **Validación de Integridad**:
    - Hacer un cotejo línea por línea del archivo `.ts` generado contra el `.docx` original para certificar que no falten oraciones, aclaraciones o líneas completas de texto.
+
+## Protocolo de Calidad de Código Frontend
+
+6. **Evitar styled-jsx anidados**:
+   - En Next.js, **nunca** definas etiquetas `<style jsx>` dentro de bloques condicionales u otros elementos hijos anidados en el árbol JSX. Todos los estilos de styled-jsx deben declararse en la raíz del componente (o combinarse en un único bloque de estilo al final del archivo).
+
+7. **Verificación Obligatoria en Localhost**:
+   - Antes de dar por finalizada una tarea frontend, el agente debe ejecutar el compilador (`npx tsc --noEmit`) y, si es posible, corroborar la correcta compilación del servidor de desarrollo local para evitar errores de renderizado en caliente en el navegador (como elementos rotos o problemas de hidratación).
