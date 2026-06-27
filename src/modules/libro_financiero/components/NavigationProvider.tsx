@@ -6,11 +6,13 @@ import { TabType } from './ContentTabs';
 interface NavigationContextType {
   activeUnit: string;
   activeTopic: string;
+  contentTopic: string;
   activeTab: TabType;
   availableTabs: TabType[];
   isSidebarOpen: boolean;
   setActiveUnit: (unitId: string) => void;
   setActiveTopic: (topicId: string) => void;
+  setContentTopic: (topicId: string) => void;
   setActiveTab: (tab: TabType) => void;
   setAvailableTabs: (tabs: TabType[]) => void;
   toggleSidebar: () => void;
@@ -22,6 +24,7 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const [activeUnit, setActiveUnit] = useState<string>('U01');
   const [activeTopic, setActiveTopic] = useState<string>('U01_Pto01');
+  const [contentTopic, setContentTopic] = useState<string>('U01_Pto01');
   const [activeTab, setActiveTab] = useState<TabType>('Desarrollo');
   const [availableTabs, setAvailableTabs] = useState<TabType[]>(['Desarrollo', 'Glosario', 'Casos Prácticos', 'Autoevaluación', 'Gráficos']);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -38,11 +41,13 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     <NavigationContext.Provider value={{
       activeUnit,
       activeTopic,
+      contentTopic,
       activeTab,
       availableTabs,
       isSidebarOpen,
       setActiveUnit,
       setActiveTopic,
+      setContentTopic,
       setActiveTab,
       setAvailableTabs,
       toggleSidebar,
@@ -59,12 +64,14 @@ export function useNavigation() {
     // Fallback: provide safe defaults to avoid crashing when provider is missing.
     return {
       activeUnit: 'U01',
-      activeTopic: '1.1',
+      activeTopic: 'U01_Pto01',
+      contentTopic: 'U01_Pto01',
       activeTab: 'Desarrollo' as TabType,
       availableTabs: ['Desarrollo', 'Glosario', 'Casos Prácticos', 'Autoevaluación', 'Gráficos'],
       isSidebarOpen: true,
       setActiveUnit: () => {},
       setActiveTopic: () => {},
+      setContentTopic: () => {},
       setActiveTab: () => {},
       setAvailableTabs: () => {},
       toggleSidebar: () => {},

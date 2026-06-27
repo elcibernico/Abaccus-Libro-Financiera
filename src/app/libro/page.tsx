@@ -1,6 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 import { useNavigation } from '@/modules/libro_financiero/components/NavigationProvider';
+import { ScrollspyRegistry } from '@/modules/libro_financiero/hooks/useScrollspy';
 import { dataRegistry } from '@/modules/libro_financiero/data/dataRegistry';
 import Sidebar from '@/modules/libro_financiero/components/Sidebar';
 import ResizableSidebar from '@/visual/components/layout/ResizableSidebar';
@@ -63,6 +64,8 @@ function getDescendantDataFiles(activeId: string): string[] {
 export default function LibroPage() {
   const { 
     activeTopic, 
+    setActiveTopic,
+    contentTopic,
     activeTab, 
     setActiveTab, 
     setAvailableTabs,
@@ -70,16 +73,16 @@ export default function LibroPage() {
     setIsSidebarOpen
   } = useNavigation();
 
-  // Scroll automático al tope de página al cambiar tema
+  // Scroll automático al tope de página al cambiar tema cargado
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [activeTopic]);
+  }, [contentTopic]);
 
-  const targetDataFiles = getDescendantDataFiles(activeTopic);
-  const filesToLoad = targetDataFiles.length > 0 ? targetDataFiles : [activeTopic];
+  const targetDataFiles = getDescendantDataFiles(contentTopic);
+  const filesToLoad = targetDataFiles.length > 0 ? targetDataFiles : [contentTopic];
 
   const topicData: TopicData = {
-    id: activeTopic,
+    id: contentTopic,
     title: '',
     Desarrollo: [],
     Glosario: [],
@@ -88,21 +91,30 @@ export default function LibroPage() {
     "Gráficos": []
   };
 
+  // Construir grupos de desarrollo por subtema
+  const developmentGroups: Array<{ fileKey: string; blocks: any[] }> = [];
+
   filesToLoad.forEach((fileKey) => {
     const data = dataRegistry[fileKey];
     if (data) {
       if (!topicData.title && data.title) {
         topicData.title = data.title;
       }
+      
+      const subtopicBlocks: any[] = [];
       if (Array.isArray(data.Desarrollo)) {
         if (filesToLoad.length > 1 && data.title) {
-          topicData.Desarrollo.push({
+          subtopicBlocks.push({
             type: 'text',
             content: `### ${data.title}`
           });
         }
-        topicData.Desarrollo.push(...data.Desarrollo);
+        subtopicBlocks.push(...data.Desarrollo);
       }
+      if (subtopicBlocks.length > 0) {
+        developmentGroups.push({ fileKey, blocks: subtopicBlocks });
+      }
+
       if (Array.isArray(data.Glosario)) {
         topicData.Glosario.push(...data.Glosario);
       }
@@ -118,7 +130,7 @@ export default function LibroPage() {
     }
   });
 
-  const hasContent = topicData.Desarrollo.length > 0 || 
+  const hasContent = developmentGroups.length > 0 || 
                      topicData.Glosario.length > 0 || 
                      topicData["Casos Prácticos"].length > 0 || 
                      topicData.Autoevaluación.length > 0 ||
@@ -131,7 +143,7 @@ export default function LibroPage() {
     if (resolvedTopicData) {
       const tabs: TabType[] = [];
       
-      if (resolvedTopicData.Desarrollo && resolvedTopicData.Desarrollo.length > 0) {
+      if (developmentGroups.length > 0) {
         tabs.push('Desarrollo');
       }
       if (resolvedTopicData.Glosario && resolvedTopicData.Glosario.length > 0) {
@@ -153,7 +165,7 @@ export default function LibroPage() {
         setActiveTab(tabs[0]);
       }
     }
-  }, [activeTopic]);
+  }, [contentTopic]);
 
   const renderTextContent = (content: string) => {
     if (!content) return '';
@@ -243,7 +255,7 @@ export default function LibroPage() {
   };
 
   const renderActiveTabContent = () => {
-    if (!resolvedTopicData) {
+    if (!resolvedTopicData && developmentGroups.length === 0 && topicData.Glosario.length === 0 && topicData["Casos Prácticos"].length === 0 && topicData.Autoevaluación.length === 0 && topicData["Gráficos"].length === 0) {
       return (
         <div className="empty-state">
           <p>Seleccione un tema del menú lateral para ver su contenido interactivo.</p>
@@ -255,35 +267,44 @@ export default function LibroPage() {
       case 'Desarrollo':
         return (
           <div className="development-content">
-            {resolvedTopicData.Desarrollo.map((block: any, idx: number) => {
-              if (block.type === 'interactive_graphic') {
-                return (
-                  <InteractiveGraphic
-                    key={idx}
-                    src={block.src}
-                    title={block.title}
-                    displayMode={block.displayMode || 'inline'}
-                    height={block.height}
-                  />
-                );
-              }
-              if (block.type === 'image') {
-                return (
-                  <div key={idx} className="development-image-container glass-card" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.25rem' }}>
-                    <img
-                      src={block.src}
-                      alt={block.alt || 'Imagen de apoyo'}
-                      style={{ maxWidth: '100%', height: 'auto', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
-                    />
-                  </div>
-                );
-              }
-              return (
-                <div key={idx} className="development-block glass-card">
-                  {renderTextContent(block.content)}
-                </div>
-              );
-            })}
+            {developmentGroups.map((group) => (
+              <div 
+                key={group.fileKey} 
+                id={`scrollspy-${group.fileKey}`} 
+                className="scrollspy-section"
+                style={{ scrollMarginTop: '150px' }} // Ayuda a que el scroll de anclas no quede tapado por el header
+              >
+                {group.blocks.map((block: any, idx: number) => {
+                  if (block.type === 'interactive_graphic') {
+                    return (
+                      <InteractiveGraphic
+                        key={idx}
+                        src={block.src}
+                        title={block.title}
+                        displayMode={block.displayMode || 'inline'}
+                        height={block.height}
+                      />
+                    );
+                  }
+                  if (block.type === 'image') {
+                    return (
+                      <div key={idx} className="development-image-container glass-card" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.25rem', marginBottom: '1.5rem' }}>
+                        <img
+                          src={block.src}
+                          alt={block.alt || 'Imagen de apoyo'}
+                          style={{ maxWidth: '100%', height: 'auto', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
+                        />
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={idx} className="development-block glass-card" style={{ marginBottom: '1.5rem' }}>
+                      {renderTextContent(block.content)}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         );
 
@@ -370,13 +391,14 @@ export default function LibroPage() {
         <main className="page-body">
           <AnimatePresence mode="wait">
             <motion.div
-              key={`${activeTopic}_${activeTab}`}
+              key={`${contentTopic}_${activeTab}`}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.25 }}
               className="tab-content-animator"
             >
+              <ScrollspyRegistry ids={filesToLoad} onActiveIdChange={setActiveTopic} activeTab={activeTab} />
               {renderActiveTabContent()}
             </motion.div>
           </AnimatePresence>

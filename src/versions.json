@@ -1,9 +1,9 @@
 {
-  "Core": "1.2.1",
-  "Modulo_Libro": "2.3.4",
+  "Core": "1.2.2",
+  "Modulo_Libro": "2.4.0",
   "Modulo_Admin": "1.3.1",
   "Modulo_Perfil": "1.1.0",
-  "Modulo_Bibliografía": "0.1.0-beta",
+  "Modulo_Biblioteca": "0.1.0-beta",
   "Modulo_Clases": "0.1.0-beta",
   "Modulo_Examenes": "0.1.0-beta",
   "Modulo_Alumnado": "0.1.0-beta",

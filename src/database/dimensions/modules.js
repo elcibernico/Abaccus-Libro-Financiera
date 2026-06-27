@@ -10,9 +10,9 @@ export const MODULES_REGISTRY = [
     allowedRoles: ['all']
   },
   {
-    id: 'bibliografia',
-    name: 'Bibliografía Cátedra',
-    path: '/bibliografia',
+    id: 'biblioteca',
+    name: 'Biblioteca Digital',
+    path: '/biblioteca',
     allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno', 'docente']
   },
   {

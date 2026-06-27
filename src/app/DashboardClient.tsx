@@ -41,7 +41,7 @@ export default function DashboardClient({ user, modules, versions }: DashboardCl
       desc: 'Acceso al Libro Digital interactivo con simuladores y renders LaTeX.',
       label: 'Acceso Habilitado'
     },
-    bibliografia: {
+    biblioteca: {
       icon: Book,
       color: 'from-emerald-500 to-teal-600',
       desc: 'Consulta la bibliografía sugerida por la cátedra enlazada a Drive.',
@@ -146,7 +146,7 @@ export default function DashboardClient({ user, modules, versions }: DashboardCl
               const getModuleVersionKey = (id: string) => {
                 switch (id) {
                   case 'libro': return 'Modulo_Libro';
-                  case 'bibliografia': return 'Modulo_Bibliografía';
+                  case 'biblioteca': return 'Modulo_Biblioteca';
                   case 'clases': return 'Modulo_Clases';
                   case 'examenes': return 'Modulo_Examenes';
                   case 'alumnado': return 'Modulo_Alumnado';

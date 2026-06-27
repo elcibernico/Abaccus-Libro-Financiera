@@ -14,6 +14,17 @@ function nodeHasContent(node: any): boolean {
   return false;
 }
 
+function isNodeActiveOrParentOfActive(node: any, activeTopicId: string): boolean {
+  if (node.dataFile === activeTopicId || node.id === activeTopicId) return true;
+  if (Array.isArray(node.subtopics)) {
+    return node.subtopics.some((sub: any) => isNodeActiveOrParentOfActive(sub, activeTopicId));
+  }
+  if (Array.isArray(node.topics)) {
+    return node.topics.some((topic: any) => isNodeActiveOrParentOfActive(topic, activeTopicId));
+  }
+  return false;
+}
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 function TopicItem({
   topic,
@@ -24,7 +35,7 @@ function TopicItem({
   unitId: string;
   depth?: number;
 }) {
-  const { activeTopic, setActiveTopic, setActiveUnit, setIsSidebarOpen } = useNavigation();
+  const { activeTopic, setActiveTopic, setContentTopic, setActiveUnit, setIsSidebarOpen } = useNavigation();
   const [open, setOpen] = useState(false);
 
   const isClickable = !!topic.dataFile;
@@ -33,10 +44,10 @@ function TopicItem({
   const isActive = activeTopic === topic.dataFile;
 
   useEffect(() => {
-    if (hasChildren && topic.subtopics?.some((s: any) => s.dataFile === activeTopic || nodeHasContent(s))) {
-      setOpen(true);
+    if (hasChildren) {
+      setOpen(isNodeActiveOrParentOfActive(topic, activeTopic));
     }
-  }, [activeTopic]);
+  }, [activeTopic, hasChildren, topic]);
 
   if (!isVisible) return null;
 
@@ -49,6 +60,7 @@ function TopicItem({
     if (isClickable) {
       setActiveUnit(unitId);
       setActiveTopic(topic.dataFile);
+      setContentTopic(topic.dataFile);
       if (typeof window !== 'undefined' && window.innerWidth < 768) {
         setIsSidebarOpen(false);
       }
@@ -105,8 +117,18 @@ function TopicItem({
  
 // ── Main Sidebar (Modulo Content) ──────────────────────────────────────────────
 export default function Sidebar() {
-  const [expandedUnits, setExpandedUnits] = useState<Record<string, boolean>>({ U02: true });
-  const { activeTopic, setActiveTopic, setActiveUnit, setIsSidebarOpen } = useNavigation();
+  const [expandedUnits, setExpandedUnits] = useState<Record<string, boolean>>({});
+  const { activeTopic, setActiveTopic, setContentTopic, setActiveUnit, setIsSidebarOpen } = useNavigation();
+
+  useEffect(() => {
+    const newExpanded: Record<string, boolean> = {};
+    bookIndex.units.forEach((unit: any) => {
+      if (isNodeActiveOrParentOfActive(unit, activeTopic)) {
+        newExpanded[unit.id] = true;
+      }
+    });
+    setExpandedUnits(newExpanded);
+  }, [activeTopic]);
  
   const toggleUnit = (id: string) => {
     setExpandedUnits((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -125,6 +147,7 @@ export default function Sidebar() {
             toggleUnit(unit.id);
             setActiveUnit(unit.id);
             setActiveTopic(unit.id);
+            setContentTopic(unit.id);
             if (typeof window !== 'undefined' && window.innerWidth < 768) {
               setIsSidebarOpen(false);
             }

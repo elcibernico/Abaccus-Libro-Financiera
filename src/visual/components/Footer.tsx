@@ -22,8 +22,8 @@ export default function Footer() {
       return `Perfil v${versions.Modulo_Perfil}`;
     } else if (pathname.startsWith('/libro')) {
       return `Libro v${versions.Modulo_Libro}`;
-    } else if (pathname.startsWith('/bibliografia')) {
-      return `Bibliografía v${versions.Modulo_Bibliografía}`;
+    } else if (pathname.startsWith('/biblioteca')) {
+      return `Biblioteca v${versions.Modulo_Biblioteca}`;
     } else if (pathname.startsWith('/clases')) {
       return `Clases v${versions.Modulo_Clases}`;
     } else if (pathname.startsWith('/examenes')) {
