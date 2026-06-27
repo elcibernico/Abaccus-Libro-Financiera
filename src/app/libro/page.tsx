@@ -309,6 +309,7 @@ export default function LibroPage() {
         );
 
       case 'Glosario':
+        if (!resolvedTopicData) return null;
         return (
           <div className="glossary-content">
             <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary-color)' }}>Glosario del Tema</h3>
@@ -328,6 +329,7 @@ export default function LibroPage() {
         );
 
       case 'Gráficos':
+        if (!resolvedTopicData) return null;
         return (
           <div className="graphics-content">
             {resolvedTopicData.Gráficos && resolvedTopicData.Gráficos.map((graphic: any, idx: number) => (
@@ -343,6 +345,7 @@ export default function LibroPage() {
         );
 
       case 'Casos Prácticos':
+        if (!resolvedTopicData) return null;
         return (
           <div className="cases-content">
             <PracticalCasesSlideshow
@@ -353,6 +356,7 @@ export default function LibroPage() {
         );
 
       case 'Autoevaluación':
+        if (!resolvedTopicData) return null;
         return (
           <div className="quiz-content">
             <QuizSlideshow
