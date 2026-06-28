@@ -19,20 +19,43 @@ export async function getAuthorizedUserByEmail(email, provider, options = {}) {
   try {
     const formattedEmail = email.toLowerCase().trim();
 
-    // REGLA DE BYPASS Y AUTO-APROVISIONAMIENTO DE MEGA-ADMINS
+    // REGLA DE BYPASS: root tiene acceso total, pero igual buscamos su nombre real en Supabase
     if (MEGA_ADMINS.includes(formattedEmail)) {
-      return {
-        id: 'mega_admin_root',
-        email: formattedEmail,
-        name: 'Mega Admin',
-        role: 'root', // Nivel 0
-        celular: 'System',
-        permissions: {
-          may_export_pdf: true,
-          may_edit_records: true,
-          may_view_advanced_charts: true,
-        }
-      };
+      try {
+        const supabase = await queryDatabase({ provider: 'supabase' });
+        const { data: rootUser } = await supabase
+          .from('whitelist_users')
+          .select('name, celular')
+          .eq('email', formattedEmail)
+          .maybeSingle();
+
+        return {
+          id: 'mega_admin_root',
+          email: formattedEmail,
+          name: rootUser?.name || '',   // nombre real de Supabase
+          role: 'root',
+          celular: rootUser?.celular || 'System',
+          permissions: {
+            may_export_pdf: true,
+            may_edit_records: true,
+            may_view_advanced_charts: true,
+          }
+        };
+      } catch {
+        // Si Supabase falla, seguimos sin bloquear al root
+        return {
+          id: 'mega_admin_root',
+          email: formattedEmail,
+          name: '',
+          role: 'root',
+          celular: 'System',
+          permissions: {
+            may_export_pdf: true,
+            may_edit_records: true,
+            may_view_advanced_charts: true,
+          }
+        };
+      }
     }
 
     let dbUser = null;
