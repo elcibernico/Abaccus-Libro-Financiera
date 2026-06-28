@@ -1,10 +1,7 @@
+'use client';
+
 import AuditoriaBiblioteca from '../AuditoriaBiblioteca';
 import Link from 'next/link';
-import { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'Auditoría de Valoraciones | Admin',
-};
 
 export default function AdminAuditoriaPage() {
   return (
