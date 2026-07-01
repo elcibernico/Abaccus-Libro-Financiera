@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/core/security/supabaseClient';
 import { mapObraFromDb } from '../services/supabaseBibliotecaService';
 import { ObraBiblioteca } from '@/database/dimensions/biblioteca_dim';
@@ -14,6 +14,8 @@ export default function FullscreenPDFReader({ id }: FullscreenPDFReaderProps) {
   const [obra, setObra] = useState<ObraBiblioteca | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const page = searchParams.get('page');
 
   useEffect(() => {
     async function loadObra() {
@@ -155,6 +157,22 @@ export default function FullscreenPDFReader({ id }: FullscreenPDFReaderProps) {
             {obra.autores} • {obra.unidadTematica}
           </p>
         </div>
+        {page && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            backgroundColor: 'rgba(56, 189, 248, 0.15)',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            color: '#38bdf8',
+            padding: '6px 14px',
+            borderRadius: '20px',
+            fontSize: '13px',
+            fontWeight: 500,
+          }}>
+            📖 Página citada en la respuesta: <strong style={{ marginLeft: '4px', fontSize: '14px', color: '#f3f4f6' }}>{page}</strong>
+          </div>
+        )}
         <button 
           onClick={handleClose}
           style={{

@@ -59,7 +59,7 @@ export const MODULES_REGISTRY = [
   },
   {
     id: 'paulita',
-    name: 'Chateá con Paulita de ABACCUS',
+    name: 'Paulita ITS',
     path: '/paulita',
     allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno', 'docente']
   }

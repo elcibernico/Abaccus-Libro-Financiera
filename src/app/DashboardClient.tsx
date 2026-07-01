@@ -89,7 +89,7 @@ export default function DashboardClient({ user, modules, versions }: DashboardCl
       icon: Bot,
       color: 'from-sky-400 to-blue-600',
       desc: 'Tu asistente virtual basada en IA para resolver dudas al instante.',
-      label: 'Próximamente'
+      label: 'Acceso Habilitado'
     }
   };
 
@@ -148,8 +148,8 @@ export default function DashboardClient({ user, modules, versions }: DashboardCl
               // 3. Resultado final: Tiene acceso si su rol lo permite (y no está denegado) o si tiene excepción directa
               const hasAccess = (isRoleAllowed && !isUserExplicitlyDenied) || isUserExcepted;
 
-              // El libro digital y la biblioteca están habilitados
-              const isAvailable = module.id === 'libro' || module.id === 'biblioteca';
+              // El libro digital, la biblioteca y Paulita están habilitados
+              const isAvailable = module.id === 'libro' || module.id === 'biblioteca' || module.id === 'paulita';
 
               const handleNavigate = () => {
                 if (hasAccess && isAvailable) {
@@ -166,6 +166,7 @@ export default function DashboardClient({ user, modules, versions }: DashboardCl
                   case 'alumnado': return 'Modulo_Alumnado';
                   case 'investigacion': return 'Modulo_Investigacion';
                   case 'reporteria': return 'Modulo_Reporteria';
+                  case 'paulita': return 'Modulo_Paulita';
                   default: return '';
                 }
               };

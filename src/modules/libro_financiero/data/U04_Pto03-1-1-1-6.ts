@@ -26,7 +26,7 @@ Partimos de la fórmula general de una renta temporaria anticipada con cuotas va
 Como en una imposición todos los pagos están anticipados a la época final de valuación, reemplazamos la variable “$\\text{a}$” por “$n$” en el factor de capitalización:
  $\${}^{\\text{a}=n}/{V_{n_{a}}}=\\left[ \\left( C+\\frac{r}{i} \\right)\\cdot a_{n:i}-\\frac{r}{i}\\cdot \\frac{1}{\\left( 1+i \\right)^{n}}\\cdot n \\right]\\cdot \\left( 1+i \\right)^{n}$$ <b>Artilugio matemático explícito:</b> Para simplificar esta expresión, aplicamos la propiedad distributiva del factor $\\left( 1+i \\right)^{n}$ hacia el interior del corchete.
 1. Al multiplicar el primer término, sabemos por las relaciones entre factores plurales que $a_{n:i}\\cdot \\left( 1+i \\right)^{n}=s_{n:i}$.
-2. Al multiplicar el segundo término, el factor $\\frac{1}{\\left( 1+i \\right)^{n}}$ se anula directamente con $\\left( 1+i \\right)^{n}$, quedando simplemente $1$.
+2. Al multiplicar el segundo término, el factor $\\frac{1}{\\left( 1+i \\right)^{n}}$ se anula directamente con $\\left( 1+i \\right)^{n}$, quedando simplemente 1.
 
 Aplicando estos pasos algebraicos, obtenemos la fórmula definitiva para las imposiciones con cuotas vencidas variables en progresión aritmética:
  $$S_{n_{a}}=\\left( C+\\frac{r}{i} \\right)\\cdot s_{n:i}-\\frac{r}{i}\\cdot n$$`
