@@ -14,7 +14,7 @@ Se simbolizará $V_{n_{g}}$ a la suma de los valores actuales de las $n$ cuotas 
 Planteando la actualización cuota por cuota obtenemos:
  $$V_{n_{g}}=\\frac{c}{1+i}+\\frac{c\\cdot \\left( 1+g \\right)}{\\left( 1+i \\right)^{2}}+\\frac{c\\cdot \\left( 1+g \\right)^{2}}{\\left( 1+i \\right)^{3}}+…+\\frac{c\\cdot \\left( 1+g \\right)^{n-2}}{\\left( 1+i \\right)^{n-1}}+\\frac{c\\cdot \\left( 1+g \\right)^{n-1}}{\\left( 1+i \\right)^{n}}$$ 
 Se observa que en el segundo miembro de la igualdad anterior, se tiene la suma de $n$ términos variables en progresión geométrica de razón $q=\\frac{1+g}{1+i}$.
- $$V_{n_{g}}=\\frac{c\\cdot \\left( 1+g \\right)^{0}}{1+i}+\\frac{c\\cdot \\left( 1+g \\right)^{1}}{\\left( 1+i \\right)^{2}}+\\frac{c\\cdot \\left( 1+g \\right)^{2}}{\\left( 1+i \\right)^{3}}+…+\\frac{c\\cdot \\left( 1+g \\right)^{n-2}}{\\left( 1+i \\right)^{n-1}}+\\frac{c\\cdot \\left( 1+g \\right)^{n-1}}{\\left( 1+i \\right)^{n}} $$`
+ $$V_{n_{g}}=\\frac{c\\cdot \\left( 1+g \\right)^{0}}{\\left(1+i\\right)^{1}}+\\frac{c\\cdot \\left( 1+g \\right)^{1}}{\\left( 1+i \\right)^{2}}+\\frac{c\\cdot \\left( 1+g \\right)^{2}}{\\left( 1+i \\right)^{3}}+…+\\frac{c\\cdot \\left( 1+g \\right)^{n-2}}{\\left( 1+i \\right)^{n-1}}+\\frac{c\\cdot \\left( 1+g \\right)^{n-1}}{\\left( 1+i \\right)^{n}} $$`
     },
     {
       "type": "interactive_graphic",
