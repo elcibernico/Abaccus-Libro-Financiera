@@ -99,7 +99,8 @@ function preprocessMarkdown(text: string): string {
   });
 
   // 3. Reemplazar citas [Cita: UUID, pág. Z] con enlace estándar Markdown https://cite/UUID?page=Z
-  processed = processed.replace(/\[Cita:\s*([a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12})\s*,\s*(?:pp\.|pág\.)?\s*(\d+)\]/gi, (match, sourceId, pageStr) => {
+  // Manejamos posibles escapes que agrega Gemini (como \[Cita: ...\])
+  processed = processed.replace(/\\?\[Cita:\s*([a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12})\s*,\s*(?:pp\.|pág\.)?\s*(\d+)\\?\]/gi, (match, sourceId, pageStr) => {
     return `[Cita](https://cite/${sourceId}?page=${pageStr})`;
   });
 
@@ -119,6 +120,7 @@ export default function ChatbotPage() {
   ]);
   
   const [input, setInput] = useState('');
+  const [interimResult, setInterimResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [voiceActive, setVoiceActive] = useState(true);
   const [listening, setListening] = useState(false);
@@ -147,31 +149,47 @@ export default function ChatbotPage() {
         const rec = new SpeechRecognition();
         rec.continuous = false;
         rec.lang = 'es-AR';
-        rec.interimResults = false;
+        rec.interimResults = true; // Activar resultados intermedios para feedback en tiempo real
         rec.maxAlternatives = 1;
 
         rec.onstart = () => {
           console.log('[STT] Micrófono encendido (onstart)');
           setListening(true);
           isListeningRef.current = true;
+          setInterimResult('');
         };
 
         rec.onend = () => {
           console.log('[STT] Micrófono apagado (onend)');
           setListening(false);
           isListeningRef.current = false;
+          setInterimResult('');
         };
 
         rec.onerror = (e: any) => {
           console.error('[STT Error] Error en SpeechRecognition:', e);
           setListening(false);
           isListeningRef.current = false;
+          setInterimResult('');
         };
 
         rec.onresult = (event: any) => {
-          const transcript = event.results[0][0].transcript;
-          console.log('[STT] Voz detectada:', transcript);
-          setInput(prev => (prev + ' ' + transcript).trim());
+          let interimTranscript = '';
+          let finalTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            } else {
+              interimTranscript += event.results[i][0].transcript;
+            }
+          }
+          
+          if (finalTranscript) {
+            setInput(prev => (prev + ' ' + finalTranscript).trim());
+            setInterimResult('');
+          } else {
+            setInterimResult(interimTranscript);
+          }
         };
         
         rec.onnomatch = () => {
@@ -522,7 +540,7 @@ export default function ChatbotPage() {
           
           <input
             type="text"
-            value={input}
+            value={interimResult ? (input + ' ' + interimResult).trim() : input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={listening ? 'Escuchando tu pregunta...' : 'Preguntá sobre Matemática Financiera...'}
             className="chat-text-input"
