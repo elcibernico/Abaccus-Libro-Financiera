@@ -83,6 +83,12 @@ function latexToSpeech(latex: string): string {
 function preprocessMarkdown(text: string): string {
   let processed = text;
 
+  // Eliminar bloques de código markdown globales que Gemini pueda añadir por error (evita que todo sea un solo bloque)
+  processed = processed.replace(/^```(?:markdown|text)?\n([\s\S]*?)\n```$/i, '$1');
+
+  // Eliminar espacios iniciales de indentación (ej. generados por Gemini en listas) que causan bloques de código indentado
+  processed = processed.replace(/^[ \t]+/gm, '');
+
   // 1. Reemplazar matemática en bloque $$formula$$ con bloque de código especial ```math-block\nformula\n```
   processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
     return `\n\`\`\`math-block\n${formula.trim()}\n\`\`\`\n`;

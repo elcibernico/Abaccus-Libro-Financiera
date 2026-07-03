@@ -138,6 +138,9 @@ async function generateAnswer(question: string, contextChunks: any[], keys: stri
     "Es crítico que uses ese formato con corchetes y comas exactamente para que el frontend pueda vincular el botón al visor de PDFs.\n" +
     "Toda ecuación o fórmula matemática debe ser escrita en notación LaTeX estándar, usando barras diagonales inversas simples " +
     "(por ejemplo: \\frac{C}{d}, \\cdot, \\Rightarrow, \\text{}). Usa $$ para fórmulas en bloque y $ para fórmulas en línea.\n" +
+    "Asegurate de que todo texto alfabético dentro de una ecuación esté envuelto en el comando \\text{} (ej: \\text{Valor}). " +
+    "No uses caracteres Unicode especiales para símbolos matemáticos (como ∇, ×, o ‼), usa siempre sus comandos LaTeX correspondientes (como \\nabla o \\times).\n" +
+    "No uses bloques de código (```) para encerrar tu respuesta entera, respondé directamente en texto plano con Markdown.\n" +
     "Al finalizar tu respuesta, añade siempre una oración recordando amablemente al alumno: 'Ante cualquier duda profunda sobre este tema, por favor consulte a su docente a cargo.'\n" +
     "==========================================\n";
 
