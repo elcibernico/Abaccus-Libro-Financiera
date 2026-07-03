@@ -679,15 +679,21 @@ export default function ChatbotPage() {
           margin: 0 auto;
         }
 
-        .message-row {
-          display: flex;
+        :global(.message-row) {
+          display: flex !important;
           gap: 12px;
           align-items: flex-start;
           width: 100%;
         }
 
-        .user-row {
-          flex-direction: row-reverse;
+        :global(.user-row) {
+          flex-direction: row !important;
+          justify-content: flex-start !important;
+        }
+
+        :global(.bot-row) {
+          flex-direction: row-reverse !important;
+          justify-content: flex-end !important;
         }
 
         .message-avatar {
@@ -696,15 +702,16 @@ export default function ChatbotPage() {
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
         }
 
-        .bot-row .message-avatar {
+        :global(.bot-row) .message-avatar {
           background: rgba(56, 189, 248, 0.1);
           color: #38bdf8;
           border: 1px solid rgba(56, 189, 248, 0.15);
         }
 
-        .user-row .message-avatar {
+        :global(.user-row) .message-avatar {
           background: rgba(129, 140, 248, 0.1);
           color: #818cf8;
           border: 1px solid rgba(129, 140, 248, 0.15);
@@ -713,10 +720,14 @@ export default function ChatbotPage() {
         .message-bubble-wrapper {
           display: flex;
           flex-direction: column;
-          max-width: 90%;
+          max-width: 85%;
         }
 
-        .user-row .message-bubble-wrapper {
+        :global(.user-row) .message-bubble-wrapper {
+          align-items: flex-start;
+        }
+
+        :global(.bot-row) .message-bubble-wrapper {
           align-items: flex-end;
         }
 
