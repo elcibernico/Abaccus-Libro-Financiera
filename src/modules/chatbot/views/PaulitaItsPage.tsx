@@ -331,10 +331,7 @@ export default function PaulitaItsPage() {
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
       
-      // Auto-scroll siguiendo la lectura (se dispara a medida que avanza el audio)
-      audio.ontimeupdate = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      };
+      // El auto-scroll constante ha sido eliminado para permitir al usuario desplazarse libremente
       
       audio.onended = () => {
         setIsSpeaking(false);
