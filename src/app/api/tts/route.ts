@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     const tts = new EdgeTTS({
-      voice: 'es-AR-ElenaNeural',
+      voice: 'es-AR-TomasNeural',
       lang: 'es-AR',
       outputFormat: 'audio-24khz-48kbitrate-mono-mp3'
     });
