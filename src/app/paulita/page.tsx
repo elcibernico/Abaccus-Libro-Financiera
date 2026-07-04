@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/core/security/supabaseServer';
 import { verifyUserAndIP, getClientIp } from '@/core/security/securityService';
 import { headers } from 'next/headers';
-import ChatbotPage from '@/modules/chatbot/views/ChatbotPage';
+import PaulitaItsPage from '@/modules/chatbot/views/PaulitaItsPage';
 
 export default async function Page() {
   const supabase = await createClient();
@@ -24,7 +24,7 @@ export default async function Page() {
 
   return (
     <main style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
-      <ChatbotPage />
+      <PaulitaItsPage />
     </main>
   );
 }

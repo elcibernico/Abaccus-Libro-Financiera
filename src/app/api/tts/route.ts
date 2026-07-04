@@ -14,9 +14,10 @@ export async function POST(req: NextRequest) {
     }
 
     const tts = new EdgeTTS({
-      voice: 'es-AR-TomasNeural',
+      voice: 'es-AR-ElenaNeural',
       lang: 'es-AR',
-      outputFormat: 'audio-24khz-48kbitrate-mono-mp3'
+      outputFormat: 'audio-24khz-48kbitrate-mono-mp3',
+      timeout: 60000 // 60 segundos para evitar timeouts en lecturas de textos largos
     });
 
     const tempDir = os.tmpdir();
