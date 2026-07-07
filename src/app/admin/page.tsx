@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePreferences } from '@/modules/libro_financiero/components/UserPreferencesProvider';
 import RolesManagement from './RolesManagement';
+import EditorObras from './EditorObras';
 
 interface UserPermission {
   may_export_pdf: boolean;
@@ -44,7 +45,7 @@ interface IpData {
 
 export default function AdminPage() {
   const { theme } = usePreferences();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'roles' | 'pending' | 'ips' | 'templates' | 'ratings' | 'biblioteca'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'roles' | 'pending' | 'ips' | 'templates' | 'ratings' | 'biblioteca' | 'obras'>('dashboard');
   const [users, setUsers] = useState<UserData[]>([]);
   const [pendingUsers, setPendingUsers] = useState<PendingUserData[]>([]);
   const [ips, setIps] = useState<IpData[]>([]);
@@ -850,6 +851,11 @@ export default function AdminPage() {
                 <p>Gestión de obras digitales</p>
               </div>
             </Link>
+            <div className="dashboard-card" onClick={() => setActiveTab('obras')}>
+              <div className="card-icon">📝</div>
+              <h3>Títulos de Obras (ITS)</h3>
+              <p>Editor de títulos de embeddings</p>
+            </div>
           </div>
         )}
 
@@ -1576,6 +1582,11 @@ export default function AdminPage() {
                 </div>
               </form>
             </div>
+          </div>
+        )}        {/* Pestaña de Editor de Títulos de Obras (embeddings) */}
+        {activeTab === 'obras' && (
+          <div className="tab-pane fade-in">
+            <EditorObras />
           </div>
         )}
 

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/core/security/supabaseServer';
 import { verifyUserAndIP, getClientIp } from '@/core/security/securityService';
 import { headers } from 'next/headers';
-import PaulitaItsPage from '@/modules/chatbot/views/PaulitaItsPage';
+import PaulitaItsPage from '@/modules/paulita/views/PaulitaItsPage';
 
 export default async function Page() {
   const supabase = await createClient();

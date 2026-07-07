@@ -12,6 +12,7 @@ export default function RolesManagement() {
   const availablePermissions = [
     { key: 'access_libro', label: 'Acceso Libro' },
     { key: 'edit_content', label: 'Edición Contenido' },
+    { key: 'edit_content_obras', label: 'Editar Obras (ITS)' },
     { key: 'manage_users', label: 'Gestionar Usuarios' },
     { key: 'manage_roles', label: 'Gestionar Roles' },
     { key: 'view_metrics', label: 'Ver Métricas' },

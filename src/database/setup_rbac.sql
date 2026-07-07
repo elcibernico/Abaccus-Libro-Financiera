@@ -45,6 +45,7 @@ insert into public.permissions (name, description) values
   ('manage_roles', 'Permite cambiar roles de otros usuarios y asignar excepciones'),
   ('view_metrics', 'Permite ver dashboards y métricas de uso'),
   ('edit_content', 'Permite editar contenido del simulador'),
+  ('edit_content_obras', 'Permite editar títulos y autores de obras indexadas en embeddings'),
   ('access_libro', 'Permite el acceso al contenido principal del simulador financiero')
 on conflict do nothing;
 
@@ -66,12 +67,14 @@ insert into public.roles_permissions (role_id, permission_name) values
   ('root', 'manage_roles'),
   ('root', 'view_metrics'),
   ('root', 'edit_content'),
+  ('root', 'edit_content_obras'),
   ('root', 'access_libro');
 
 -- Asignar permisos al rol ADMIN (Limitado)
 insert into public.roles_permissions (role_id, permission_name) values
   ('admin', 'manage_users'),
   ('admin', 'view_metrics'),
+  ('admin', 'edit_content_obras'),
   ('admin', 'access_libro');
 
 -- Asignar permisos al rol ALUMNO

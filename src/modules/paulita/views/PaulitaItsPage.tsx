@@ -15,7 +15,8 @@ import {
   Sparkles, 
   Loader2,
   StopCircle,
-  Play
+  Play,
+  Pause
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LatexRenderer from '../../libro_financiero/components/LatexRenderer';
@@ -117,14 +118,7 @@ function preprocessMarkdown(text: string): string {
 
 export default function PaulitaItsPage() {
   const router = useRouter();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'welcome',
-      sender: 'bot',
-      text: '¡Hola! Soy Paulita ITS, tu tutora de Matemática Financiera. Haceme cualquier consulta sobre la bibliografía oficial de la materia. Te responderé basándome estrictamente en los libros de la cátedra y te indicaré la cita exacta para que puedas abrir el lector en la página citada.',
-      timestamp: new Date()
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   
   const [input, setInput] = useState('');
   const [interimResult, setInterimResult] = useState('');
@@ -132,17 +126,25 @@ export default function PaulitaItsPage() {
   const [voiceActive, setVoiceActive] = useState(true);
   const [listening, setListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
 
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const isListeningRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const gradioClientRef = useRef<any>(null);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
+    setMessages([
+      {
+        id: 'welcome',
+        sender: 'bot',
+        text: '¡Hola! Soy Paulita ITS, tu tutora de Matemática Financiera. Haceme cualquier consulta sobre la bibliografía oficial de la materia. Te responderé basándome estrictamente en los libros de la cátedra y te indicaré la cita exacta para que puedas abrir el lector en la página citada.',
+        timestamp: new Date()
+      }
+    ]);
   }, []);
 
   // Auto-scroll al final del chat
@@ -269,16 +271,26 @@ export default function PaulitaItsPage() {
   };
 
 
-  // Función para leer respuestas con TTS (Text-to-Speech)
-  const speakText = async (text: string, chunks: Chunk[] = []) => {
-    if (!voiceActive || typeof window === 'undefined') return;
+  // Función para procesar y hablar el texto
+  const speakText = async (text: string, chunks: Chunk[] = [], messageId?: string) => {
+    if (!voiceActive && !messageId) return;
 
-    // Detener cualquier lectura previa
+    // Si ya se está reproduciendo el mismo mensaje, lo pausamos
+    if (messageId && playingMessageId === messageId && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+      setIsSpeaking(false);
+      setPlayingMessageId(null);
+      return;
+    }
+
+    // Detener cualquier lectura previa (si hacemos clic en otro)
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
     setIsSpeaking(false);
+    setPlayingMessageId(messageId || null);
 
     // Reemplazar citas de texto por recomendación bibliográfica hablada de viva voz
     let textToSpeak = text.replace(/\[Cita:\s*([a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12})\s*,\s*(?:pp\.|pág\.)?\s*(\d+)\]/gi, (match, sourceId, pageStr) => {
@@ -301,46 +313,49 @@ export default function PaulitaItsPage() {
 
     try {
       setIsSpeaking(true);
-      if (!gradioClientRef.current) {
-        const { Client } = await import("@gradio/client");
-        gradioClientRef.current = await Client.connect("elcibernico/paulita-tts");
+      
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: textToSpeak.trim() }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
+
+      const blob = await res.blob();
+      const audioUrl = URL.createObjectURL(blob);
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
       
-      const result = await gradioClientRef.current.predict("/predict", [
-        textToSpeak.trim(),
-      ]);
+      // El auto-scroll constante ha sido eliminado para permitir al usuario desplazarse libremente
       
-      if (result && result.data && result.data[0]) {
-        const audioUrl = result.data[0].url;
-        const audio = new Audio(audioUrl);
-        audioRef.current = audio;
-        
-        // Auto-scroll siguiendo la lectura (se dispara a medida que avanza el audio)
-        audio.ontimeupdate = () => {
-          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        };
-        
-        audio.onended = () => {
-          setIsSpeaking(false);
-          // Scroll final de confirmación
-          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        };
-        
-        audio.onerror = () => {
-          setIsSpeaking(false);
-          console.error("[TTS] Error al reproducir audio de Gradio");
-        };
-        await audio.play();
-      } else {
+      audio.onended = () => {
         setIsSpeaking(false);
-      }
+        setPlayingMessageId(null);
+        URL.revokeObjectURL(audioUrl);
+        // Scroll final de confirmación
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      };
+      
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        setPlayingMessageId(null);
+        URL.revokeObjectURL(audioUrl);
+        console.error("[TTS] Error al reproducir audio de Microsoft Edge TTS");
+      };
+      await audio.play();
     } catch (error: any) {
-      console.error("[TTS Error] Fallo la clonación de voz por API:", error);
+      console.error("[TTS Error] Falló la síntesis de voz por API interna:", error);
       setIsSpeaking(false);
+      setPlayingMessageId(null);
       setMessages(prev => [...prev, {
         id: Math.random().toString(),
         sender: 'bot',
-        text: `[Error de Voz] Ocurrió un fallo en el servidor de Hugging Face. Detalle técnico: ${error.message || String(error)}`,
+        text: `[Error de Voz] Ocurrió un fallo en el servicio de síntesis de voz. Detalle técnico: ${error.message || String(error)}`,
         timestamp: new Date()
       }]);
     }
@@ -388,7 +403,7 @@ export default function PaulitaItsPage() {
       setMessages(prev => [...prev, botMsg]);
       
       // Hablar la respuesta pasándole los chunks de libros para verbalizar la recomendación
-      speakText(data.response, data.chunks || []);
+      speakText(data.response, data.chunks || [], botMsg.id);
 
     } catch (err: any) {
       console.error(err);
@@ -475,7 +490,7 @@ export default function PaulitaItsPage() {
 
 
   return (
-    <div className="chatbot-container">
+    <div className="paulita-container">
       {/* Barra superior de navegación */}
       <header className="chat-header glass-header">
         <button onClick={() => router.push('/')} className="back-btn">
@@ -499,6 +514,7 @@ export default function PaulitaItsPage() {
                   audioRef.current = null;
                 }
                 setIsSpeaking(false);
+                setPlayingMessageId(null);
               }}
               className="action-btn stop-speaking-btn"
               title="Detener lectura de voz"
@@ -515,6 +531,7 @@ export default function PaulitaItsPage() {
                   audioRef.current = null;
                 }
                 setIsSpeaking(false);
+                setPlayingMessageId(null);
               }
             }} 
             className={`action-btn ${voiceActive ? 'active' : ''}`}
@@ -542,9 +559,9 @@ export default function PaulitaItsPage() {
                   {msg.sender === 'user' ? <User size={18} /> : <Bot size={18} />}
                   {msg.sender === 'bot' && (
                     <button
-                      onClick={() => speakText(msg.text, msg.chunks)}
+                      onClick={() => speakText(msg.text, msg.chunks, msg.id)}
                       className="replay-message-btn"
-                      title="Escuchar este mensaje"
+                      title={playingMessageId === msg.id ? "Pausar lectura" : "Escuchar este mensaje"}
                       style={{
                         background: 'rgba(56, 189, 248, 0.1)',
                         border: '1px solid rgba(56, 189, 248, 0.2)',
@@ -568,7 +585,11 @@ export default function PaulitaItsPage() {
                         e.currentTarget.style.transform = 'scale(1)';
                       }}
                     >
-                      <Play size={12} fill="#38bdf8" />
+                      {playingMessageId === msg.id ? (
+                        <Pause size={12} fill="#38bdf8" />
+                      ) : (
+                        <Play size={12} fill="#38bdf8" />
+                      )}
                     </button>
                   )}
                 </div>
@@ -632,10 +653,10 @@ export default function PaulitaItsPage() {
 
       {/* Estilos encapsulados con Styled JSX */}
       <style jsx>{`
-        .chatbot-container {
+        .paulita-container {
           display: flex;
           flex-direction: column;
-          height: 100vh;
+          height: calc(100vh - 64px);
           width: 100%;
           background: linear-gradient(135deg, #0e1118 0%, #151824 100%);
           color: #f3f4f6;
@@ -649,9 +670,6 @@ export default function PaulitaItsPage() {
           align-items: center;
           padding: 16px 24px;
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-          position: sticky;
-          top: 64px;
-          z-index: 50;
         }
 
         .glass-header {
@@ -1046,7 +1064,7 @@ export default function PaulitaItsPage() {
         }
 
         /* Estilos específicos para el Modo Claro (data-theme='light') */
-        :global([data-theme='light']) .chatbot-container {
+        :global([data-theme='light']) .paulita-container {
           background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%) !important;
           color: #1f2937 !important;
         }

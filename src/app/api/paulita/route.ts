@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('Error en el pipeline del Chatbot RAG:', error);
+    console.error('Error en el pipeline de Paulita RAG:', error);
     return NextResponse.json({
       error: error?.message || 'Error interno del servidor en el tutor de IA'
     }, { status: 500 });
