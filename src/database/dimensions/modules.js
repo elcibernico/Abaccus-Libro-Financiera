@@ -10,6 +10,12 @@ export const MODULES_REGISTRY = [
     allowedRoles: ['all']
   },
   {
+    id: 'paulita',
+    name: 'Paulita ITS',
+    path: '/paulita',
+    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno', 'docente']
+  },
+  {
     id: 'biblioteca',
     name: 'Biblioteca Digital',
     path: '/biblioteca',
@@ -40,12 +46,6 @@ export const MODULES_REGISTRY = [
     allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'docente']
   },
   {
-    id: 'investigacion',
-    name: 'Trabajos de Investigación',
-    path: '/investigacion',
-    allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno', 'docente']
-  },
-  {
     id: 'reporteria',
     name: 'Reportería y Analítica',
     path: '/reporteria',
@@ -58,9 +58,9 @@ export const MODULES_REGISTRY = [
     allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno', 'docente']
   },
   {
-    id: 'paulita',
-    name: 'Paulita ITS',
-    path: '/paulita',
+    id: 'investigacion',
+    name: 'Trabajos de Investigación',
+    path: '/investigacion',
     allowedRoles: ['root', 'admin', 'jefe_catedra', 'adjunto', 'profesor', 'ayudante', 'alumno', 'docente']
   }
 ];
