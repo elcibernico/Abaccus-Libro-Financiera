@@ -235,7 +235,7 @@ export default function DashboardClient({ user, modules, versions }: DashboardCl
                   </div>
                   <span className="status-tag tag-active admin-tag">Administrar</span>
                 </div>
-                <h4 className="module-name">Configuración de Tablas</h4>
+                <h4 className="module-name">Panel Admin</h4>
                 <p className="module-desc">Administra el Whitelist de usuarios, edita registros y gestiona la lista de IPs autorizadas.</p>
                 {versions.Modulo_Admin && (
                   <span className="card-version">v{versions.Modulo_Admin}</span>
