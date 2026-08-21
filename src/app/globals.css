@@ -168,6 +168,23 @@ footer {
   opacity: 0.9;
 }
 
+/* Blockquotes con soporte de tema claro/oscuro */
+blockquote {
+  border-left: 4px solid var(--primary-color);
+  background-color: rgba(16, 185, 129, 0.05);
+  color: var(--text-color);
+  padding: 0.85rem 1.25rem;
+  margin: 1.25rem 0;
+  border-radius: 0 0.75rem 0.75rem 0;
+  font-style: italic;
+  line-height: 1.6;
+  opacity: 0.95;
+}
+
+[data-theme='dark'] blockquote {
+  background-color: rgba(16, 185, 129, 0.08);
+}
+
 /* Buttons */
 .btn-primary {
   background: var(--primary-color);

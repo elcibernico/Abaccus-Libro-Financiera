@@ -220,7 +220,9 @@ export default function LibroPage() {
       const isSimpleVariable = /^[a-zA-Z\d\_\^\{\}\-\+]+$/.test(inner);
       const hasMathOperators = /[\+\-\*\/\=\<\>\(\)\_\^\\\{\}\[\]]/.test(inner);
       
-      const containsSpanishWords = spanishStopWords.test(inner);
+      // Si contiene \text{...}, es una expresión LaTeX válida incluso si contiene palabras en español
+      const hasLatexCommands = /\\text\{|\\frac|\\cdot|\\sum|\\left|\\right|\^|\_/.test(inner);
+      const containsSpanishWords = !hasLatexCommands && spanishStopWords.test(inner);
       const isLongTextWithoutOperators = inner.length > 30 && !hasMathOperators;
       
       if (containsSpanishWords || isLongTextWithoutOperators) {
@@ -235,7 +237,7 @@ export default function LibroPage() {
             trust: true,
             strict: false
           });
-          return `<span style="display: inline; white-space: nowrap; vertical-align: baseline;">${html}</span>`;
+          return `<span style="display: inline; vertical-align: baseline;">${html}</span>`;
         } catch (e) {
           return match;
         }

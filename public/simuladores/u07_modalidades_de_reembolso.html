@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modalidades de Reembolso de Bonos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+</head>
+<body class="bg-slate-50 p-4 font-sans text-slate-800 flex justify-center">
+  <div class="max-w-4xl w-full bg-white rounded-2xl shadow-md border border-slate-200 p-6">
+    <div class="text-center mb-6">
+      <span class="text-xs uppercase tracking-widest font-bold px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full">Estructura Contractual</span>
+      <h2 class="text-xl md:text-2xl font-bold text-slate-900 mt-2">Modalidades de Reembolso del Bono</h2>
+      <p class="text-sm text-slate-500 mt-1">Esquema comparativo según la amortización de capital y el pago de intereses</p>
+    </div>
+
+    <!-- Tree SVG Connector -->
+    <div class="hidden md:block w-full h-12 mb-2">
+      <svg class="w-full h-full" viewBox="0 0 600 50" preserveAspectRatio="none">
+        <path d="M 300 0 L 300 25 M 100 25 L 500 25 M 100 25 L 100 50 M 300 25 L 300 50 M 500 25 L 500 50" 
+              stroke="#cbd5e1" stroke-width="2" fill="none" stroke-linecap="round" />
+        <circle cx="300" cy="0" r="4" fill="#6366f1"/>
+        <circle cx="100" cy="50" r="4" fill="#3b82f6"/>
+        <circle cx="300" cy="50" r="4" fill="#8b5cf6"/>
+        <circle cx="500" cy="50" r="4" fill="#10b981"/>
+      </svg>
+    </div>
+
+    <!-- 3 Columns Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Card A: Bullet -->
+      <div class="rounded-xl border border-blue-200 bg-blue-50/50 p-5 hover:shadow-lg transition-all border-t-4 border-t-blue-500 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center text-sm shadow">A</span>
+            <h3 class="font-bold text-slate-900 text-base">Bono Bullet</h3>
+          </div>
+          <div class="space-y-2 text-xs text-slate-600">
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+              <span class="font-bold text-blue-700 block mb-1">💰 Intereses:</span>
+              Servicio periódico (cupones constantes sobre capital nominal íntegro).
+            </div>
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
+              <span class="font-bold text-blue-700 block mb-1">🏛️ Capital:</span>
+              Reembolso íntegro en un único pago al vencimiento final ($n$).
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-blue-200/60 text-[11px] font-semibold text-blue-800 text-center">
+          Equivalente al Sistema Americano
+        </div>
+      </div>
+
+      <!-- Card B: Cupón Cero -->
+      <div class="rounded-xl border border-purple-200 bg-purple-50/50 p-5 hover:shadow-lg transition-all border-t-4 border-t-purple-500 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-7 h-7 rounded-lg bg-purple-600 text-white font-bold flex items-center justify-center text-sm shadow">B</span>
+            <h3 class="font-bold text-slate-900 text-base">Cupón Cero</h3>
+          </div>
+          <div class="space-y-2 text-xs text-slate-600">
+            <div class="bg-white/80 p-2.5 rounded-lg border border-purple-100">
+              <span class="font-bold text-purple-700 block mb-1">💰 Intereses:</span>
+              Sin cupones periódicos intermedios. El interés se capitaliza íntegramente.
+            </div>
+            <div class="bg-white/80 p-2.5 rounded-lg border border-purple-100">
+              <span class="font-bold text-purple-700 block mb-1">🏛️ Capital:</span>
+              Pago único al vencimiento ($n$) que acumula capital e interés devengado.
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-purple-200/60 text-[11px] font-semibold text-purple-800 text-center">
+          Emisión a Descuento (Bajo la Par)
+        </div>
+      </div>
+
+      <!-- Card C: Pago Periódico -->
+      <div class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-5 hover:shadow-lg transition-all border-t-4 border-t-emerald-500 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold flex items-center justify-center text-sm shadow">C</span>
+            <h3 class="font-bold text-slate-900 text-base">Pago Periódico</h3>
+          </div>
+          <div class="space-y-2 text-xs text-slate-600">
+            <div class="bg-white/80 p-2.5 rounded-lg border border-emerald-100">
+              <span class="font-bold text-emerald-700 block mb-1">💰 Intereses:</span>
+              Liquidados periódicamente sobre el saldo de deuda residual ($V_t$).
+            </div>
+            <div class="bg-white/80 p-2.5 rounded-lg border border-emerald-100">
+              <span class="font-bold text-emerald-700 block mb-1">🏛️ Capital:</span>
+              Amortización en cuotas periódicas (Sistema Francés, Alemán o a Medida).
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-emerald-200/60 text-[11px] font-semibold text-emerald-800 text-center">
+          Bonos Amortizables (Amortizing)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false }
+        ],
+        throwOnError: false
+      });
+    });
+  </script>
+</body>
+</html>

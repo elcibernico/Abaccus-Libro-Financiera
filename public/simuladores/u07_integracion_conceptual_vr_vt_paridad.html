@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integración Conceptual: VR, VT y Paridad</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+</head>
+<body class="bg-slate-50 p-4 font-sans text-slate-800 flex justify-center">
+  <div class="max-w-4xl w-full bg-white rounded-2xl shadow-md border border-slate-200 p-6">
+    <div class="text-center mb-6">
+      <span class="text-xs uppercase tracking-widest font-bold px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full">Encadenamiento Lógico</span>
+      <h2 class="text-xl md:text-2xl font-bold text-slate-900 mt-2">Integración Conceptual de Métricas de Valuación</h2>
+      <p class="text-sm text-slate-500 mt-1">Cómo se derivan el Valor Residual, el Valor Técnico y el Valor Paridad</p>
+    </div>
+
+    <!-- Step-by-Step Flow Stack -->
+    <div class="flex flex-col items-center space-y-3">
+      
+      <!-- Step 1: Valor Residual -->
+      <div class="w-full max-w-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center shadow">1</div>
+          <div>
+            <div class="text-xs font-bold text-blue-700 uppercase tracking-wider">Paso 1</div>
+            <h3 class="text-base font-bold text-slate-900">Valor Residual ($VR$)</h3>
+          </div>
+        </div>
+        <div class="text-xs text-slate-600 bg-white/80 px-3 py-2 rounded-lg border border-blue-100 max-w-sm">
+          <b>Capital adeudado</b> pendiente de amortización:
+          <div class="text-blue-800 font-semibold mt-0.5">$VR_t = VN - \sum \text{Amortizaciones Realizadas}$</div>
+        </div>
+      </div>
+
+      <!-- Connector 1 -->
+      <div class="flex items-center gap-2 text-indigo-600 font-bold text-xs bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
+        <span>+ Intereses Corridos Devengados ($I_c$)</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+      </div>
+
+      <!-- Step 2: Valor Técnico -->
+      <div class="w-full max-w-2xl bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-600 text-white font-bold flex items-center justify-center shadow">2</div>
+          <div>
+            <div class="text-xs font-bold text-purple-700 uppercase tracking-wider">Paso 2</div>
+            <h3 class="text-base font-bold text-slate-900">Valor Técnico ($VT$)</h3>
+          </div>
+        </div>
+        <div class="text-xs text-slate-600 bg-white/80 px-3 py-2 rounded-lg border border-purple-100 max-w-sm">
+          Lo que el bono <b>"debería valer contractualmente hoy"</b>:
+          <div class="text-purple-800 font-semibold mt-0.5">$VT = VR + I_c$</div>
+        </div>
+      </div>
+
+      <!-- Connector 2 -->
+      <div class="flex items-center gap-2 text-emerald-600 font-bold text-xs bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+        <span>Comparado contra el Precio de Cotización de Mercado ($PC$)</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+      </div>
+
+      <!-- Step 3: Valor Paridad -->
+      <div class="w-full max-w-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white font-bold flex items-center justify-center shadow">3</div>
+          <div>
+            <div class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Paso 3</div>
+            <h3 class="text-base font-bold text-slate-900">Valor Paridad ($\text{Paridad } \%$)</h3>
+          </div>
+        </div>
+        <div class="text-xs text-slate-600 bg-white/80 px-3 py-2 rounded-lg border border-emerald-100 max-w-sm">
+          Relación porcentual que indica si cotiza <b>Sobre, Bajo o A la par</b>:
+          <div class="text-emerald-800 font-semibold mt-0.5">$\text{Paridad } (\%) = \frac{PC}{VT} \cdot 100$</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false }
+        ],
+        throwOnError: false
+      });
+    });
+  </script>
+</body>
+</html>

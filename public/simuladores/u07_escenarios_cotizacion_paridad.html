@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estados de la Paridad</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+</head>
+<body class="bg-slate-50 p-4 font-sans text-slate-800 flex justify-center">
+  <div class="max-w-4xl w-full bg-white rounded-2xl shadow-md border border-slate-200 p-6">
+    <div class="text-center mb-6">
+      <span class="text-xs uppercase tracking-widest font-bold px-3 py-1 bg-teal-100 text-teal-800 rounded-full">Análisis de Mercado</span>
+      <h2 class="text-xl md:text-2xl font-bold text-slate-900 mt-2">Los Tres Escenarios de Cotización</h2>
+      <p class="text-sm text-slate-500 mt-1">Comparación entre el Precio de Mercado ($PC$) y el Valor Técnico ($VT$)</p>
+    </div>
+
+    <!-- Tree connector SVG -->
+    <div class="hidden md:block w-full h-10 mb-2">
+      <svg class="w-full h-full" viewBox="0 0 600 40" preserveAspectRatio="none">
+        <path d="M 300 0 L 300 20 M 100 20 L 500 20 M 100 20 L 100 40 M 300 20 L 300 40 M 500 20 L 500 40" 
+              stroke="#cbd5e1" stroke-width="2" fill="none" stroke-linecap="round" />
+        <circle cx="300" cy="0" r="4" fill="#0d9488"/>
+        <circle cx="100" cy="40" r="4" fill="#3b82f6"/>
+        <circle cx="300" cy="40" r="4" fill="#10b981"/>
+        <circle cx="500" cy="40" r="4" fill="#f59e0b"/>
+      </svg>
+    </div>
+
+    <!-- 3 Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Escenario 1: Sobre la par -->
+      <div class="rounded-xl border border-blue-200 bg-blue-50/50 p-5 hover:shadow-lg transition-all border-t-4 border-t-blue-500 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 rounded-md bg-blue-100 text-blue-800 font-extrabold text-xs">Paridad &gt; 100%</span>
+            <span class="text-xs font-semibold text-slate-400">$PC &gt; VT$</span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-base mb-2">Sobre la Par</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            El bono cotiza a un precio superior a su valor técnico teórico.
+          </p>
+        </div>
+        <div class="mt-4 pt-3 border-t border-blue-200/60 text-[11px] font-semibold text-blue-800 bg-white/60 p-2 rounded-lg text-center">
+          TIR del mercado &lt; Tasa Cupón
+        </div>
+      </div>
+
+      <!-- Escenario 2: A la par -->
+      <div class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-5 hover:shadow-lg transition-all border-t-4 border-t-emerald-500 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 font-extrabold text-xs">Paridad = 100%</span>
+            <span class="text-xs font-semibold text-slate-400">$PC = VT$</span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-base mb-2">A la Par</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            El precio de mercado coincide exactamente con el valor técnico del bono.
+          </p>
+        </div>
+        <div class="mt-4 pt-3 border-t border-emerald-200/60 text-[11px] font-semibold text-emerald-800 bg-white/60 p-2 rounded-lg text-center">
+          TIR del mercado = Tasa Cupón
+        </div>
+      </div>
+
+      <!-- Escenario 3: Bajo la par -->
+      <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-5 hover:shadow-lg transition-all border-t-4 border-t-amber-500 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 font-extrabold text-xs">Paridad &lt; 100%</span>
+            <span class="text-xs font-semibold text-slate-400">$PC &lt; VT$</span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-base mb-2">Bajo la Par</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            El bono cotiza con descuento respecto a sus derechos teóricos acumulados.
+          </p>
+        </div>
+        <div class="mt-4 pt-3 border-t border-amber-200/60 text-[11px] font-semibold text-amber-800 bg-white/60 p-2 rounded-lg text-center">
+          TIR del mercado &gt; Tasa Cupón
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false }
+        ],
+        throwOnError: false
+      });
+    });
+  </script>
+</body>
+</html>

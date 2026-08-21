@@ -33,6 +33,13 @@ import data_U04_Pto03_1_2_1_5 from './U04_Pto03-1-2-1-5';
 import data_U04_Pto03_1_2_1_6 from './U04_Pto03-1-2-1-6';
 import data_U04_Pto03_1_2_1_7 from './U04_Pto03-1-2-1-7';
 import data_U04_Pto03_1_2_1_8 from './U04_Pto03-1-2-1-8';
+import data_U07_Pto01_0_0_0_0 from './U07_Pto01-0-0-0-0';
+import data_U07_Pto02_0_0_0_0 from './U07_Pto02-0-0-0-0';
+import data_U07_Pto03_0_0_0_0 from './U07_Pto03-0-0-0-0';
+import data_U07_Pto04_0_0_0_0 from './U07_Pto04-0-0-0-0';
+import data_U07_Pto05_0_0_0_0 from './U07_Pto05-0-0-0-0';
+import data_U07_Pto06_0_0_0_0 from './U07_Pto06-0-0-0-0';
+import data_U07_Pto07_0_0_0_0 from './U07_Pto07-0-0-0-0';
 
 export const dataRegistry: Record<string, TopicData> = {
   'U01_Pto01': data_U01_Pto01,
@@ -67,6 +74,13 @@ export const dataRegistry: Record<string, TopicData> = {
   'U04_Pto03-1-2-1-6': data_U04_Pto03_1_2_1_6,
   'U04_Pto03-1-2-1-7': data_U04_Pto03_1_2_1_7,
   'U04_Pto03-1-2-1-8': data_U04_Pto03_1_2_1_8,
+  'U07_Pto01-0-0-0-0': data_U07_Pto01_0_0_0_0,
+  'U07_Pto02-0-0-0-0': data_U07_Pto02_0_0_0_0,
+  'U07_Pto03-0-0-0-0': data_U07_Pto03_0_0_0_0,
+  'U07_Pto04-0-0-0-0': data_U07_Pto04_0_0_0_0,
+  'U07_Pto05-0-0-0-0': data_U07_Pto05_0_0_0_0,
+  'U07_Pto06-0-0-0-0': data_U07_Pto06_0_0_0_0,
+  'U07_Pto07-0-0-0-0': data_U07_Pto07_0_0_0_0,
 };
 
 export const availableTopics = new Set(Object.keys(dataRegistry));

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema Alemán en Bonos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+</head>
+<body class="bg-slate-50 p-4 font-sans text-slate-800 flex justify-center">
+  <div class="max-w-4xl w-full bg-white rounded-2xl shadow-md border border-slate-200 p-6">
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-6">
+      <div>
+        <span class="text-xs uppercase tracking-wider font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md">Sistema Alemán</span>
+        <h3 class="text-lg font-bold text-slate-900 mt-1">Restitución Periódica Constante del Principal</h3>
+      </div>
+      <div class="text-xs text-slate-500 font-medium bg-slate-100 px-3 py-1.5 rounded-lg">
+        $t = \frac{V_n}{n}$ (Constante) + Intereses Decrecientes
+      </div>
+    </div>
+
+    <!-- Timeline Graphic -->
+    <div class="relative overflow-x-auto py-6">
+      <div class="min-w-[620px] px-4">
+        <!-- Labels Top: Momentos -->
+        <div class="flex justify-between text-xs font-bold text-slate-600 mb-2">
+          <div class="w-16 text-center">Momento 0</div>
+          <div class="w-20 text-center">1</div>
+          <div class="w-20 text-center">2</div>
+          <div class="w-20 text-center">3</div>
+          <div class="w-12 text-center text-slate-400">...</div>
+          <div class="w-20 text-center">n-1</div>
+          <div class="w-20 text-center font-extrabold text-teal-700">n</div>
+        </div>
+
+        <!-- Axis Line with Nodes -->
+        <div class="relative flex items-center justify-between my-4">
+          <!-- Main Line -->
+          <div class="absolute left-8 right-10 h-1 bg-slate-300 -z-0"></div>
+          
+          <!-- Nodes -->
+          <div class="relative z-10 w-16 flex justify-center">
+            <div class="w-5 h-5 rounded-full bg-slate-400 border-4 border-white shadow-sm"></div>
+          </div>
+          <div class="relative z-10 w-20 flex justify-center">
+            <div class="w-5 h-5 rounded-full bg-teal-500 border-4 border-white shadow-sm"></div>
+          </div>
+          <div class="relative z-10 w-20 flex justify-center">
+            <div class="w-5 h-5 rounded-full bg-teal-500 border-4 border-white shadow-sm"></div>
+          </div>
+          <div class="relative z-10 w-20 flex justify-center">
+            <div class="w-5 h-5 rounded-full bg-teal-500 border-4 border-white shadow-sm"></div>
+          </div>
+          <div class="relative z-10 w-12 flex justify-center">
+            <span class="text-slate-400 font-bold tracking-widest">•••</span>
+          </div>
+          <div class="relative z-10 w-20 flex justify-center">
+            <div class="w-5 h-5 rounded-full bg-teal-500 border-4 border-white shadow-sm"></div>
+          </div>
+          <div class="relative z-10 w-20 flex justify-center">
+            <div class="w-6 h-6 rounded-full bg-teal-700 border-4 border-white shadow ring-2 ring-teal-200"></div>
+          </div>
+        </div>
+
+        <!-- Bottom: Cash Flows -->
+        <div class="flex justify-between items-start text-xs pt-2">
+          <!-- 0 -->
+          <div class="w-16 text-center text-slate-400 font-semibold italic text-[11px]">Emisión</div>
+          <!-- 1 -->
+          <div class="w-20 text-center flex flex-col gap-1 items-center">
+            <span class="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-semibold text-[10px]">Interés $I_1$</span>
+            <span class="px-2 py-0.5 bg-teal-600 text-white rounded font-bold text-[10px]">Capital $t$</span>
+          </div>
+          <!-- 2 -->
+          <div class="w-20 text-center flex flex-col gap-1 items-center">
+            <span class="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-semibold text-[10px]">Interés $I_2$</span>
+            <span class="px-2 py-0.5 bg-teal-600 text-white rounded font-bold text-[10px]">Capital $t$</span>
+          </div>
+          <!-- 3 -->
+          <div class="w-20 text-center flex flex-col gap-1 items-center">
+            <span class="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-semibold text-[10px]">Interés $I_3$</span>
+            <span class="px-2 py-0.5 bg-teal-600 text-white rounded font-bold text-[10px]">Capital $t$</span>
+          </div>
+          <!-- Dots -->
+          <div class="w-12 text-center text-slate-300"></div>
+          <!-- n-1 -->
+          <div class="w-20 text-center flex flex-col gap-1 items-center">
+            <span class="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-semibold text-[10px]">Interés $I_{n-1}$</span>
+            <span class="px-2 py-0.5 bg-teal-600 text-white rounded font-bold text-[10px]">Capital $t$</span>
+          </div>
+          <!-- n -->
+          <div class="w-20 text-center flex flex-col gap-1 items-center">
+            <span class="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-semibold text-[10px]">Interés $I_n$</span>
+            <span class="px-2 py-0.5 bg-teal-600 text-white rounded font-bold text-[10px]">Capital $t$</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false }
+        ],
+        throwOnError: false
+      });
+    });
+  </script>
+</body>
+</html>

@@ -937,43 +937,43 @@
           "id": "7.1",
           "number": "7.1",
           "title": "Concepto. Características.",
-          "dataFile": "U07_Pto01"
+          "dataFile": "U07_Pto01-0-0-0-0"
         },
         {
           "id": "7.2",
           "number": "7.2",
           "title": "Modalidades de emisión.",
-          "dataFile": "U07_Pto02"
+          "dataFile": "U07_Pto02-0-0-0-0"
         },
         {
           "id": "7.3",
           "number": "7.3",
-          "title": "Modalidades de reembolso. Pago íntegro del principal al vencimiento con servicio periódico de intereses (bono bullet). Pago íntegro del principal al vencimiento sin pago de intereses (cupón cero). Pago periódico del principal y de los intereses.",
-          "dataFile": "U07_Pto03"
+          "title": "Modalidades de reembolso.",
+          "dataFile": "U07_Pto03-0-0-0-0"
         },
         {
           "id": "7.4",
           "number": "7.4",
           "title": "Valor residual. Valor técnico. Valor paridad.",
-          "dataFile": "U07_Pto04"
+          "dataFile": "U07_Pto04-0-0-0-0"
         },
         {
           "id": "7.5",
           "number": "7.5",
           "title": "Riesgos asociados a la inversión en bonos.",
-          "dataFile": "U07_Pto05"
+          "dataFile": "U07_Pto05-0-0-0-0"
         },
         {
           "id": "7.6",
           "number": "7.6",
-          "title": "Valuación de bonos. Valuación de un bono con pago periódico de intereses y amortización íntegra al final del plazo (Bullet). Valuación de un bono sin cupones de intereses y amortización íntegra al final del plazo (Cupón cero). Valuación de un bono amortizable.",
-          "dataFile": "U07_Pto06"
+          "title": "Valuación de bonos.",
+          "dataFile": "U07_Pto06-0-0-0-0"
         },
         {
           "id": "7.7",
           "number": "7.7",
-          "title": "Medidas de rendimiento de la inversión en bonos. Rendimiento corriente. Rendimiento al vencimiento. Evolución del precio de un bono a través del tiempo hasta su amortización final.",
-          "dataFile": "U07_Pto07"
+          "title": "Medidas de rendimiento de la inversión en bonos.",
+          "dataFile": "U07_Pto07-0-0-0-0"
         },
         {
           "id": "7.8",

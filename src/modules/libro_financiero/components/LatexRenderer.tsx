@@ -32,7 +32,7 @@ export default function LatexRenderer({ formula, displayMode = true }: LatexRend
   const Component = displayMode ? 'div' : 'span';
   const styles = displayMode 
     ? {} 
-    : { display: 'inline', whiteSpace: 'nowrap' as const, verticalAlign: 'baseline' };
+    : { display: 'inline', verticalAlign: 'baseline' };
 
   return <Component ref={containerRef} className={displayMode ? "formula" : "inline-formula"} style={styles} />;
 }

@@ -1,0 +1,2303 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Valuación de Bonos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <style>
+        :root {
+            --bg-main: #090d16;
+            --bg-card: #111827;
+            --bg-card-alt: #1f2937;
+            --border-color: #1f293d;
+            --border-highlight: #3b82f6;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-primary: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-gold: #f59e0b;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            padding: 14px 20px;
+            line-height: 1.4;
+            -webkit-font-smoothing: antialiased;
+            width: 100%;
+        }
+
+        .simulator-wrapper {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+        }
+
+        /* Header ultra limpio para incrustar */
+        .sim-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .sim-header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.01em;
+        }
+
+        .preset-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .preset-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-right: 2px;
+        }
+
+        .preset-btn {
+            background: var(--bg-card-alt);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .preset-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            color: #ffffff;
+            border-color: var(--accent-primary);
+        }
+
+        .preset-btn.active {
+            background: var(--accent-primary);
+            color: #ffffff;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Grid Layout */
+        .sim-grid {
+            display: grid;
+            grid-template-columns: 440px 1fr;
+            gap: 18px;
+        }
+
+        @media (max-width: 1150px) {
+            .sim-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 1.18rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Formularios e Inputs */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            background: #060911;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1.15rem;
+            font-weight: 700;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.35);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Tooltip System Extensivo */
+        .has-tooltip {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(147, 197, 253, 0.2);
+            color: #93c5fd;
+            font-size: 0.78rem;
+            margin-left: 6px;
+            font-style: normal;
+            font-weight: 800;
+        }
+
+        .tooltip-box {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #030712;
+            color: #f3f4f6;
+            border: 1px solid #3b82f6;
+            border-radius: 6px;
+            padding: 9px 11px;
+            font-size: 0.72rem;
+            width: 270px;
+            z-index: 9999;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.9);
+            transition: opacity 0.18s ease, visibility 0.18s ease;
+            pointer-events: none;
+            text-align: left;
+            line-height: 1.35;
+        }
+
+        .tooltip-box::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #3b82f6 transparent transparent transparent;
+        }
+
+        .has-tooltip:hover .tooltip-box {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip-formula {
+            display: block;
+            background: rgba(59, 130, 246, 0.15);
+            border-left: 3px solid #3b82f6;
+            padding: 4px 6px;
+            margin-top: 5px;
+            font-family: monospace;
+            font-size: 0.72rem;
+            color: #93c5fd;
+        }
+
+        .tooltip-item {
+            display: block;
+            margin-top: 3px;
+            font-size: 0.7rem;
+            color: #9ca3af;
+        }
+
+        /* KPIs Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 860px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .kpi-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #d1d5db;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kpi-value {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 6px 0;
+            letter-spacing: -0.02em;
+        }
+
+        .kpi-sub {
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .badge-par {
+            color: #60a5fa;
+            background: rgba(59, 130, 246, 0.15);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.82rem;
+        }
+
+        .badge-sobrepar {
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.15);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.82rem;
+        }
+
+        .badge-bajopar {
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.15);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.82rem;
+        }
+
+        /* Contenedores de Gráficos Visuales */
+        .visual-container {
+            background: #060911;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            position: relative;
+        }
+
+        .visual-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .visual-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .visual-legend {
+            display: flex;
+            gap: 16px;
+            font-size: 0.92rem;
+            color: #e2e8f0;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .legend-color {
+            width: 13px;
+            height: 13px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        canvas {
+            width: 100% !important;
+            display: block;
+        }
+
+        #cTimeline {
+            height: 250px !important;
+        }
+
+        .charts-flex {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .charts-flex {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        #cPriceYield,
+        #cTimePath {
+            height: 220px !important;
+        }
+
+        /* Tabs para información secundaria */
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 14px;
+            margin-top: 10px;
+        }
+
+        .tab-link {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            padding: 8px 16px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.15s ease;
+        }
+
+        .tab-link.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            max-height: 320px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.98rem;
+            text-align: right;
+        }
+
+        th,
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        th {
+            background: #030712;
+            color: #f1f5f9;
+            font-weight: 800;
+            font-size: 0.96rem;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        tr.row-tot td {
+            font-weight: 800;
+            font-size: 1.05rem;
+            background: rgba(59, 130, 246, 0.14);
+            border-top: 2px solid var(--accent-primary);
+            color: #ffffff;
+        }
+
+        .risks-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
+        }
+
+        .risk-card {
+            background: #0d1527;
+            border: 1px solid #2a3756;
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 1.05rem;
+            line-height: 1.5;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .risk-card-head {
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .risk-card-desc {
+            color: #cbd5e1;
+            font-size: 1.0rem;
+            font-weight: 500;
+        }
+
+        .badge-par {
+            color: #93c5fd;
+            background: rgba(59, 130, 246, 0.25);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
+        .badge-sobrepar {
+            color: #6ee7b7;
+            background: rgba(16, 185, 129, 0.25);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
+        .badge-bajopar {
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.25);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
+        /* Estilo para las fórmulas KaTeX de la pestaña Teoría */
+        .katex {
+            font-size: 1.25em !important;
+            color: #ffffff !important;
+        }
+
+        /* Botón de expansión en los encabezados */
+        .btn-expand {
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            color: #93c5fd;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.82rem;
+            transition: all 0.2s ease;
+            margin-left: auto;
+        }
+
+        .btn-expand:hover {
+            background: #3b82f6;
+            color: #ffffff;
+            border-color: #60a5fa;
+            transform: scale(1.08);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Modal Overlay Expandido con Blur */
+        .expand-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(4, 7, 15, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 99999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .expand-modal-backdrop.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .expand-modal-container {
+            width: 95vw;
+            max-width: 1500px;
+            height: 92vh;
+            max-height: 1050px;
+            background: #0d1322;
+            border: 2px solid #3b82f6;
+            border-radius: 14px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9), 0 0 35px rgba(59, 130, 246, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: zoomInModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes zoomInModal {
+            from {
+                transform: scale(0.92);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Header del Modal Expandido */
+        .expand-modal-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 22px;
+            background: #111827;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .expand-modal-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-close-modal {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1.5px solid rgba(239, 68, 68, 0.6);
+            color: #fca5a5;
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.05rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-close-modal:hover {
+            background: #ef4444;
+            color: #ffffff;
+            box-shadow: 0 0 14px rgba(239, 68, 68, 0.6);
+        }
+
+        /* Barra Horizontal Superior de Parámetros Clave (GRANDE Y LEGIBLE) */
+        .expand-controls-bar {
+            background: #080d1a;
+            border-bottom: 1.5px solid #2a3756;
+            padding: 12px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .expand-ctrl-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #374151;
+        }
+
+        .expand-ctrl-item label {
+            color: #f1f5f9;
+            font-size: 1.02rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .expand-ctrl-item select,
+        .expand-ctrl-item input {
+            background: #060911;
+            border: 1.5px solid #4b5563;
+            color: #ffffff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 1.08rem;
+            font-weight: 700;
+            outline: none;
+            width: 110px;
+            transition: all 0.2s ease;
+        }
+
+        .expand-ctrl-item select:focus,
+        .expand-ctrl-item input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+        }
+
+        .expand-ctrl-item select {
+            width: auto;
+        }
+
+        .expand-modal-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background: #070a13;
+        }
+
+        .expand-modal-body canvas {
+            width: 100% !important;
+            height: 100% !important;
+            min-height: 520px;
+        }
+
+        /* Hover Tooltip flotante para los gráficos de Canvas */
+        #chartHoverTooltip,
+        #chartHoverTooltipTimePath {
+            position: absolute;
+            display: none;
+            background: rgba(13, 21, 39, 0.96);
+            border: 1.5px solid #3b82f6;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.92rem;
+            color: #ffffff;
+            pointer-events: none;
+            z-index: 100000;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), 0 0 12px rgba(59, 130, 246, 0.35);
+            white-space: nowrap;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="simulator-wrapper">
+        <header class="sim-header">
+            <h1>Simulador de Valuación de Bonos</h1>
+            <div class="preset-group">
+                <span class="preset-label">Opciones:</span>
+                <button class="preset-btn active" onclick="applyPreset('bullet')">Bono Bullet</button>
+                <button class="preset-btn" onclick="applyPreset('cupon_cero')">Cupón Cero</button>
+                <button class="preset-btn" onclick="applyPreset('aleman')">Amort. Alemán</button>
+                <button class="preset-btn" onclick="applyPreset('frances')">Amort. Francés</button>
+                <button class="preset-btn" onclick="applyPreset('gracia')">Con Gracia</button>
+                <button class="preset-btn" onclick="applyPreset('fraccionario')">VT / Int. Corridos</button>
+            </div>
+        </header>
+
+        <div class="sim-grid">
+            <div>
+                <!-- Emisión -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Condiciones de Emisión (7.2 / 7.3)</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span>Modalidad de Reembolso</span>
+                            <span class="has-tooltip">
+                                <i class="info-icon">i</i>
+                                <span class="tooltip-box">
+                                    <strong>Modalidades de Reembolso (7.3)</strong>
+                                    <span class="tooltip-item">• <strong>Bullet:</strong> Interés periódico ($I_t = VR
+                                        \times i$) y capital íntegro al final ($A_n = VN$).</span>
+                                    <span class="tooltip-item">• <strong>Cupón Cero:</strong> Sin intereses explícitos
+                                        ($i=0$), emitido bajo la par.</span>
+                                    <span class="tooltip-item">• <strong>Alemán:</strong> Amortización constante de
+                                        principal ($A_t = VN / n$).</span>
+                                    <span class="tooltip-item">• <strong>Francés:</strong> Servicio total constante
+                                        ($S_t = I_t + A_t$).</span>
+                                    <span class="tooltip-item">• <strong>Con Gracia:</strong> Intereses iniciales y
+                                        amortizaciones diferidas.</span>
+                                </span>
+                            </span>
+                        </label>
+                        <select id="selReembolso" class="form-control" onchange="onModalidadChange()">
+                            <option value="bullet">Bullet (Americano - Capital al vto)</option>
+                            <option value="cupon_cero">Cupón Cero (Zero Coupon - Descuento)</option>
+                            <option value="aleman">Amortizable Alemán (Capital Constante)</option>
+                            <option value="frances">Amortizable Francés (Servicio Constante)</option>
+                            <option value="gracia">Amortizable con Gracia</option>
+                        </select>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span>Valor Nominal (VN)</span>
+                                <span class="has-tooltip">
+                                    <i class="info-icon">i</i>
+                                    <span class="tooltip-box">
+                                        <strong>Valor Nominal (VN)</strong>
+                                        <br>Monto facial emitido por cada título.
+                                        <span class="tooltip-formula">VN</span>
+                                    </span>
+                                </span>
+                            </label>
+                            <input type="number" id="inpVN" class="form-control" value="1000" step="100" min="1"
+                                oninput="runSim()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span>Plazo Total (n)</span>
+                                <span class="has-tooltip">
+                                    <i class="info-icon">i</i>
+                                    <span class="tooltip-box">
+                                        <strong>Plazo de Vigencia (n)</strong>
+                                        <br>Cantidad de años / períodos totales del bono.
+                                    </span>
+                                </span>
+                            </label>
+                            <input type="number" id="inpPlazo" class="form-control" value="5" min="1" max="30"
+                                oninput="runSim()">
+                        </div>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span>Tasa Cupón (i % anual)</span>
+                                <span class="has-tooltip">
+                                    <i class="info-icon">i</i>
+                                    <span class="tooltip-box">
+                                        <strong>Tasa Contractual (i)</strong>
+                                        <br>Tasa de interés nominal estipulada en el prospecto.
+                                        <span class="tooltip-formula">I_t = VR_{t-1} × (i / m)</span>
+                                    </span>
+                                </span>
+                            </label>
+                            <input type="number" id="inpCupon" class="form-control" value="10" step="0.25" min="0"
+                                oninput="runSim()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span>Frecuencia Cupón</span>
+                                <span class="has-tooltip">
+                                    <i class="info-icon">i</i>
+                                    <span class="tooltip-box">
+                                        <strong>Frecuencia Anual (m)</strong>
+                                        <br>Cantidad de servicios de interés abonados por año.
+                                    </span>
+                                </span>
+                            </label>
+                            <select id="selFrecuencia" class="form-control" onchange="runSim()">
+                                <option value="1">Anual (m=1)</option>
+                                <option value="2">Semestral (m=2)</option>
+                                <option value="3">Cuatrimestral (m=3)</option>
+                                <option value="4">Trimestral (m=4)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="boxGracia" class="form-group" style="display:none;">
+                        <label class="form-label">
+                            <span>Período Inicio Amortización</span>
+                            <span class="has-tooltip">
+                                <i class="info-icon">i</i>
+                                <span class="tooltip-box">
+                                    <strong>Período de Gracia</strong>
+                                    <br>Período en el que se inicia la devolución de principal.
+                                </span>
+                            </span>
+                        </label>
+                        <input type="number" id="inpGracia" class="form-control" value="3" min="1" max="10"
+                            oninput="runSim()">
+                    </div>
+                </div>
+
+                <!-- Mercado y Pricing -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Mercado & Pricing (7.6 / 7.7)</span>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span>TIR Requerida (r % anual)</span>
+                                <span class="has-tooltip">
+                                    <i class="info-icon">i</i>
+                                    <span class="tooltip-box">
+                                        <strong>TIR Requerida de Mercado (r)</strong>
+                                        <br>Costo de oportunidad para descontar el flujo de fondos.
+                                        <span class="tooltip-formula">P = Σ [ S_t / (1 + r)^t ]</span>
+                                    </span>
+                                </span>
+                            </label>
+                            <input type="number" id="inpTIR" class="form-control" value="11" step="0.25" min="0"
+                                oninput="onTIRInput()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span>Precio Cotización (PC)</span>
+                                <span class="has-tooltip">
+                                    <i class="info-icon">i</i>
+                                    <span class="tooltip-box">
+                                        <strong>Precio de Cotización (PC)</strong>
+                                        <br>Precio de mercado observado en bolsa o pizarra.
+                                    </span>
+                                </span>
+                            </label>
+                            <input type="number" id="inpPrecio" class="form-control" value="963.04" step="1" min="0"
+                                oninput="onPrecioInput()">
+                        </div>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span>Días devengados cupón</span>
+                                <span class="has-tooltip">
+                                    <i class="info-icon">i</i>
+                                    <span class="tooltip-box">
+                                        <strong>Intereses Corridos (7.4)</strong>
+                                        <br>Días transcurridos desde el último vencimiento.
+                                        <span class="tooltip-formula">I_c = VR × i × (días / 360)</span>
+                                    </span>
+                                </span>
+                            </label>
+                            <input type="number" id="inpDias" class="form-control" value="0" min="0" max="360"
+                                oninput="runSim()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span>TIR Bonos EE.UU. (%)</span>
+                                <span class="has-tooltip">
+                                    <i class="info-icon">i</i>
+                                    <span class="tooltip-box">
+                                        <strong>Riesgo País (7.5)</strong>
+                                        <br>Tasa libre de riesgo para calcular el spread soberano.
+                                        <span class="tooltip-formula">RP = (TIR - TIR_{US}) × 10.000 bps</span>
+                                    </span>
+                                </span>
+                            </label>
+                            <input type="number" id="inpTIR_US" class="form-control" value="4.5" step="0.1" min="0"
+                                oninput="runSim()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <!-- KPIs Principales -->
+                <div class="kpi-grid">
+                    <!-- Precio Teórico -->
+                    <div class="kpi-card">
+                        <div class="kpi-title">
+                            <span>Precio Teórico (P)</span>
+                            <span class="has-tooltip">
+                                <i class="info-icon">i</i>
+                                <span class="tooltip-box">
+                                    <strong>Valuación Teórica (7.6)</strong>
+                                    <br>Valor presente del flujo futuro proyectado:
+                                    <span class="tooltip-formula">P = Σ [ S_t / (1+r)^t ]</span>
+                                    <span class="tooltip-item">• <strong>Bullet:</strong> $VN \cdot i \cdot
+                                        a_{\overline{n}|r} + VN/(1+r)^n$</span>
+                                    <span class="tooltip-item">• <strong>Cupón Cero:</strong> $VN / (1+r)^n$</span>
+                                </span>
+                            </span>
+                        </div>
+                        <div class="kpi-value" id="resPrecio">$ 963,04</div>
+                        <div class="kpi-sub" id="resEmisionTag"><span class="badge-bajopar">Bajo la par</span></div>
+                    </div>
+
+                    <!-- Valor Técnico -->
+                    <div class="kpi-card">
+                        <div class="kpi-title">
+                            <span>Valor Técnico (VT)</span>
+                            <span class="has-tooltip">
+                                <i class="info-icon">i</i>
+                                <span class="tooltip-box">
+                                    <strong>Valor Técnico (7.4)</strong>
+                                    <br>Valor contractual conforme a condiciones de emisión:
+                                    <span class="tooltip-formula">VT = VR + I_c</span>
+                                    <span class="tooltip-item">• <strong>VR:</strong> Valor residual no amortizado ($VN
+                                        - T_k$).</span>
+                                    <span class="tooltip-item">• <strong>I_c:</strong> Intereses devengados no
+                                        percibidos.</span>
+                                </span>
+                            </span>
+                        </div>
+                        <div class="kpi-value" id="resVT">$ 1.000,00</div>
+                        <div class="kpi-sub" id="resVRSub">VR: $ 1.000,00 | Ic: $ 0,00</div>
+                    </div>
+
+                    <!-- Paridad -->
+                    <div class="kpi-card">
+                        <div class="kpi-title">
+                            <span>Paridad Técnica</span>
+                            <span class="has-tooltip">
+                                <i class="info-icon">i</i>
+                                <span class="tooltip-box">
+                                    <strong>Valor Paridad (7.4)</strong>
+                                    <br>Relación porcentual cotización vs valor técnico:
+                                    <span class="tooltip-formula">Paridad = (PC / VT) × 100</span>
+                                    <span class="tooltip-item">• &gt; 100%: Sobre la par ($TIR < i$)</span>
+                                            <span class="tooltip-item">• = 100%: A la par ($TIR = i$)</span>
+                                            <span class="tooltip-item">• &lt; 100%: Bajo la par ($TIR > i$)</span>
+                                    </span>
+                                </span>
+                        </div>
+                        <div class="kpi-value" id="resParidad">96,30%</div>
+                        <div class="kpi-sub" id="resParidadTag"><span class="badge-bajopar">Cotiza bajo la par</span>
+                        </div>
+                    </div>
+
+                    <!-- Rendimiento Corriente -->
+                    <div class="kpi-card">
+                        <div class="kpi-title">
+                            <span>Rendimiento Corriente</span>
+                            <span class="has-tooltip">
+                                <i class="info-icon">i</i>
+                                <span class="tooltip-box">
+                                    <strong>Current Yield (7.7)</strong>
+                                    <br>Relaciona el cupón con el precio de cotización:
+                                    <span class="tooltip-formula">R_{CTE} = (VR × i) / PC</span>
+                                    <span class="tooltip-item">• Incompleto: omite ganancia de capital y
+                                        reinversión.</span>
+                                </span>
+                            </span>
+                        </div>
+                        <div class="kpi-value" id="resRCTE">10,38%</div>
+                        <div class="kpi-sub" id="resRCTESub">R_GC: +0,62% | TIR: 11,00%</div>
+                    </div>
+
+                    <!-- Duration -->
+                    <div class="kpi-card">
+                        <div class="kpi-title">
+                            <span>Duration Macaulay</span>
+                            <span class="has-tooltip">
+                                <i class="info-icon">i</i>
+                                <span class="tooltip-box">
+                                    <strong>Duration de Macaulay (7.8)</strong>
+                                    <br>Plazo promedio ponderado de cobro de fondos:
+                                    <span class="tooltip-formula">D = Σ [ t × PV(S_t) ] / P</span>
+                                    <span class="tooltip-item">• Cupón Cero: $D = n$ (plazo total)</span>
+                                    <span class="tooltip-item">• Bullet / Amortizable: $D < n$</span>
+                                    </span>
+                                </span>
+                        </div>
+                        <div class="kpi-value" id="resDuration">4,17 años</div>
+                        <div class="kpi-sub" id="resModDuration">Mod. Dur: 3,76 años</div>
+                    </div>
+
+                    <!-- Riesgo País -->
+                    <div class="kpi-card">
+                        <div class="kpi-title">
+                            <span>Riesgo País (RP)</span>
+                            <span class="has-tooltip">
+                                <i class="info-icon">i</i>
+                                <span class="tooltip-box">
+                                    <strong>Riesgo País (7.5)</strong>
+                                    <br>Spread de TIR sobre Bonos del Tesoro EE.UU.:
+                                    <span class="tooltip-formula">RP = TIR_{Emergente} - TIR_{EEUU}</span>
+                                    <span class="tooltip-item">• Expresado en puntos básicos (100 bps = 1%).</span>
+                                </span>
+                            </span>
+                        </div>
+                        <div class="kpi-value" id="resRP">650 bps</div>
+                        <div class="kpi-sub" id="resSpread">Spread: 6,50% anual</div>
+                    </div>
+                </div>
+
+                <!-- EJE TEMPORAL 100% GRÁFICO VISUAL -->
+                <div class="visual-container" id="box-timeline">
+                    <div class="visual-header">
+                        <span class="visual-title">
+                            Eje Temporal y Diagrama de Flujo de Fondos (Esquema Fransolini 7.3)
+                            <span class="has-tooltip">
+                                <i class="info-icon">i</i>
+                                <span class="tooltip-box">
+                                    <strong>Gráfico Unidimensional Fransolini</strong>
+                                    <br>Muestra gráficamente en cada período $k=0 \dots n$:
+                                    <span class="tooltip-item">• <strong>Barra Roja (k=0):</strong> Inversión Inicial /
+                                        Precio de Compra.</span>
+                                    <span class="tooltip-item">• <strong>Barra Azul:</strong> Cupón de Interés
+                                        ($I_k$).</span>
+                                    <span class="tooltip-item">• <strong>Barra Verde:</strong> Amortización de Capital
+                                        ($A_k$).</span>
+                                    <span class="tooltip-item">• <strong>Línea Dorada:</strong> Evolución del Valor
+                                        Residual ($VR_k$).</span>
+                                </span>
+                            </span>
+                        </span>
+                        <div class="visual-legend">
+                            <div class="legend-item"><span class="legend-color" style="background:#ef4444;"></span>
+                                Inversión ($k=0$)</div>
+                            <div class="legend-item"><span class="legend-color" style="background:#3b82f6;"></span>
+                                Interés ($I_k$)</div>
+                            <div class="legend-item"><span class="legend-color" style="background:#10b981;"></span>
+                                Capital ($A_k$)</div>
+                            <div class="legend-item"><span class="legend-color" style="background:#f59e0b;"></span>
+                                Saldo Residual ($VR$)</div>
+                        </div>
+                        <button class="btn-expand" title="Ampliar Gráfico"
+                            onclick="openExpandModal('timeline')">⛶</button>
+                    </div>
+                    <div style="position:relative;" id="container-cTimeline">
+                        <canvas id="cTimeline"></canvas>
+                        <div id="chartHoverTooltip"></div>
+                    </div>
+                </div>
+
+                <!-- GRÁFICOS ANALÍTICOS LADO A LADO -->
+                <div class="charts-flex">
+                    <div class="visual-container" id="box-priceyield">
+                        <div class="visual-header">
+                            <span class="visual-title">Curva de Valuación (Precio vs TIR)</span>
+                            <button class="btn-expand" title="Ampliar Gráfico"
+                                onclick="openExpandModal('priceyield')">⛶</button>
+                        </div>
+                        <div id="container-cPriceYield">
+                            <canvas id="cPriceYield"></canvas>
+                        </div>
+                    </div>
+                    <div class="visual-container" id="box-timepath">
+                        <div class="visual-header">
+                            <span class="visual-title">Evolución en el Tiempo (Time Path / Pull to Par)</span>
+                            <div class="visual-legend">
+                                <div class="legend-item"><span class="legend-color" style="background:#34d399;"></span>
+                                    Sobre la par</div>
+                                <div class="legend-item"><span class="legend-color" style="background:#60a5fa;"></span>
+                                    A la par</div>
+                                <div class="legend-item"><span class="legend-color" style="background:#f87171;"></span>
+                                    Bajo la par</div>
+                            </div>
+                            <button class="btn-expand" title="Ampliar Gráfico"
+                                onclick="openExpandModal('timepath')">⛶</button>
+                        </div>
+                        <div id="container-cTimePath" style="position:relative;">
+                            <canvas id="cTimePath"></canvas>
+                            <div id="chartHoverTooltipTimePath"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs para Tablas Numéricas y Teoría -->
+                <div class="card" id="box-tables" style="margin-top:12px;">
+                    <div class="tab-bar" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <button class="tab-link active" onclick="openTab('t-table')">Cuadro de Flujos &
+                                Amortización</button>
+                            <button class="tab-link" onclick="openTab('t-risks')">Matriz de Riesgos (7.5)</button>
+                            <button class="tab-link" onclick="openTab('t-theory')">Relaciones Teóricas
+                                Fransolini</button>
+                        </div>
+                        <button class="btn-expand" title="Ampliar Tablas y Teoría"
+                            onclick="openExpandModal('tables')">⛶</button>
+                    </div>
+                    <div id="container-tabs-content">
+
+                        <!-- Tab 1: Tabla -->
+                        <div id="t-table" class="tab-pane active">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align:center;">Período (t)</th>
+                                            <th>Saldo Inicial (VR<sub>t-1</sub>)</th>
+                                            <th>Amortización (A<sub>t</sub>)</th>
+                                            <th>Interés (I<sub>t</sub>)</th>
+                                            <th>Servicio Total (S<sub>t</sub>)</th>
+                                            <th>Factor Desc. (1+r)<sup>-t</sup></th>
+                                            <th>Valor Actual PV(S<sub>t</sub>)</th>
+                                            <th>Saldo Final (VR<sub>t</sub>)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbBody"></tbody>
+                                    <tfoot>
+                                        <tr class="row-tot" id="tbFoot"></tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: Riesgos -->
+                        <div id="t-risks" class="tab-pane">
+                            <div class="risks-box" id="rBox"></div>
+                        </div>
+
+                        <!-- Tab 3: Teoría -->
+                        <div id="t-theory" class="tab-pane">
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; font-size:0.95rem;">
+                                <div
+                                    style="background:#060911; padding:14px; border-radius:8px; border:1px solid var(--border-color);">
+                                    <strong
+                                        style="color:var(--accent-primary); font-size:1.05rem; display:block; margin-bottom:8px;">1.
+                                        Modalidades de Emisión (7.2):</strong>
+                                    <ul style="margin-left:18px; margin-top:6px; color:#e2e8f0; line-height:1.8;">
+                                        <li><strong>A la par:</strong> $P = VN \implies TIR = i$</li>
+                                        <li><strong>Bajo la par (Descuento):</strong> $P < VN \implies TIR> i$</li>
+                                        <li><strong>Sobre la par (Con prima):</strong> $P > VN \implies TIR < i$</li>
+                                    </ul>
+                                    <br>
+                                    <strong
+                                        style="color:var(--accent-primary); font-size:1.05rem; display:block; margin-bottom:8px;">2.
+                                        Valor Residual y Técnico (7.4):</strong>
+                                    <div
+                                        style="background:rgba(0,0,0,0.3); padding:12px; margin-top:6px; border-radius:8px; color:#93c5fd; line-height:1.8; font-size:0.98rem;">
+                                        • $VR_k = VN - T_k$<br>
+                                        • $I_c = VR \cdot i \cdot \left( \frac{\text{días}}{360} \right)$<br>
+                                        • $VT = VR + I_c$<br>
+                                        • $\text{Paridad} = \left( \frac{PC}{VT} \right) \cdot 100$
+                                    </div>
+                                </div>
+
+                                <div
+                                    style="background:#060911; padding:14px; border-radius:8px; border:1px solid var(--border-color);">
+                                    <strong
+                                        style="color:var(--accent-primary); font-size:1.05rem; display:block; margin-bottom:8px;">3.
+                                        Medidas de Rendimiento (7.7):</strong>
+                                    <ul style="margin-left:18px; margin-top:6px; color:#e2e8f0; line-height:1.8;">
+                                        <li><strong>Rendimiento Corriente:</strong> $R_{CTE} = \frac{VR \cdot i}{PC}$
+                                        </li>
+                                        <li><strong>Ganancia de Capital:</strong> $R_{GC} = \frac{P_1 - P_0}{P_0}$</li>
+                                        <li><strong>Rendimiento Total (TIR):</strong> $TIR = R_{CTE} + R_{GC}$</li>
+                                    </ul>
+                                    <br>
+                                    <strong
+                                        style="color:var(--accent-primary); font-size:1.05rem; display:block; margin-bottom:8px;">4.
+                                        Relaciones de Orden (p. 338):</strong>
+                                    <div
+                                        style="background:rgba(0,0,0,0.3); padding:12px; margin-top:6px; border-radius:8px; color:#93c5fd; line-height:1.8; font-size:0.98rem;">
+                                        • <strong>Bajo la par:</strong> $TIR > R_{CTE} > i$<br>
+                                        • <strong>A la par:</strong> $TIR = R_{CTE} = i$<br>
+                                        • <strong>Sobre la par:</strong> $TIR < R_{CTE} < i$ </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- /container-tabs-content -->
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- MODAL OVERLAY EXPANDIDO (MODO FOCO 70%-80% PANTALLA) -->
+    <div id="expandModalBackdrop" class="expand-modal-backdrop" onclick="onBackdropClick(event)">
+        <div class="expand-modal-container" id="expandModalContainer">
+            <!-- Top Bar con Título y Botón Cerrar -->
+            <div class="expand-modal-top">
+                <div class="expand-modal-title">
+                    <span style="color:var(--accent-primary);">⛶</span>
+                    <span id="expandModalTitleText">Vista Ampliada del Gráfico</span>
+                </div>
+                <button class="btn-close-modal" onclick="closeExpandModal()">
+                    <span>Contraer</span>
+                    <span>✖</span>
+                </button>
+            </div>
+
+            <!-- Barra Superior Flotante con Condiciones de Emisión y Mercado & Pricing -->
+            <div class="expand-controls-bar">
+                <!-- Modalidad -->
+                <div class="expand-ctrl-item">
+                    <label>Modalidad:</label>
+                    <select id="m_selReembolso"
+                        onchange="syncModalInput('selReembolso', this.value); onModalidadChange();">
+                        <option value="bullet">Bullet (Capital al vto)</option>
+                        <option value="cupon_cero">Cupón Cero</option>
+                        <option value="aleman">Alemán (Principal cte)</option>
+                        <option value="frances">Francés (Servicio cte)</option>
+                        <option value="gracia">Con Gracia</option>
+                    </select>
+                </div>
+
+                <!-- VN -->
+                <div class="expand-ctrl-item">
+                    <label>VN ($):</label>
+                    <input type="number" id="m_inpVN" step="100" min="1"
+                        oninput="syncModalInput('inpVN', this.value); runSim();">
+                </div>
+
+                <!-- Plazo n -->
+                <div class="expand-ctrl-item">
+                    <label>Plazo (n):</label>
+                    <input type="number" id="m_inpPlazo" min="1" max="30"
+                        oninput="syncModalInput('inpPlazo', this.value); runSim();">
+                </div>
+
+                <!-- Tasa Cupón i -->
+                <div class="expand-ctrl-item">
+                    <label>Cupón (i %):</label>
+                    <input type="number" id="m_inpCupon" step="0.25" min="0"
+                        oninput="syncModalInput('inpCupon', this.value); runSim();">
+                </div>
+
+                <!-- Frecuencia m -->
+                <div class="expand-ctrl-item">
+                    <label>Frecuencia:</label>
+                    <select id="m_selFrecuencia" onchange="syncModalInput('selFrecuencia', this.value); runSim();">
+                        <option value="1">Anual (m=1)</option>
+                        <option value="2">Semestral (m=2)</option>
+                        <option value="3">Cuatrimestral (m=3)</option>
+                        <option value="4">Trimestral (m=4)</option>
+                    </select>
+                </div>
+
+                <!-- TIR Mercado r -->
+                <div class="expand-ctrl-item"
+                    style="border-color:rgba(59,130,246,0.5); background:rgba(59,130,246,0.08);">
+                    <label style="color:#93c5fd;">TIR (r %):</label>
+                    <input type="number" id="m_inpTIR" step="0.25" min="0"
+                        oninput="syncModalInput('inpTIR', this.value); onTIRInput();">
+                </div>
+
+                <!-- Precio PC -->
+                <div class="expand-ctrl-item"
+                    style="border-color:rgba(16,185,129,0.5); background:rgba(16,185,129,0.08);">
+                    <label style="color:#6ee7b7;">Precio (PC):</label>
+                    <input type="number" id="m_inpPrecio" step="1" min="0"
+                        oninput="syncModalInput('inpPrecio', this.value); onPrecioInput();">
+                </div>
+
+                <!-- Días devengados -->
+                <div class="expand-ctrl-item">
+                    <label>Días Ic:</label>
+                    <input type="number" id="m_inpDias" min="0" max="360"
+                        oninput="syncModalInput('inpDias', this.value); runSim();">
+                </div>
+            </div>
+
+            <!-- Contenedor del elemento ampliado -->
+            <div class="expand-modal-body" id="expandModalBody">
+                <!-- El contenido ampliado se monta aquí dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let curTab = 't-table';
+        let timelineHotspots = []; // Para interacciones de hover sobre el eje temporal
+        let currentExpandedSection = null;
+
+        // Sincronización entre inputs del modal y los inputs principales
+        function syncModalInputsFromMain() {
+            const fields = [
+                { m: 'm_selReembolso', main: 'selReembolso' },
+                { m: 'm_inpVN', main: 'inpVN' },
+                { m: 'm_inpPlazo', main: 'inpPlazo' },
+                { m: 'm_inpCupon', main: 'inpCupon' },
+                { m: 'm_selFrecuencia', main: 'selFrecuencia' },
+                { m: 'm_inpTIR', main: 'inpTIR' },
+                { m: 'm_inpPrecio', main: 'inpPrecio' },
+                { m: 'm_inpDias', main: 'inpDias' }
+            ];
+            fields.forEach(f => {
+                const elM = document.getElementById(f.m);
+                const elMain = document.getElementById(f.main);
+                if (elM && elMain) {
+                    elM.value = elMain.value;
+                }
+            });
+        }
+
+        function syncModalInput(mainId, val) {
+            const mainEl = document.getElementById(mainId);
+            if (mainEl) {
+                mainEl.value = val;
+            }
+        }
+
+        // Apertura del modo expandido
+        function openExpandModal(sectionId) {
+            if (currentExpandedSection) {
+                closeExpandModal();
+            }
+            currentExpandedSection = sectionId;
+            const backdrop = document.getElementById('expandModalBackdrop');
+            const body = document.getElementById('expandModalBody');
+            const titleText = document.getElementById('expandModalTitleText');
+
+            syncModalInputsFromMain();
+            while (body.firstChild) {
+                body.removeChild(body.firstChild);
+            }
+
+            if (sectionId === 'timeline') {
+                titleText.textContent = 'Eje Temporal y Diagrama de Flujo de Fondos (Esquema Fransolini)';
+                const orig = document.getElementById('container-cTimeline');
+                if (orig) {
+                    body.appendChild(orig);
+                    orig.style.height = '100%';
+                }
+            } else if (sectionId === 'priceyield') {
+                titleText.textContent = 'Curva de Valuación (Precio vs TIR)';
+                const orig = document.getElementById('container-cPriceYield');
+                if (orig) {
+                    body.appendChild(orig);
+                    orig.style.height = '100%';
+                }
+            } else if (sectionId === 'timepath') {
+                titleText.textContent = 'Evolución en el Tiempo (Time Path / Pull to Par)';
+                const orig = document.getElementById('container-cTimePath');
+                if (orig) {
+                    body.appendChild(orig);
+                    orig.style.height = '100%';
+                }
+            } else if (sectionId === 'tables') {
+                titleText.textContent = 'Cuadro de Flujos, Matriz de Riesgos y Teoría';
+                const orig = document.getElementById('container-tabs-content');
+                if (orig) {
+                    body.appendChild(orig);
+                }
+            }
+
+            backdrop.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Re-ejecutar renderizado con nuevas dimensiones expandidas
+            setTimeout(() => {
+                runSim();
+                if (window.renderMathInElement) {
+                    renderMathInElement(body, {
+                        delimiters: [
+                            { left: '$$', right: '$$', display: true },
+                            { left: '$', right: '$', display: false }
+                        ],
+                        throwOnError: false
+                    });
+                }
+            }, 50);
+        }
+
+        // Cierre del modo expandido
+        function closeExpandModal() {
+            const backdrop = document.getElementById('expandModalBackdrop');
+            if (!backdrop.classList.contains('active')) return;
+
+            if (currentExpandedSection === 'timeline') {
+                const orig = document.getElementById('container-cTimeline');
+                const box = document.getElementById('box-timeline');
+                if (orig && box) {
+                    box.appendChild(orig);
+                    orig.style.height = '';
+                }
+            } else if (currentExpandedSection === 'priceyield') {
+                const orig = document.getElementById('container-cPriceYield');
+                const box = document.getElementById('box-priceyield');
+                if (orig && box) {
+                    box.appendChild(orig);
+                    orig.style.height = '';
+                }
+            } else if (currentExpandedSection === 'timepath') {
+                const orig = document.getElementById('container-cTimePath');
+                const box = document.getElementById('box-timepath');
+                if (orig && box) {
+                    box.appendChild(orig);
+                    orig.style.height = '';
+                }
+            } else if (currentExpandedSection === 'tables') {
+                const orig = document.getElementById('container-tabs-content');
+                const box = document.getElementById('box-tables');
+                if (orig && box) {
+                    box.appendChild(orig);
+                }
+            }
+
+            backdrop.classList.remove('active');
+            document.body.style.overflow = '';
+            currentExpandedSection = null;
+
+            setTimeout(() => {
+                runSim();
+            }, 50);
+        }
+
+        function onBackdropClick(e) {
+            if (e.target.id === 'expandModalBackdrop') {
+                closeExpandModal();
+            }
+        }
+
+        // Cerrar con Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeExpandModal();
+            }
+        });
+
+        const presetConfigs = {
+            bullet: { vn: 1000, plazo: 5, cupon: 10, frec: 1, mod: 'bullet', gracia: 3, tir: 11, dias: 0, tirUS: 4.5 },
+            cupon_cero: { vn: 1000, plazo: 5, cupon: 0, frec: 1, mod: 'cupon_cero', gracia: 1, tir: 10, dias: 0, tirUS: 4.5 },
+            aleman: { vn: 1000, plazo: 5, cupon: 10, frec: 1, mod: 'aleman', gracia: 1, tir: 11, dias: 0, tirUS: 4.5 },
+            frances: { vn: 1000, plazo: 5, cupon: 10, frec: 1, mod: 'frances', gracia: 1, tir: 11, dias: 0, tirUS: 4.5 },
+            gracia: { vn: 1000, plazo: 6, cupon: 10, frec: 1, mod: 'gracia', gracia: 3, tir: 11, dias: 0, tirUS: 4.5 },
+            fraccionario: { vn: 5000, plazo: 5, cupon: 8, frec: 2, mod: 'bullet', gracia: 1, tir: 8.8, dias: 155, tirUS: 4.5 }
+        };
+
+        function applyPreset(k) {
+            const p = presetConfigs[k];
+            if (!p) return;
+            document.getElementById('inpVN').value = p.vn;
+            document.getElementById('inpPlazo').value = p.plazo;
+            document.getElementById('inpCupon').value = p.cupon;
+            document.getElementById('selFrecuencia').value = p.frec;
+            document.getElementById('selReembolso').value = p.mod;
+            document.getElementById('inpGracia').value = p.gracia;
+            document.getElementById('inpTIR').value = p.tir;
+            document.getElementById('inpDias').value = p.dias;
+            document.getElementById('inpTIR_US').value = p.tirUS;
+
+            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+            if (window.event && window.event.target) window.event.target.classList.add('active');
+
+            onModalidadChange(false);
+            runSim();
+        }
+
+        function onModalidadChange(trigger = true) {
+            const mod = document.getElementById('selReembolso').value;
+            const boxG = document.getElementById('boxGracia');
+            const inpC = document.getElementById('inpCupon');
+
+            boxG.style.display = (mod === 'gracia') ? 'block' : 'none';
+            if (mod === 'cupon_cero') {
+                inpC.value = 0;
+                inpC.disabled = true;
+            } else {
+                inpC.disabled = false;
+            }
+            if (trigger) runSim();
+        }
+
+        function onTIRInput() {
+            runSim(true, false);
+        }
+
+        function onPrecioInput() {
+            const p = parseFloat(document.getElementById('inpPrecio').value) || 0;
+            const calcTIR = solveInternalRate(p);
+            document.getElementById('inpTIR').value = (calcTIR * 100).toFixed(2);
+            runSim(false, false);
+        }
+
+        function openTab(tId) {
+            curTab = tId;
+            document.querySelectorAll('.tab-link').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            if (window.event && window.event.target) window.event.target.classList.add('active');
+            document.getElementById(tId).classList.add('active');
+        }
+
+        function calcFlows() {
+            const vn = parseFloat(document.getElementById('inpVN').value) || 1000;
+            const n = parseInt(document.getElementById('inpPlazo').value) || 1;
+            const m = parseInt(document.getElementById('selFrecuencia').value) || 1;
+            const mod = document.getElementById('selReembolso').value;
+            const i_anual = (mod === 'cupon_cero') ? 0 : (parseFloat(document.getElementById('inpCupon').value) || 0) / 100;
+            const i_per = i_anual / m;
+            const r_anual = (parseFloat(document.getElementById('inpTIR').value) || 0) / 100;
+            const r_per = Math.pow(1 + r_anual, 1 / m) - 1;
+            const totalP = n * m;
+
+            let list = [];
+            let vr = vn;
+
+            if (mod === 'bullet' || mod === 'cupon_cero') {
+                for (let t = 1; t <= totalP; t++) {
+                    const interest = (mod === 'cupon_cero') ? 0 : vr * i_per;
+                    const amort = (t === totalP) ? vn : 0;
+                    const total = interest + amort;
+                    const vrFinal = vr - amort;
+                    list.push({ t, vrInit: vr, amort, interest, total, vrFinal });
+                    vr = vrFinal;
+                }
+            } else if (mod === 'aleman') {
+                const aConst = vn / totalP;
+                for (let t = 1; t <= totalP; t++) {
+                    const interest = vr * i_per;
+                    const amort = aConst;
+                    const total = interest + amort;
+                    const vrFinal = vr - amort;
+                    list.push({ t, vrInit: vr, amort, interest, total, vrFinal: Math.max(0, vrFinal) });
+                    vr = vrFinal;
+                }
+            } else if (mod === 'frances') {
+                const cuota = (i_per > 0) ? vn * (i_per / (1 - Math.pow(1 + i_per, -totalP))) : (vn / totalP);
+                for (let t = 1; t <= totalP; t++) {
+                    const interest = vr * i_per;
+                    const amort = (t === totalP) ? vr : (cuota - interest);
+                    const total = interest + amort;
+                    const vrFinal = vr - amort;
+                    list.push({ t, vrInit: vr, amort, interest, total, vrFinal: Math.max(0, vrFinal) });
+                    vr = vrFinal;
+                }
+            } else if (mod === 'gracia') {
+                const g = parseInt(document.getElementById('inpGracia').value) || 1;
+                const remP = Math.max(1, totalP - g + 1);
+                const aConst = vn / remP;
+                for (let t = 1; t <= totalP; t++) {
+                    const interest = vr * i_per;
+                    const amort = (t >= g) ? aConst : 0;
+                    const total = interest + amort;
+                    const vrFinal = vr - amort;
+                    list.push({ t, vrInit: vr, amort, interest, total, vrFinal: Math.max(0, vrFinal) });
+                    vr = vrFinal;
+                }
+            }
+            return { list, vn, n, m, totalP, i_anual, i_per, r_anual, r_per };
+        }
+
+        function solveInternalRate(targetPrice) {
+            const { list, m, totalP } = calcFlows();
+            let r = 0.10 / m;
+            for (let iter = 0; iter < 80; iter++) {
+                let npv = 0, dnpv = 0;
+                for (let t = 1; t <= totalP; t++) {
+                    const cf = list[t - 1].total;
+                    const d = Math.pow(1 + r, t);
+                    npv += cf / d;
+                    dnpv -= (t * cf) / (d * (1 + r));
+                }
+                const diff = npv - targetPrice;
+                if (Math.abs(diff) < 1e-6) break;
+                r = r - diff / dnpv;
+                if (r <= -0.95) r = 0.001;
+            }
+            return Math.pow(1 + r, m) - 1;
+        }
+
+        function runSim(updatePrice = true, updateTIR = false) {
+            const data = calcFlows();
+            const { list, vn, n, m, totalP, i_anual, r_anual, r_per } = data;
+
+            let pTeorico = 0, sumPV_t = 0, totA = 0, totI = 0, totS = 0;
+
+            list.forEach(item => {
+                const factor = Math.pow(1 + r_per, -item.t);
+                item.factor = factor;
+                item.pv = item.total * factor;
+                pTeorico += item.pv;
+                sumPV_t += item.t * item.pv;
+                totA += item.amort;
+                totI += item.interest;
+                totS += item.total;
+            });
+
+            if (updatePrice) {
+                document.getElementById('inpPrecio').value = pTeorico.toFixed(2);
+            }
+
+            const pMercado = parseFloat(document.getElementById('inpPrecio').value) || pTeorico;
+            const dias = parseInt(document.getElementById('inpDias').value) || 0;
+            const diasTot = 360 / m;
+            const vr0 = vn;
+            const ic = (i_anual > 0) ? (vr0 * (i_anual / m) * (dias / diasTot)) : 0;
+            const vt = vr0 + ic;
+            const paridad = (pMercado / vt) * 100;
+            const rcte = (pMercado > 0) ? ((vr0 * i_anual) / pMercado) * 100 : 0;
+            const tirAct = parseFloat(document.getElementById('inpTIR').value) || (r_anual * 100);
+            const rgc = tirAct - rcte;
+
+            const durPeriods = (pTeorico > 0) ? (sumPV_t / pTeorico) : 0;
+            const durYears = durPeriods / m;
+            const modDur = durYears / (1 + r_per);
+
+            const tirUS = parseFloat(document.getElementById('inpTIR_US').value) || 0;
+            const rpBps = Math.round((tirAct - tirUS) * 100);
+
+            // Actualizar KPIs
+            document.getElementById('resPrecio').innerText = `$ ${pTeorico.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            let emHtml = '';
+            if (Math.abs(paridad - 100) < 0.05) emHtml = '<span class="badge-par">A la par (P = VN)</span>';
+            else if (paridad > 100) emHtml = '<span class="badge-sobrepar">Sobre la par (Con prima)</span>';
+            else emHtml = '<span class="badge-bajopar">Bajo la par (Descuento)</span>';
+            document.getElementById('resEmisionTag').innerHTML = emHtml;
+
+            document.getElementById('resVT').innerText = `$ ${vt.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('resVRSub').innerText = `VR: $ ${vr0.toFixed(2)} | Ic: $ ${ic.toFixed(2)}`;
+
+            document.getElementById('resParidad').innerText = `${paridad.toFixed(2)}%`;
+            if (paridad > 100) document.getElementById('resParidadTag').innerHTML = '<span class="badge-sobrepar">Sobre la par (TIR < i)</span>';
+            else if (paridad < 100) document.getElementById('resParidadTag').innerHTML = '<span class="badge-bajopar">Bajo la par (TIR > i)</span>';
+            else document.getElementById('resParidadTag').innerHTML = '<span class="badge-par">A la par (TIR = i)</span>';
+
+            document.getElementById('resRCTE').innerText = `${rcte.toFixed(2)}%`;
+            document.getElementById('resRCTESub').innerText = `R_GC: ${(rgc >= 0 ? '+' : '')}${rgc.toFixed(2)}% | TIR: ${tirAct.toFixed(2)}%`;
+
+            document.getElementById('resDuration').innerText = `${durYears.toFixed(2)} años`;
+            document.getElementById('resModDuration').innerText = `Mod. Dur: ${modDur.toFixed(2)} años`;
+
+            document.getElementById('resRP').innerText = `${rpBps > 0 ? '+' : ''}${rpBps} bps`;
+            document.getElementById('resSpread').innerText = `Spread: ${(tirAct - tirUS).toFixed(2)}% vs EEUU`;
+
+            // Renderizado de Tablas & Riesgos
+            renderTableRows(list, totA, totI, totS, pTeorico);
+            renderRisksView(document.getElementById('selReembolso').value, durYears, tirAct, rpBps);
+
+            // RENDERIZADO VISUAL
+            drawTimelineVisualCanvas(list, vn, pMercado);
+            drawPriceYield();
+            drawTimePath();
+        }
+
+        function drawTimelineVisualCanvas(list, vn, pMercado) {
+            const cv = document.getElementById('cTimeline');
+            if (!cv) return;
+            const ctx = cv.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = cv.getBoundingClientRect();
+            cv.width = rect.width * dpr;
+            cv.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const w = rect.width, h = rect.height;
+            ctx.clearRect(0, 0, w, h);
+
+            const numSteps = list.length + 1; // k=0 más los k=1..totalP
+            const pad = { l: 45, r: 25, t: 30, b: 35 };
+            const gw = w - pad.l - pad.r;
+            const gh = h - pad.t - pad.b;
+
+            // Máximos para la escala del eje Y
+            const maxFlow = Math.max(pMercado, ...list.map(x => x.total)) * 1.15;
+            const maxVR = vn * 1.05;
+            const maxY = Math.max(maxFlow, maxVR);
+
+            const stepW = gw / numSteps;
+            const zeroY = pad.t + gh * 0.75; // Línea base k
+
+            // Reset hotspots
+            timelineHotspots = [];
+
+            // Eje Unidimensional
+            ctx.strokeStyle = '#2a3756';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(pad.l, zeroY);
+            ctx.lineTo(w - pad.r, zeroY);
+            ctx.stroke();
+
+            const isLarge = w > 700;
+            const nodeR = isLarge ? 22 : 15;
+            const nodeFont = isLarge ? 'bold 18px sans-serif' : 'bold 14px sans-serif';
+            const amountFont = isLarge ? 'bold 16px sans-serif' : 'bold 13px sans-serif';
+            const labelFont = isLarge ? 'bold 15px sans-serif' : 'bold 13px sans-serif';
+            const barW = Math.min(isLarge ? 55 : 28, stepW * 0.45);
+            const x0 = pad.l + stepW * 0.5;
+            const h0 = (pMercado / maxY) * (gh * 0.65);
+
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(x0 - barW / 2, zeroY, barW, h0);
+
+            // Marca de nodo k=0
+            ctx.fillStyle = '#1e293b';
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = isLarge ? 3.5 : 2.5;
+            ctx.beginPath();
+            ctx.arc(x0, zeroY, nodeR, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = nodeFont;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('0', x0, zeroY);
+            ctx.textBaseline = 'alphabetic';
+
+            ctx.fillStyle = '#f87171';
+            ctx.font = amountFont;
+            ctx.fillText('-$' + Math.round(pMercado), x0, zeroY + h0 + (isLarge ? 24 : 16));
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = labelFont;
+            ctx.fillText('k = 0', x0, zeroY - (nodeR + 10));
+
+            timelineHotspots.push({
+                x: x0 - barW / 2, y: zeroY, w: barW, h: h0,
+                title: 'k = 0 (Desembolso / Precio)',
+                text: `Precio de Mercado: -$${pMercado.toFixed(2)} | VR Inicial: $${vn.toFixed(2)}`
+            });
+
+            // Puntos para curva de Saldo Residual
+            const vrPoints = [{ x: x0, y: zeroY - (vn / maxY) * (gh * 0.65) }];
+
+            // 2. DIBUJAR k = 1 .. n (FLUJOS Y AMORTIZACIÓN)
+            list.forEach((it, idx) => {
+                const xk = pad.l + stepW * (idx + 1.5);
+                const hInt = (it.interest / maxY) * (gh * 0.65);
+                const hCap = (it.amort / maxY) * (gh * 0.65);
+
+                // Stacked Bar: Azul (Interés) + Verde (Capital)
+                const yInt = zeroY - hInt;
+                const yCap = yInt - hCap;
+
+                if (hInt > 0) {
+                    ctx.fillStyle = '#3b82f6';
+                    ctx.fillRect(xk - barW / 2, yInt, barW, hInt);
+                }
+                if (hCap > 0) {
+                    ctx.fillStyle = '#10b981';
+                    ctx.fillRect(xk - barW / 2, yCap, barW, hCap);
+                }
+
+                // Marca de nodo k
+                const nodeColor = (idx === list.length - 1) ? '#10b981' : '#3b82f6';
+                ctx.fillStyle = '#1e293b';
+                ctx.strokeStyle = nodeColor;
+                ctx.lineWidth = isLarge ? 3.5 : 2.5;
+                ctx.beginPath();
+                ctx.arc(xk, zeroY, nodeR, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = nodeFont;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(it.t.toString(), xk, zeroY);
+                ctx.textBaseline = 'alphabetic';
+
+                // Monto total servicio sobre la barra
+                const totalY = zeroY - (hInt + hCap) - (isLarge ? 12 : 8);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = amountFont;
+                ctx.fillText('+$' + Math.round(it.total), xk, totalY);
+
+                ctx.fillStyle = '#cbd5e1';
+                ctx.font = labelFont;
+                ctx.fillText(`k = ${it.t}`, xk, zeroY + nodeR + (isLarge ? 20 : 14));
+
+                // Punto de Saldo Residual para la línea dorada
+                const yVR = zeroY - (it.vrFinal / maxY) * (gh * 0.65);
+                vrPoints.push({ x: xk, y: yVR });
+
+                timelineHotspots.push({
+                    x: xk - barW / 2, y: yCap, w: barW, h: (hInt + hCap),
+                    title: `Momento k = ${it.t}`,
+                    text: `Interés: +$${it.interest.toFixed(2)} | Capital: +$${it.amort.toFixed(2)} | Servicio: +$${it.total.toFixed(2)} | VR final: $${it.vrFinal.toFixed(2)}`
+                });
+            });
+
+            // 3. DIBUJAR LÍNEA TENDENCIA SALDO RESIDUAL (VR_k)
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            vrPoints.forEach((pt, i) => {
+                if (i === 0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+            });
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Puntos dorados sobre el saldo residual
+            vrPoints.forEach(pt => {
+                ctx.fillStyle = '#f59e0b';
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // Interacción Hover en Canvas Timeline
+        const cvTl = document.getElementById('cTimeline');
+        const tooltipEl = document.getElementById('chartHoverTooltip');
+
+        if (cvTl) {
+            cvTl.addEventListener('mousemove', (e) => {
+                const rect = cvTl.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                let found = false;
+                for (let spot of timelineHotspots) {
+                    if (mouseX >= spot.x - 5 && mouseX <= spot.x + spot.w + 5) {
+                        tooltipEl.style.display = 'block';
+                        tooltipEl.style.left = (e.clientX - rect.left + 10) + 'px';
+                        tooltipEl.style.top = (e.clientY - rect.top - 25) + 'px';
+                        tooltipEl.innerHTML = `<strong>${spot.title}</strong><br>${spot.text}`;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) tooltipEl.style.display = 'none';
+            });
+
+            cvTl.addEventListener('mouseleave', () => {
+                tooltipEl.style.display = 'none';
+            });
+        }
+
+        function drawPriceYield() {
+            const cv = document.getElementById('cPriceYield');
+            if (!cv) return;
+            const ctx = cv.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = cv.getBoundingClientRect();
+            cv.width = rect.width * dpr;
+            cv.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const w = rect.width, h = rect.height;
+            ctx.clearRect(0, 0, w, h);
+
+            const curTIR = parseFloat(document.getElementById('inpTIR').value) || 10;
+            const vn = parseFloat(document.getElementById('inpVN').value) || 1000;
+            const m = parseInt(document.getElementById('selFrecuencia').value) || 1;
+
+            const minT = Math.max(1, curTIR - 8);
+            const maxT = curTIR + 8;
+            const pts = [];
+
+            for (let k = 0; k <= 30; k++) {
+                const tVal = minT + (k / 30) * (maxT - minT);
+                const rEff = tVal / 100;
+                const rPer = Math.pow(1 + rEff, 1 / m) - 1;
+                const data = calcFlows();
+                let pVal = 0;
+                data.list.forEach(it => pVal += it.total * Math.pow(1 + rPer, -it.t));
+                pts.push({ tir: tVal, p: pVal });
+            }
+
+            const minP = Math.min(...pts.map(x => x.p)) * 0.92;
+            const maxP = Math.max(...pts.map(x => x.p)) * 1.05;
+
+            const pad = { l: 45, r: 15, t: 15, b: 24 };
+            const gw = w - pad.l - pad.r;
+            const gh = h - pad.t - pad.b;
+
+            const mapX = (t) => pad.l + ((t - minT) / (maxT - minT)) * gw;
+            const mapY = (p) => pad.t + (1 - (p - minP) / (maxP - minP)) * gh;
+
+            // Grid
+            ctx.strokeStyle = '#2a3756';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let i = 0; i <= 3; i++) {
+                const y = pad.t + (i / 3) * gh;
+                ctx.moveTo(pad.l, y);
+                ctx.lineTo(w - pad.r, y);
+                const valP = maxP - (i / 3) * (maxP - minP);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '11px sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText('$' + Math.round(valP), pad.l - 4, y + 4);
+            }
+            ctx.stroke();
+
+            // Par line
+            const parY = mapY(vn);
+            if (parY >= pad.t && parY <= h - pad.b) {
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(pad.l, parY);
+                ctx.lineTo(w - pad.r, parY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Curve
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            pts.forEach((pt, i) => {
+                const x = mapX(pt.tir), y = mapY(pt.p);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Current point (Destacado con Badge de Alto Contraste y tamaño gigante en modo expandido)
+            const curP = parseFloat(document.getElementById('inpPrecio').value) || vn;
+            const cx = mapX(curTIR), cy = mapY(curP);
+
+            const isLarge = w > 700;
+            const ptRadius = isLarge ? 9 : 6.5;
+            const fontSize = isLarge ? 18 : 14;
+            const boxPaddingH = isLarge ? 24 : 16;
+            const boxH = isLarge ? 38 : 26;
+
+            // Punto rojo grande pulsante con halo blanco
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(cx, cy, ptRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = isLarge ? 3 : 2;
+            ctx.stroke();
+
+            // Etiqueta destacada en cajita (Badge flotante)
+            const labelText = `TIR: ${curTIR.toFixed(2)}% | P: $${curP.toFixed(2)}`;
+            ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+            const textMetrics = ctx.measureText(labelText);
+            const boxW = textMetrics.width + boxPaddingH;
+            const boxX = Math.max(pad.l + 4, Math.min(w - pad.r - boxW, cx - boxW / 2));
+            const boxY = (cy - (boxH + 12) >= pad.t) ? (cy - (boxH + 12)) : (cy + 16);
+
+            // Fondo de la etiqueta
+            ctx.fillStyle = 'rgba(11, 19, 38, 0.96)';
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = isLarge ? 2.5 : 1.5;
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(boxX, boxY, boxW, boxH, isLarge ? 10 : 6);
+            } else {
+                ctx.rect(boxX, boxY, boxW, boxH);
+            }
+            ctx.fill();
+            ctx.stroke();
+
+            // Texto de la etiqueta
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(labelText, boxX + boxW / 2, boxY + boxH / 2);
+            ctx.textBaseline = 'alphabetic';
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = `bold ${isLarge ? 15 : 12}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText('Tasa Requerida (%)', pad.l + gw / 2, h - (isLarge ? 8 : 4));
+        }
+
+        let timePathHoverData = null;
+
+        function drawTimePath() {
+            const cv = document.getElementById('cTimePath');
+            if (!cv) return;
+            const ctx = cv.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = cv.getBoundingClientRect();
+            cv.width = rect.width * dpr;
+            cv.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const w = rect.width, h = rect.height;
+            ctx.clearRect(0, 0, w, h);
+
+            const vn = parseFloat(document.getElementById('inpVN').value) || 1000;
+            const n = parseInt(document.getElementById('inpPlazo').value) || 5;
+            const cupon = parseFloat(document.getElementById('inpCupon').value) || 10;
+            const iVal = cupon / 100;
+
+            const pad = { l: 80, r: 35, t: 25, b: 35 };
+            const gw = w - pad.l - pad.r;
+            const gh = h - pad.t - pad.b;
+
+            const mapX = (t) => pad.l + (t / n) * gw;
+
+            function calcPathP(remT, r) {
+                if (remT === 0) return vn;
+                const ren = (r > 0) ? (1 - Math.pow(1 + r, -remT)) / r : remT;
+                return (vn * iVal * ren) + (vn * Math.pow(1 + r, -remT));
+            }
+
+            const rS = Math.max(0.02, iVal * 0.6); // Sobre la par (tasa menor que cupón)
+            const rP = iVal;                       // A la par (tasa igual a cupón)
+            const rB = (iVal > 0) ? iVal * 1.4 : 0.12; // Bajo la par (tasa mayor que cupón)
+
+            const cS = [], cP = [], cB = [];
+            for (let t = 0; t <= n; t++) {
+                const rem = n - t;
+                cS.push({ t, p: calcPathP(rem, rS) });
+                cP.push({ t, p: calcPathP(rem, rP) });
+                cB.push({ t, p: calcPathP(rem, rB) });
+            }
+
+            const all = [...cS, ...cP, ...cB].map(x => x.p);
+            const minP = Math.min(...all) * 0.95;
+            const maxP = Math.max(...all) * 1.05;
+            const mapY = (p) => pad.t + (1 - (p - minP) / (maxP - minP)) * gh;
+
+            // Almacenar data para el evento de hover interactivo
+            timePathHoverData = {
+                pad, gw, gh, w, h, n, minP, maxP,
+                calcPathP, rS, rP, rB, mapX, mapY, vn
+            };
+
+            // Grid
+            ctx.strokeStyle = '#2a3756';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let i = 0; i <= 3; i++) {
+                const y = pad.t + (i / 3) * gh;
+                ctx.moveTo(pad.l, y);
+                ctx.lineTo(w - pad.r, y);
+                const valP = maxP - (i / 3) * (maxP - minP);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 13px sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText('$' + Math.round(valP), pad.l - 10, y + 4);
+            }
+            ctx.stroke();
+
+            // Dibujar Curvas
+            function plot(arr, color) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                arr.forEach((pt, i) => {
+                    const x = mapX(pt.t), y = mapY(pt.p);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+            }
+
+            plot(cS, '#34d399');
+            plot(cP, '#60a5fa');
+            plot(cB, '#f87171');
+
+            // Título del Eje X de gran tamaño y contraste blanco
+            ctx.fillStyle = '#f3f4f6';
+            ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Años transcurridos (0 a ${n})  —  Convergencia al Par (Pull to Par)`, pad.l + gw / 2, h - 6);
+        }
+
+        // Interacción Hover interactivo para TimePath
+        const cvTp = document.getElementById('cTimePath');
+        const tooltipTp = document.getElementById('chartHoverTooltipTimePath');
+
+        if (cvTp && tooltipTp) {
+            cvTp.addEventListener('mousemove', (e) => {
+                if (!timePathHoverData) return;
+                const rect = cvTp.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                const { pad, gw, n, calcPathP, rS, rP, rB, mapX, mapY, vn } = timePathHoverData;
+
+                if (mouseX >= pad.l && mouseX <= pad.l + gw) {
+                    const tRatio = (mouseX - pad.l) / gw;
+                    const tYear = tRatio * n;
+                    const remT = Math.max(0, n - tYear);
+
+                    const pSobre = calcPathP(remT, rS);
+                    const pPar = calcPathP(remT, rP);
+                    const pBajo = calcPathP(remT, rB);
+
+                    tooltipTp.style.display = 'block';
+                    tooltipTp.style.left = Math.min(rect.width - 240, mouseX + 15) + 'px';
+                    tooltipTp.style.top = Math.max(10, mouseY - 50) + 'px';
+                    tooltipTp.innerHTML = `
+                                <div style="font-weight:800; color:#ffffff; margin-bottom:4px; font-size:1.02rem; border-bottom:1px solid #374151; padding-bottom:3px;">
+                                    Momento: Año ${tYear.toFixed(2)} / ${n}
+                                </div>
+                                <div style="color:#34d399; font-weight:700; font-size:0.95rem;">
+                                    ● Sobre la par: $ ${pSobre.toFixed(2)}
+                                </div>
+                                <div style="color:#60a5fa; font-weight:700; font-size:0.95rem;">
+                                    ● A la par: $ ${pPar.toFixed(2)}
+                                </div>
+                                <div style="color:#f87171; font-weight:700; font-size:0.95rem;">
+                                    ● Bajo la par: $ ${pBajo.toFixed(2)}
+                                </div>
+                                <div style="font-size:0.8rem; color:#9ca3af; margin-top:3px;">
+                                    Convergencia al Vto: $ ${vn.toFixed(2)}
+                                </div>
+                            `;
+                } else {
+                    tooltipTp.style.display = 'none';
+                }
+            });
+
+            cvTp.addEventListener('mouseleave', () => {
+                tooltipTp.style.display = 'none';
+            });
+        }
+
+        function renderTableRows(list, totA, totI, totS, pTeorico) {
+            const tbody = document.getElementById('tbBody');
+            let html = '';
+            list.forEach(it => {
+                html += `
+                <tr>
+                    <td style="text-align:center; font-weight:600;">${it.t}</td>
+                    <td>$ ${it.vrInit.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td style="color:#34d399;">$ ${it.amort.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td style="color:#60a5fa;">$ ${it.interest.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td style="font-weight:700; color:#ffffff;">$ ${it.total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td style="font-family:monospace; color:#94a3b8;">${it.factor.toFixed(6)}</td>
+                    <td style="font-weight:600; color:#93c5fd;">$ ${it.pv.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td style="color:#fbbf24;">$ ${it.vrFinal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                </tr>
+            `;
+            });
+            tbody.innerHTML = html;
+
+            document.getElementById('tbFoot').innerHTML = `
+            <td style="text-align:center;">TOTALES</td>
+            <td>-</td>
+            <td style="color:#34d399;">$ ${totA.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td style="color:#60a5fa;">$ ${totI.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td style="color:#ffffff;">$ ${totS.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td>-</td>
+            <td style="color:#93c5fd;">$ ${pTeorico.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td>$ 0,00</td>
+        `;
+        }
+
+        function renderRisksView(mod, dur, tir, rpBps) {
+            const box = document.getElementById('rBox');
+            let rTasa = (mod === 'cupon_cero') ? { txt: 'Muy Alto', cls: 'badge-bajopar', desc: 'Máxima sensibilidad: no abona cupones intermedios.' }
+                : (mod === 'aleman') ? { txt: 'Bajo', cls: 'badge-sobrepar', desc: 'Menor sensibilidad: rápida devolución del principal.' }
+                    : { txt: 'Moderado', cls: 'badge-par', desc: 'Sensibilidad estándar inversa ante cambios de tasa.' };
+
+            let rReinv = (mod === 'cupon_cero') ? { txt: 'Nulo (0)', cls: 'badge-par', desc: 'Sin flujos intermedios a reinvertir.' }
+                : (mod === 'aleman') ? { txt: 'Muy Alto', cls: 'badge-bajopar', desc: 'Elevados flujos periódicos de capital e interés.' }
+                    : (mod === 'bullet') ? { txt: 'Moderado', cls: 'badge-par', desc: 'Se limita exclusivamente a los cupones de interés.' }
+                        : { txt: 'Medio-Alto', cls: 'badge-bajopar', desc: 'Requiere reinvertir amortizaciones y cupones.' };
+
+            box.innerHTML = `
+            <div class="risk-card">
+                <div class="risk-card-head"><span>1. Riesgo Tasa de Interés</span><span class="${rTasa.cls}">${rTasa.txt}</span></div>
+                <div class="risk-card-desc">${rTasa.desc}</div>
+            </div>
+            <div class="risk-card">
+                <div class="risk-card-head"><span>2. Riesgo de Reinversión</span><span class="${rReinv.cls}">${rReinv.txt}</span></div>
+                <div class="risk-card-desc">${rReinv.desc}</div>
+            </div>
+            <div class="risk-card">
+                <div class="risk-card-head"><span>3. Riesgo de Opciones</span><span class="badge-par">Estándar</span></div>
+                <div class="risk-card-desc">Cláusulas de rescate anticipado (Call) o venta pactada (Put).</div>
+            </div>
+            <div class="risk-card">
+                <div class="risk-card-head"><span>4. Riesgo Inflación & Dólar</span><span class="badge-bajopar">Vulnerable</span></div>
+                <div class="risk-card-desc">Depreciación de cupones nominales fijos frente al IPC / Tipo de cambio.</div>
+            </div>
+            <div class="risk-card">
+                <div class="risk-card-head"><span>5. Riesgo Default & Liquidez</span><span class="badge-par">Crediticio</span></div>
+                <div class="risk-card-desc">Solvencia del emisor y profundidad bursátil para compra/venta.</div>
+            </div>
+            <div class="risk-card">
+                <div class="risk-card-head"><span>6. Riesgo País (${rpBps} bps)</span><span class="${rpBps > 500 ? 'badge-bajopar' : 'badge-sobrepar'}">${rpBps} bps</span></div>
+                <div class="risk-card-desc">Sobreprecio de riesgo exigido sobre Bonos del Tesoro de EE.UU.</div>
+            </div>
+        `;
+        }
+
+        function renderAllMath() {
+            if (window.renderMathInElement) {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false }
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        // Inicialización inmediata y segura dentro de iframes
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                runSim();
+                renderAllMath();
+            });
+        } else {
+            runSim();
+            renderAllMath();
+        }
+
+        window.addEventListener('load', () => {
+            runSim();
+            renderAllMath();
+        });
+
+        window.addEventListener('resize', () => {
+            runSim();
+        });
+    </script>
+
+</body>
+
+</html>
