@@ -109,7 +109,7 @@ export async function getAuthorizedUserByEmail(email, provider, options = {}) {
         };
       }
     } else if (provider === 'supabase') {
-      const supabase = await queryDatabase({ provider: 'supabase' });
+      const supabase = await queryDatabase({ provider: 'supabase', options: { useAdmin: true } });
       const { data: user, error } = await supabase
         .from('whitelist_users')
         .select('*')

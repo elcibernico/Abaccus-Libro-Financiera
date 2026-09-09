@@ -57,10 +57,11 @@ export async function middleware(request) {
       return NextResponse.redirect(new URL('/', request.url));
     }
 
-    // Evitar bucle de redirección en las páginas de onboarding y reactivación
+    // Evitar bucle de redirección en las páginas de onboarding, reactivación o admin
     if (
       pathname.startsWith('/perfil/onboarding') ||
-      pathname.startsWith('/perfil/reactivar')
+      pathname.startsWith('/perfil/reactivar') ||
+      pathname.startsWith('/admin')
     ) {
       return response;
     }
@@ -80,15 +81,17 @@ export async function middleware(request) {
 
         // 2. Validar Onboarding (fecha de nacimiento o dni vacíos)
         if (!dbUser.fecha_nacimiento || !dbUser.dni) {
-          return NextResponse.redirect(new URL('/perfil/onboarding', request.url));
+          if (pathname !== '/perfil/onboarding') {
+            return NextResponse.redirect(new URL('/perfil/onboarding', request.url));
+          }
         }
       }
     } catch (err) {
       console.error('[Middleware DB Query Error]:', err);
     }
   } else {
-    // Si NO está logueado y trata de acceder a cualquier página que no sea /login, forzar login
-    if (pathname !== '/login') {
+    // Si NO está logueado y trata de acceder a cualquier página protegida, redirigir a /login
+    if (pathname !== '/login' && !pathname.startsWith('/auth')) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
