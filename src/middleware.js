@@ -52,9 +52,14 @@ export async function middleware(request) {
 
   // Lógica de Redirección Global
   if (user) {
-    // Si está logueado e intenta ir a /login, redirigir al Dashboard principal
+    // Si está logueado e intenta ir a /login sin error, redirigir al Dashboard principal
+    // (Si viene con ?error=..., permitirle ver el mensaje de error o desloguearse)
     if (pathname === '/login') {
-      return NextResponse.redirect(new URL('/', request.url));
+      const errorParam = request.nextUrl.searchParams.get('error');
+      if (!errorParam) {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+      return response;
     }
 
     // Evitar bucle de redirección en las páginas de onboarding, reactivación o admin

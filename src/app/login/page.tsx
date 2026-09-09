@@ -30,12 +30,17 @@ function LoginForm() {
       setErrorMsg('Tu sesión ha expirado. Por favor inicia sesión de nuevo.');
     }
 
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        router.push('/');
-      }
-    });
+    // Check if user is already logged in (only redirect if no error in URL)
+    if (!errorParam) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          router.push('/');
+        }
+      });
+    } else {
+      // Si hay un error de acceso/seguridad, cerrar la sesión local para romper cualquier ciclo
+      supabase.auth.signOut();
+    }
   }, [searchParams, router]);
 
   const handleOAuthLogin = async (provider: any) => {
