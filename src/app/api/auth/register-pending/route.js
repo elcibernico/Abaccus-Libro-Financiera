@@ -11,7 +11,7 @@ async function getPhonePrefixByIp(ip) {
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const timeoutId = setTimeout(() => controller.abort(), 800); // 800ms max
 
     const res = await fetch(`https://ipapi.co/${ip}/json/`, {
       signal: controller.signal,
@@ -32,7 +32,7 @@ async function getPhonePrefixByIp(ip) {
       }
     }
   } catch (err) {
-    console.warn('[Register Pending]: No se pudo auto-detectar prefijo de IP:', err.message);
+    // Si falla o se agota el timeout, usar fallback sin esperar
   }
   return defaultRes;
 }

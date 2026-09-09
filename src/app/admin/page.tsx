@@ -942,13 +942,13 @@ export default function AdminPage() {
                   >
                     {roles.length > 0 ? (
                       roles.map(r => (
-                        <option key={r.id} value={r.id === 'alumno' ? 'user' : r.id}>
+                        <option key={r.id} value={r.id}>
                           {r.is_active ? r.label : r.id}
                         </option>
                       ))
                     ) : (
                       <>
-                        <option value="user">Alumno</option>
+                        <option value="alumno">Alumno</option>
                         <option value="docente">Docente</option>
                         <option value="admin">Administrador</option>
                         <option value="guest">Invitado</option>
@@ -1095,7 +1095,7 @@ export default function AdminPage() {
                             )}
                             {roles.length > 0 ? (
                               roles.map(r => (
-                                <option key={r.id} value={r.id === 'alumno' ? 'user' : r.id}>
+                                <option key={r.id} value={r.id}>
                                   {r.is_active ? r.label : r.id}
                                 </option>
                               ))
@@ -1103,7 +1103,7 @@ export default function AdminPage() {
                               <>
                                 <option value="admin">Administrador</option>
                                 <option value="docente">Docente</option>
-                                <option value="user">Alumno</option>
+                                <option value="alumno">Alumno</option>
                                 <option value="guest">Invitado</option>
                               </>
                             )}
@@ -1247,11 +1247,11 @@ export default function AdminPage() {
                                   >
                                     {roles.length > 0 ? (
                                       roles.filter(r => r.is_active !== false && r.id !== 'root').map(r => (
-                                        <option key={r.id} value={r.id === 'alumno' ? 'user' : r.id}>{r.label}</option>
+                                        <option key={r.id} value={r.id}>{r.label}</option>
                                       ))
                                     ) : (
                                       <>
-                                        <option value="user">Alumno</option>
+                                        <option value="alumno">Alumno</option>
                                         <option value="docente">Docente</option>
                                         <option value="admin">Administrador</option>
                                         <option value="guest">Invitado</option>
